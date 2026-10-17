@@ -1,27 +1,22 @@
 <?php
 
+use App\Http\Controllers\Admin\CurriculumModuleController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\QuestionBankController;
 use App\Http\Controllers\Admin\SidebarMenuController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
-use Illuminate\Support\Benchmark;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('admin.dashboard');
 });
 
-Route::get('test', function () {
-    Benchmark::dd(function () {
-        (string) view('welcome');
-    });
-});
-
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/login', [AuthController::class, 'doLogin'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Admin Users Routes
+// Admin Routes
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
@@ -34,6 +29,16 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/update/{id}', [UserController::class, 'doUpdate'])->name('doUpdate');
         Route::delete('/delete/{id}', [UserController::class, 'delete'])->name('delete');
         Route::post('/reset-password/{id}', [UserController::class, 'resetPassword'])->name('resetPassword');
+    });
+
+    Route::middleware('access_type:1')->prefix('modules')->name('modules.')->group(function () {
+        Route::get('/', [CurriculumModuleController::class, 'index'])->name('index');
+        Route::get('/detail/{id}', [CurriculumModuleController::class, 'detail'])->name('detail');
+    });
+
+    Route::middleware('access_type:1')->prefix('questions')->name('questions.')->group(function () {
+        Route::get('/', [QuestionBankController::class, 'index'])->name('index');
+        Route::get('/detail/{id}', [QuestionBankController::class, 'detail'])->name('detail');
     });
 
     Route::middleware('access_type:1')->prefix('sidebar-menu')->name('sidebar_menu.')->group(function () {
@@ -54,5 +59,4 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/change-password', [UserController::class, 'changePassword'])->name('change_password');
         Route::post('/change-password', [UserController::class, 'doChangePassword'])->name('do_change_password');
     });
-
 });

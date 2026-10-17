@@ -13,7 +13,7 @@ use Illuminate\Http\Response;
 class UserController extends Controller
 {
     protected array $page = [
-        'route' => 'user',
+        'route' => 'users',
         'title' => 'Pengguna Aplikasi',
     ];
 
@@ -66,7 +66,7 @@ class UserController extends Controller
         }
     }
 
-    public function detail(int $id): View|RedirectResponse|Response
+    public function detail(string $id): View|RedirectResponse|Response
     {
         $data = $this->usecase->getByID($id);
 
@@ -83,7 +83,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function update(int $id): View|RedirectResponse|Response
+    public function update(string $id): View|RedirectResponse|Response
     {
         $data = $this->usecase->getByID($id);
 
@@ -101,7 +101,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function doUpdate(int $id, Request $request): RedirectResponse
+    public function doUpdate(string $id, Request $request): RedirectResponse
     {
         $process = $this->usecase->update(
             data: $request,
@@ -120,7 +120,7 @@ class UserController extends Controller
         }
     }
 
-    public function delete(int $id): RedirectResponse
+    public function delete(string $id): RedirectResponse
     {
         $process = $this->usecase->delete(id: $id);
 
@@ -135,7 +135,7 @@ class UserController extends Controller
         }
     }
 
-    public function resetPassword(int $id): RedirectResponse
+    public function resetPassword(string $id): RedirectResponse
     {
         $resetProcess = $this->usecase->resetPassword(id: $id);
 

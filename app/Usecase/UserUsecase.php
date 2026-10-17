@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class UserUsecase extends Usecase
 {
@@ -23,11 +24,10 @@ class UserUsecase extends Usecase
         try {
             $query = DB::table(DatabaseConst::USER())
                 ->whereNull('deleted_at')
-                ->whereIn('access_type', array_keys(UserConst::getAppAccessTypes()))
                 ->when($filterData['keywords'] ?? false, function ($query, $keywords) {
                     return $query->where(function ($q) use ($keywords) {
-                        $q->where('name', 'like', '%'.$keywords.'%')
-                            ->orWhere('email', 'like', '%'.$keywords.'%');
+                        $q->where('name', 'ilike', '%'.$keywords.'%')
+                            ->orWhere('email', 'ilike', '%'.$keywords.'%');
                     });
                 })
                 ->when($filterData['access_type'] ?? false, function ($query, $accessType) {
@@ -63,7 +63,7 @@ class UserUsecase extends Usecase
         }
     }
 
-    public function getByID(int $id): array
+    public function getByID(string $id): array
     {
         try {
             $data = DB::table(DatabaseConst::USER())
@@ -89,24 +89,40 @@ class UserUsecase extends Usecase
     public function create(Request $data): array
     {
         $validator = Validator::make($data->all(), [
-            'name' => 'required',
+            'name' => 'required|min:2',
             'email' => 'required|email|unique:users,email',
             'access_type' => 'required|in:'.implode(',', array_keys(UserConst::getAppAccessTypes())),
+            'current_cefr' => 'nullable|in:A1,A2,B1,B2,C1,C2',
+            'password' => 'nullable|min:6',
         ]);
 
         $validator->validate();
+
+        $accessType = (int) $data['access_type'];
+        $role = $accessType === UserConst::SUPERADMIN ? 'admin' : 'student';
+        $cefr = $data['current_cefr'] ?? 'A1';
+        $password = $data->filled('password') ? Hash::make($data['password']) : Hash::make('password123');
 
         DB::beginTransaction();
         try {
             DB::table(DatabaseConst::USER())
                 ->insert([
+                    'id' => (string) Str::uuid(),
                     'name' => $data['name'],
                     'email' => $data['email'],
-                    'access_type' => $data['access_type'],
-                    'password' => UserConst::DEFAULT_PASSWORD,
-                    'is_active' => 1,
+                    'role' => $role,
+                    'access_type' => $accessType,
+                    'current_cefr' => $cefr,
+                    'password' => $password,
+                    'memory' => json_encode([
+                        'facts' => [],
+                        'interests' => [],
+                        'weaknesses' => [],
+                        'totalCalls' => 0,
+                    ]),
                     'created_by' => Auth::user()?->id,
                     'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
 
             DB::commit();
@@ -126,23 +142,37 @@ class UserUsecase extends Usecase
         }
     }
 
-    public function update(Request $data, int $id): array|Exception
+    public function update(Request $data, string $id): array|Exception
     {
         $validator = Validator::make($data->all(), [
-            'name' => 'required|min:4',
-            'email' => 'required|email|unique:users,email,'.$id,
+            'name' => 'required|min:2',
+            'email' => 'required|email|unique:users,email,'.$id.',id',
             'access_type' => 'required|in:'.implode(',', array_keys(UserConst::getAppAccessTypes())),
+            'current_cefr' => 'nullable|in:A1,A2,B1,B2,C1,C2',
+            'password' => 'nullable|min:6',
         ]);
 
         $validator->validate();
 
+        $accessType = (int) $data['access_type'];
+        $role = $accessType === UserConst::SUPERADMIN ? 'admin' : 'student';
+
         $update = [
             'name' => $data['name'],
             'email' => $data['email'],
-            'access_type' => $data['access_type'],
+            'role' => $role,
+            'access_type' => $accessType,
             'updated_by' => Auth::user()?->id,
             'updated_at' => now(),
         ];
+
+        if ($data->filled('current_cefr')) {
+            $update['current_cefr'] = $data['current_cefr'];
+        }
+
+        if ($data->filled('password')) {
+            $update['password'] = Hash::make($data['password']);
+        }
 
         DB::beginTransaction();
 
@@ -170,8 +200,12 @@ class UserUsecase extends Usecase
         }
     }
 
-    public function delete(int $id): array
+    public function delete(string $id): array
     {
+        if (Auth::user()?->id === $id) {
+            return Response::buildErrorService('Tidak dapat menghapus akun administrator yang sedang aktif');
+        }
+
         DB::beginTransaction();
 
         try {
@@ -233,7 +267,6 @@ class UserUsecase extends Usecase
 
             if (! $locked) {
                 DB::rollback();
-
                 throw new Exception('FAILED LOCKED DATA');
             }
 
@@ -264,9 +297,9 @@ class UserUsecase extends Usecase
         }
     }
 
-    public function resetPassword(int $id): array
+    public function resetPassword(string $id): array
     {
-        $defaultPassword = UserConst::DEFAULT_PASSWORD;
+        $defaultPassword = 'password123';
 
         DB::beginTransaction();
 
@@ -282,7 +315,7 @@ class UserUsecase extends Usecase
             DB::commit();
 
             return Response::buildSuccess(
-                message: 'Password berhasil direset ke '.UserConst::DEFAULT_PASSWORD
+                message: 'Password berhasil direset ke: '.$defaultPassword
             );
         } catch (Exception $e) {
             DB::rollback();

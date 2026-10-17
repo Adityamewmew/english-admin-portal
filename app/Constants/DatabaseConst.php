@@ -4,30 +4,65 @@ namespace App\Constants;
 
 class DatabaseConst
 {
-    const SQL_READ = 'mysql_read';
+    const SQL_READ = 'pgsql';
 
     public static function USER(): string
     {
-        return self::DB_CORE().'.users';
+        return 'users';
     }
 
     public static function SIDEBAR_MENU(): string
     {
-        return self::DB_CORE().'.sidebar_menus';
+        return 'sidebar_menus';
     }
 
     public static function SIDEBAR_MENU_ACCESS(): string
     {
-        return self::DB_CORE().'.sidebar_menu_accesses';
+        return 'sidebar_menu_accesses';
     }
 
     public static function SIDEBAR_MENU_GROUP(): string
     {
-        return self::DB_CORE().'.sidebar_menu_groups';
+        return 'sidebar_menu_groups';
+    }
+
+    public static function CURRICULUM_MODULES(): string
+    {
+        return 'curriculum_modules';
+    }
+
+    public static function CURRICULUM_LEVELS(): string
+    {
+        return 'curriculum_levels';
+    }
+
+    public static function MODULE_SECTIONS(): string
+    {
+        return 'module_sections';
+    }
+
+    public static function SUB_MODULES(): string
+    {
+        return 'sub_modules';
+    }
+
+    public static function USER_MODULE_PROGRESS(): string
+    {
+        return 'user_module_progress';
+    }
+
+    public static function ITEM_BANK(): string
+    {
+        return 'item_bank';
+    }
+
+    public static function PLACEMENT_RESULTS(): string
+    {
+        return 'placement_results';
     }
 
     public static function DB_CORE(): string
     {
-        return config('database.connections.mysql.database', 'default');
+        return config('database.connections.pgsql.database', 'db-eddys');
     }
 }
