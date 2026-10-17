@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect()->route('admin.dashboard');
 });
+Route::get('/admin', function () {
+    return redirect()->route('admin.dashboard');
+});
 
 // Auth Routes (Login Admin di /admin/login)
 Route::get('/admin/login', [AuthController::class, 'login'])->name('login');
