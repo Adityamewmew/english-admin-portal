@@ -9,6 +9,12 @@ chown -R www-data:www-data storage bootstrap/cache || true
 # Pastikan symlink storage terhubung
 php artisan storage:link --force || true
 
+# Pastikan static assets di bawah /admin (build, images, favicon) terhubung ke root public
+mkdir -p public/admin
+ln -sfn ../build public/admin/build
+ln -sfn ../images public/admin/images
+ln -sfn ../favicon public/admin/favicon
+
 # Discover packages
 php artisan package:discover --ansi || true
 
