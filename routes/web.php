@@ -12,9 +12,12 @@ Route::get('/', function () {
     return redirect()->route('admin.dashboard');
 });
 
-Route::get('/login', [AuthController::class, 'login'])->name('login');
-Route::post('/login', [AuthController::class, 'doLogin'])->name('login.post');
+// Auth Routes (Login Admin di /admin/login)
+Route::get('/admin/login', [AuthController::class, 'login'])->name('login');
+Route::post('/admin/login', [AuthController::class, 'doLogin'])->name('login.post');
+Route::get('/login', fn () => redirect()->route('login'));
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
 
 // Admin Routes
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
