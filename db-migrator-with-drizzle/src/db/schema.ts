@@ -1,160 +1,218 @@
 import {
-    bigint,
-    index,
-    int,
-    longtext,
-    mediumtext,
-    mysqlTable,
-    smallint,
-    text,
-    timestamp,
-    tinyint,
-    uniqueIndex,
-    varchar,
-} from 'drizzle-orm/mysql-core';
-import type { AnyMySqlColumn } from 'drizzle-orm/mysql-core';
+  pgTable,
+  varchar,
+  integer,
+  text,
+  jsonb,
+  timestamp,
+  boolean,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core';
 
-export const migrationsTable = mysqlTable('migrations', {
-    id: int({ unsigned: true }).autoincrement().primaryKey(),
-    migration: varchar({ length: 255 }).notNull(),
-    batch: int().notNull(),
+// 1. Users Table
+export const users = pgTable('users', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  name: varchar('name', { length: 100 }).notNull(),
+  email: varchar('email', { length: 100 }).notNull(),
+  password: varchar('password', { length: 255 }).notNull(),
+  role: varchar('role', { length: 20 }).notNull().default('student'),
+  accessType: integer('access_type').notNull().default(2),
+  currentCefr: varchar('current_cefr', { length: 10 }).notNull().default('A1'),
+  avatarUrl: varchar('avatar_url', { length: 255 }),
+  memory: jsonb('memory').default({
+    facts: [],
+    interests: [],
+    weaknesses: [],
+    totalCalls: 0,
+  }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at'),
+  createdBy: varchar('created_by', { length: 36 }),
+  updatedBy: varchar('updated_by', { length: 36 }),
+  deletedBy: varchar('deleted_by', { length: 36 }),
 });
 
-export const usersTable = mysqlTable('users', {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    name: varchar({ length: 255 }).notNull(),
-    email: varchar({ length: 255 }).notNull(),
-    email_verified_at: timestamp(),
-    password: varchar({ length: 255 }).notNull(),
-    remember_token: varchar({ length: 100 }),
-    access_type: tinyint(), // 1: Super Admin
-    is_active: tinyint().notNull().default(1),
-    created_by: bigint({ mode: 'number', unsigned: true }).references((): AnyMySqlColumn => usersTable.id),
-    created_at: timestamp(),
-    updated_by: bigint({ mode: 'number', unsigned: true }).references((): AnyMySqlColumn => usersTable.id),
-    updated_at: timestamp(),
-    deleted_by: bigint({ mode: 'number', unsigned: true }).references((): AnyMySqlColumn => usersTable.id),
-    deleted_at: timestamp(),
-}, (t) => [
-    uniqueIndex('users_email_unique').on(t.email),
-]);
-
-export const passwordResetTokensTable = mysqlTable('password_reset_tokens', {
-    email: varchar({ length: 255 }).notNull().primaryKey(),
-    token: varchar({ length: 255 }).notNull(),
-    created_at: timestamp(),
+// 2. Sidebar Menu Groups Table
+export const sidebarMenuGroups = pgTable('sidebar_menu_groups', {
+  id: integer('id').primaryKey(),
+  key: varchar('key', { length: 50 }).notNull().unique(),
+  label: varchar('label', { length: 100 }).notNull(),
+  color: varchar('color', { length: 50 }).notNull().default('blue'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: timestamp('created_at'),
+  updatedAt: timestamp('updated_at'),
 });
 
-export const sessionsTable = mysqlTable('sessions', {
-    id: varchar({ length: 255 }).notNull().primaryKey(),
-    user_id: bigint({ mode: 'number', unsigned: true }),
-    ip_address: varchar({ length: 45 }),
-    user_agent: text(),
-    payload: longtext().notNull(),
-    last_activity: int().notNull(),
-}, (t) => [
-    index('sessions_user_id_index').on(t.user_id),
-    index('sessions_last_activity_index').on(t.last_activity),
-]);
-
-export const cacheTable = mysqlTable('cache', {
-    key: varchar({ length: 255 }).notNull().primaryKey(),
-    value: mediumtext().notNull(),
-    expiration: bigint({ mode: 'number' }).notNull(),
-}, (t) => [
-    index('cache_expiration_index').on(t.expiration),
-]);
-
-export const cacheLocksTable = mysqlTable('cache_locks', {
-    key: varchar({ length: 255 }).notNull().primaryKey(),
-    owner: varchar({ length: 255 }).notNull(),
-    expiration: bigint({ mode: 'number' }).notNull(),
-}, (t) => [
-    index('cache_locks_expiration_index').on(t.expiration),
-]);
-
-export const jobsTable = mysqlTable('jobs', {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    queue: varchar({ length: 255 }).notNull(),
-    payload: longtext().notNull(),
-    attempts: smallint({ unsigned: true }).notNull(),
-    reserved_at: int({ unsigned: true }),
-    available_at: int({ unsigned: true }).notNull(),
-    created_at: int({ unsigned: true }).notNull(),
-}, (t) => [
-    index('jobs_queue_index').on(t.queue),
-]);
-
-export const jobBatchesTable = mysqlTable('job_batches', {
-    id: varchar({ length: 255 }).notNull().primaryKey(),
-    name: varchar({ length: 255 }).notNull(),
-    total_jobs: int().notNull(),
-    pending_jobs: int().notNull(),
-    failed_jobs: int().notNull(),
-    failed_job_ids: longtext().notNull(),
-    options: mediumtext(),
-    cancelled_at: int(),
-    created_at: int().notNull(),
-    finished_at: int(),
+// 3. Sidebar Menus Table
+export const sidebarMenus = pgTable('sidebar_menus', {
+  id: integer('id').primaryKey(),
+  parentId: integer('parent_id'),
+  label: varchar('label', { length: 255 }).notNull(),
+  routeName: varchar('route_name', { length: 255 }),
+  icon: varchar('icon', { length: 255 }),
+  group: varchar('group', { length: 50 }).notNull().default('utama'),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isActive: integer('is_active').notNull().default(1),
+  createdBy: varchar('created_by', { length: 36 }),
+  updatedBy: varchar('updated_by', { length: 36 }),
+  deletedBy: varchar('deleted_by', { length: 36 }),
+  createdAt: timestamp('created_at'),
+  updatedAt: timestamp('updated_at'),
+  deletedAt: timestamp('deleted_at'),
 });
 
-export const failedJobsTable = mysqlTable('failed_jobs', {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    uuid: varchar({ length: 255 }).notNull(),
-    connection: varchar({ length: 255 }).notNull(),
-    queue: varchar({ length: 255 }).notNull(),
-    payload: longtext().notNull(),
-    exception: longtext().notNull(),
-    failed_at: timestamp().notNull().defaultNow(),
-}, (t) => [
-    uniqueIndex('failed_jobs_uuid_unique').on(t.uuid),
-    index('failed_jobs_connection_queue_failed_at_index').on(t.connection, t.queue, t.failed_at),
-]);
+// 4. Sidebar Menu Accesses Table
+export const sidebarMenuAccesses = pgTable(
+  'sidebar_menu_accesses',
+  {
+    id: integer('id').primaryKey(),
+    sidebarMenuId: integer('sidebar_menu_id').notNull(),
+    accessType: integer('access_type').notNull(),
+    createdBy: varchar('created_by', { length: 36 }),
+    createdAt: timestamp('created_at'),
+    updatedAt: timestamp('updated_at'),
+  },
+  (t) => [
+    uniqueIndex('sidebar_menu_accesses_sidebar_menu_id_access_type_unique').on(
+      t.sidebarMenuId,
+      t.accessType
+    ),
+  ]
+);
 
-export const sidebarMenuAccessesTable = mysqlTable('sidebar_menu_accesses', {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    sidebar_menu_id: bigint({ mode: 'number', unsigned: true }).notNull(),
-    // 1=Superadmin,2=Pimpinan,3=Bendahara,4=Wali Murid,5=Staff
-    access_type: tinyint().notNull(),
-    created_by: bigint({ mode: 'number', unsigned: true }),
-    created_at: timestamp(),
-}, (t) => [
-    uniqueIndex('sidebar_menu_accesses_sidebar_menu_id_access_type_unique').on(t.sidebar_menu_id, t.access_type),
-    index('sidebar_menu_accesses_sidebar_menu_id_index').on(t.sidebar_menu_id),
-]);
+// 5. Curriculum Levels Table
+export const curriculumLevels = pgTable('curriculum_levels', {
+  id: varchar('id', { length: 20 }).primaryKey(),
+  cefr: varchar('cefr', { length: 10 }).notNull(),
+  title: varchar('title', { length: 150 }).notNull(),
+  description: text('description'),
+  orderIndex: integer('order_index').notNull().default(1),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
 
-export const sidebarMenuGroupsTable = mysqlTable('sidebar_menu_groups', {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    key: varchar({ length: 50 }).notNull(),
-    label: varchar({ length: 100 }).notNull(),
-    color: varchar({ length: 50 }).notNull().default('blue'),
-    sort_order: smallint().notNull().default(0),
-    created_at: timestamp(),
-    updated_at: timestamp(),
-}, (t) => [
-    uniqueIndex('sidebar_menu_groups_key_unique').on(t.key),
-]);
+// 6. Curriculum Modules Table
+export const curriculumModules = pgTable('curriculum_modules', {
+  id: varchar('id', { length: 20 }).primaryKey(),
+  levelId: varchar('level_id', { length: 20 }).notNull().default('A1.1'),
+  title: varchar('title', { length: 150 }).notNull(),
+  cefr: varchar('cefr', { length: 10 }).notNull(),
+  group: varchar('group', { length: 100 }).notNull(),
+  objective: text('objective').notNull(),
+  complexity: varchar('complexity', { length: 20 }).notNull().default('medium'),
+  estimatedMinutes: integer('estimated_minutes').notNull().default(15),
+  isExam: boolean('is_exam').notNull().default(false),
+  passingScore: integer('passing_score').notNull().default(70),
+  orderIndex: integer('order_index').notNull().default(1),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at'),
+});
 
-export const sidebarMenusTable = mysqlTable('sidebar_menus', {
-    id: bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
-    // Self-referencing, max 1 level deep
-    parent_id: bigint({ mode: 'number', unsigned: true }),
-    label: varchar({ length: 255 }).notNull(),
-    // Laravel named route, e.g. admin.dashboard
-    route_name: varchar({ length: 255 }),
-    // Icon blade include path
-    icon: varchar({ length: 255 }),
-    // utama|lembaga|keuangan|bendahara
-    group: varchar({ length: 50 }).notNull(),
-    sort_order: smallint().notNull().default(0),
-    is_active: tinyint().notNull().default(1),
-    created_by: bigint({ mode: 'number', unsigned: true }),
-    updated_by: bigint({ mode: 'number', unsigned: true }),
-    deleted_by: bigint({ mode: 'number', unsigned: true }),
-    created_at: timestamp(),
-    updated_at: timestamp(),
-    deleted_at: timestamp(),
-}, (t) => [
-    index('sidebar_menus_parent_id_index').on(t.parent_id),
-    index('sidebar_menus_group_sort_order_index').on(t.group, t.sort_order),
-]);
+// 7. Sub Modules Table
+export const subModules = pgTable('sub_modules', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  moduleId: varchar('module_id', { length: 20 }).notNull(),
+  skillType: varchar('skill_type', { length: 20 }).notNull(),
+  title: varchar('title', { length: 150 }).notNull(),
+  orderIndex: integer('order_index').notNull().default(1),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// 8. Module Sections Table
+export const moduleSections = pgTable('module_sections', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  moduleId: varchar('module_id', { length: 20 }).notNull(),
+  subModuleId: varchar('sub_module_id', { length: 36 }),
+  sectionType: varchar('section_type', { length: 30 }).notNull(),
+  title: varchar('title', { length: 150 }).notNull(),
+  content: jsonb('content').notNull(),
+  orderIndex: integer('order_index').notNull().default(1),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// 9. User Module Progress Table
+export const userModuleProgress = pgTable('user_module_progress', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  userId: varchar('user_id', { length: 36 }).notNull(),
+  moduleId: varchar('module_id', { length: 20 }).notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('locked'),
+  score: integer('score'),
+  stepProgress: jsonb('step_progress'),
+  completedAt: timestamp('completed_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// 10. User Sub Module Progress Table
+export const userSubModuleProgress = pgTable('user_sub_module_progress', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  userId: varchar('user_id', { length: 36 }).notNull(),
+  subModuleId: varchar('sub_module_id', { length: 36 }).notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('locked'),
+  score: integer('score'),
+  completedAt: timestamp('completed_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// 11. Question Bank (Item Bank) Table
+export const itemBank = pgTable('item_bank', {
+  id: varchar('id', { length: 50 }).primaryKey(),
+  skill: varchar('skill', { length: 20 }).notNull(),
+  cefr: varchar('cefr', { length: 10 }).notNull(),
+  type: varchar('type', { length: 20 }).notNull().default('MCQ'),
+  question: text('question').notNull(),
+  options: jsonb('options'),
+  answer: text('answer').notNull(),
+  audioScript: text('audio_script'),
+  audioUrl: varchar('audio_url', { length: 255 }),
+  explanation: text('explanation'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at'),
+});
+
+// 12. Placement Results Table
+export const placementResults = pgTable('placement_results', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  userId: varchar('user_id', { length: 36 }).notNull(),
+  overallCefr: varchar('overall_cefr', { length: 10 }).notNull(),
+  mcqScore: integer('mcq_score').notNull(),
+  writingScore: integer('writing_score'),
+  speakingScore: integer('speaking_score'),
+  scorePercent: integer('score_percent').notNull(),
+  details: jsonb('details').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// 13. Call Sessions Table
+export const callSessions = pgTable('call_sessions', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  userId: varchar('user_id', { length: 36 }).notNull(),
+  moduleId: varchar('module_id', { length: 10 }),
+  topic: varchar('topic', { length: 150 }).notNull(),
+  durationSeconds: integer('duration_seconds').notNull().default(0),
+  transcript: text('transcript'),
+  evaluation: jsonb('evaluation'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+// 14. Chat Sessions Table
+export const chatSessions = pgTable('chat_sessions', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  userId: varchar('user_id', { length: 36 }).notNull(),
+  title: varchar('title', { length: 200 }).notNull().default('Percakapan Baru'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// 15. Chat Messages Table
+export const chatMessages = pgTable('chat_messages', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  sessionId: varchar('session_id', { length: 36 }).notNull(),
+  role: varchar('role', { length: 20 }).notNull(),
+  content: text('content').notNull(),
+  metadata: jsonb('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});

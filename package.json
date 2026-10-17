@@ -4,7 +4,9 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "db:push": "cd db-migrator-with-drizzle && bun db:push",
+        "db:seed": "cd db-migrator-with-drizzle && bun db:seed"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.11",

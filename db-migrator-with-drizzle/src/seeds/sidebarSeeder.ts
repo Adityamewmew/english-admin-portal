@@ -1,129 +1,159 @@
 import db from '../db';
-import { sidebarMenuAccessesTable, sidebarMenuGroupsTable, sidebarMenusTable } from '../db/schema';
-import { eq } from 'drizzle-orm';
+import { sidebarMenuAccesses, sidebarMenuGroups, sidebarMenus } from '../db/schema';
+import { eq, and } from 'drizzle-orm';
 
 export async function sidebarSeeder(): Promise<void> {
-    // 1. Seed Groups
-    const groups = [
-        {
-            id: 1,
-            key: 'utama',
-            label: 'Utama',
-            color: 'blue',
-            sort_order: 10,
-            created_at: new Date('2026-06-14 13:05:54'),
-            updated_at: new Date('2026-06-14 13:05:54'),
-        },
-    ];
+  // 1. Seed Groups
+  const groups = [
+    {
+      id: 1,
+      key: 'utama',
+      label: 'Utama',
+      color: 'blue',
+      sortOrder: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 2,
+      key: 'akademik',
+      label: 'Kurikulum & Pembelajaran',
+      color: 'emerald',
+      sortOrder: 2,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 3,
+      key: 'sistem',
+      label: 'Pengaturan Sistem',
+      color: 'indigo',
+      sortOrder: 3,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ];
 
-    for (const group of groups) {
-        const existing = await db
-            .select({ id: sidebarMenuGroupsTable.id })
-            .from(sidebarMenuGroupsTable)
-            .where(eq(sidebarMenuGroupsTable.id, group.id))
-            .limit(1);
+  for (const group of groups) {
+    const existing = await db
+      .select({ id: sidebarMenuGroups.id })
+      .from(sidebarMenuGroups)
+      .where(eq(sidebarMenuGroups.key, group.key))
+      .limit(1);
 
-        if (existing.length > 0) {
-            await db
-                .update(sidebarMenuGroupsTable)
-                .set(group)
-                .where(eq(sidebarMenuGroupsTable.id, group.id));
-            console.log(`[sidebarSeeder] Updated existing group: ${group.key}`);
-        } else {
-            await db.insert(sidebarMenuGroupsTable).values(group);
-            console.log(`[sidebarSeeder] Created group: ${group.key}`);
-        }
+    if (existing.length > 0) {
+      await db
+        .update(sidebarMenuGroups)
+        .set(group)
+        .where(eq(sidebarMenuGroups.key, group.key));
+      console.log(`[sidebarSeeder] Updated group: ${group.key}`);
+    } else {
+      await db.insert(sidebarMenuGroups).values(group);
+      console.log(`[sidebarSeeder] Created group: ${group.key}`);
+    }
+  }
+
+  // 2. Seed Menus
+  const menus = [
+    {
+      id: 1,
+      parentId: null,
+      label: 'Dashboard',
+      routeName: 'admin.dashboard',
+      icon: '_admin._layout.icons.sidebar.dashboard',
+      group: 'utama',
+      sortOrder: 1,
+      isActive: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 2,
+      parentId: null,
+      label: 'Pengguna Aplikasi',
+      routeName: 'admin.users.index',
+      icon: '_admin._layout.icons.sidebar.user',
+      group: 'utama',
+      sortOrder: 2,
+      isActive: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 3,
+      parentId: null,
+      label: 'Modul Kurikulum',
+      routeName: 'admin.modules.index',
+      icon: '_admin._layout.icons.sidebar.data_master',
+      group: 'akademik',
+      sortOrder: 1,
+      isActive: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 4,
+      parentId: null,
+      label: 'Bank Soal (Item Bank)',
+      routeName: 'admin.questions.index',
+      icon: 'partials.icons.sidebar.clipboard-list',
+      group: 'akademik',
+      sortOrder: 2,
+      isActive: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 5,
+      parentId: null,
+      label: 'Manajemen Menu',
+      routeName: 'admin.sidebar_menu.index',
+      icon: '_admin._layout.icons.sidebar.settings',
+      group: 'sistem',
+      sortOrder: 1,
+      isActive: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ];
+
+  for (const menu of menus) {
+    const existing = await db
+      .select({ id: sidebarMenus.id })
+      .from(sidebarMenus)
+      .where(eq(sidebarMenus.id, menu.id))
+      .limit(1);
+
+    if (existing.length > 0) {
+      await db
+        .update(sidebarMenus)
+        .set(menu)
+        .where(eq(sidebarMenus.id, menu.id));
+      console.log(`[sidebarSeeder] Updated menu: ${menu.label}`);
+    } else {
+      await db.insert(sidebarMenus).values(menu);
+      console.log(`[sidebarSeeder] Created menu: ${menu.label}`);
     }
 
-    // 2. Seed Menus
-    const menus = [
-        {
-            id: 1,
-            parent_id: null,
-            label: 'Dashboard',
-            route_name: 'admin.dashboard',
-            icon: '_admin._layout.icons.sidebar.dashboard',
-            group: 'utama',
-            sort_order: 1,
-            is_active: 1,
-            created_by: null,
-            updated_by: null,
-            deleted_by: null,
-            created_at: new Date('2026-06-14 13:05:54'),
-            updated_at: new Date('2026-06-14 13:05:54'),
-            deleted_at: null,
-        },
-        {
-            id: 2,
-            parent_id: null,
-            label: 'Pengguna Aplikasi',
-            route_name: 'admin.users.index',
-            icon: '_admin._layout.icons.sidebar.user',
-            group: 'utama',
-            sort_order: 99,
-            is_active: 1,
-            created_by: null,
-            updated_by: null,
-            deleted_by: null,
-            created_at: new Date('2026-06-14 13:05:54'),
-            updated_at: new Date('2026-06-14 13:05:54'),
-            deleted_at: null,
-        },
-    ];
+    const accessExisting = await db
+      .select({ id: sidebarMenuAccesses.id })
+      .from(sidebarMenuAccesses)
+      .where(
+        and(
+          eq(sidebarMenuAccesses.sidebarMenuId, menu.id),
+          eq(sidebarMenuAccesses.accessType, 1)
+        )
+      )
+      .limit(1);
 
-    for (const menu of menus) {
-        const existing = await db
-            .select({ id: sidebarMenusTable.id })
-            .from(sidebarMenusTable)
-            .where(eq(sidebarMenusTable.id, menu.id))
-            .limit(1);
-
-        if (existing.length > 0) {
-            await db
-                .update(sidebarMenusTable)
-                .set(menu)
-                .where(eq(sidebarMenusTable.id, menu.id));
-            console.log(`[sidebarSeeder] Updated existing menu: ${menu.label}`);
-        } else {
-            await db.insert(sidebarMenusTable).values(menu);
-            console.log(`[sidebarSeeder] Created menu: ${menu.label}`);
-        }
+    if (accessExisting.length === 0) {
+      await db.insert(sidebarMenuAccesses).values({
+        id: menu.id,
+        sidebarMenuId: menu.id,
+        accessType: 1,
+        createdAt: new Date(),
+      });
+      console.log(`[sidebarSeeder] Granted access for menu ${menu.id} to admin`);
     }
-
-    // 3. Seed Accesses
-    const accesses = [
-        {
-            id: 3,
-            sidebar_menu_id: 1,
-            access_type: 1,
-            created_by: 2,
-            created_at: new Date('2026-06-29 12:27:40'),
-        },
-        {
-            id: 4,
-            sidebar_menu_id: 2,
-            access_type: 1,
-            created_by: 2,
-            created_at: new Date('2026-06-29 12:27:40'),
-        },
-    ];
-
-    for (const access of accesses) {
-        const existing = await db
-            .select({ id: sidebarMenuAccessesTable.id })
-            .from(sidebarMenuAccessesTable)
-            .where(eq(sidebarMenuAccessesTable.id, access.id))
-            .limit(1);
-
-        if (existing.length > 0) {
-            await db
-                .update(sidebarMenuAccessesTable)
-                .set(access)
-                .where(eq(sidebarMenuAccessesTable.id, access.id));
-            console.log(`[sidebarSeeder] Updated existing access type ${access.access_type} for menu ${access.sidebar_menu_id}`);
-        } else {
-            await db.insert(sidebarMenuAccessesTable).values(access);
-            console.log(`[sidebarSeeder] Created access type ${access.access_type} for menu ${access.sidebar_menu_id}`);
-        }
-    }
+  }
 }
