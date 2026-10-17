@@ -343,7 +343,7 @@ class SidebarMenuUsecase extends Usecase
      */
     public function getMenusForSidebar(int $accessType, string $group): array
     {
-        $cacheKey = "sidebar_menus_{$accessType}_{$group}";
+        $cacheKey = "sidebar_menus_v4_{$accessType}_{$group}";
 
         try {
             $nested = Cache::remember($cacheKey, now()->addDay(), function () use ($accessType, $group) {
@@ -483,7 +483,7 @@ class SidebarMenuUsecase extends Usecase
 
         foreach ($accessTypes as $accessType) {
             foreach ($groupKeys as $group) {
-                Cache::forget("sidebar_menus_{$accessType}_{$group}");
+                Cache::forget("sidebar_menus_v4_{$accessType}_{$group}");
             }
         }
     }
