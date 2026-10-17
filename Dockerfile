@@ -1,23 +1,23 @@
-FROM dunglas/frankenphp:builder-php8.3.21
+FROM dunglas/frankenphp:1-php8.3
 
-# Set Caddy server name to "http://" to serve on 80 and not 443
-# Read more: https://frankenphp.dev/docs/config/#environment-variables
+# Set Caddy server name ke "http://" agar serve di port 80 (Dokploy reverse proxy)
 ENV SERVER_NAME="http://"
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     git \
     unzip \
-    librabbitmq-dev \
     libpq-dev \
-    nano
+    && rm -rf /var/lib/apt/lists/*
 
+# Install ekstensi PHP esensial untuk Laravel + PostgreSQL
 RUN install-php-extensions \
     gd \
     pcntl \
     opcache \
     pdo \
-    pdo_mysql \
+    pdo_pgsql \
     zip \
     redis
 
@@ -26,39 +26,26 @@ COPY --from=oven/bun:latest /usr/local/bin/bun /usr/local/bin/bun
 
 WORKDIR /var/www/html
 
-# Copy the Laravel application files into the container.
+# 1. Install Composer dependencies
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+
+# 2. Install Node/Bun dependencies
+COPY package.json bun.lock ./
+RUN bun install
+
+# 3. Copy source code aplikasi
 COPY . .
 
-# Start with base PHP config, then add extensions.
-COPY ./deploy/php.ini /usr/local/etc/php/
-# COPY ./.docker/etc/supervisor.d/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Install PHP extensions
-# RUN pecl install xdebug
-
-# Install Laravel dependencies using Composer.
-RUN composer install --optimize-autoloader --no-dev
-
-COPY package.json ./
-COPY bun.lock ./
-
-# Build frontend assets
-RUN bun install
+# 4. Generate optimized autoloader & build Vite assets
+RUN composer dump-autoload --optimize --no-dev
 RUN bun run build
 
-# Laravel artisan commands
-RUN php artisan storage:link && php artisan optimize
-
-# Enable PHP extensions
-# RUN docker-php-ext-enable xdebug
-
-# Set permissions for Laravel.
+# 5. Konfigurasi PHP & Permissions
+COPY ./deploy/php.ini /usr/local/etc/php/conf.d/custom.ini
+RUN chmod +x ./deploy/entrypoint.sh
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-ENV FRANKENPHP_THREADS=8
-ENV OP_CACHE_ENABLE=1
+EXPOSE 80
 
-EXPOSE 7011
-
-# Start Supervisor.
-# CMD ["/usr/bin/supervisord", "-n", "-c",  "/etc/supervisor/conf.d/supervisord.conf"]
+ENTRYPOINT ["./deploy/entrypoint.sh"]
