@@ -62,4 +62,82 @@ class QuestionBankController extends Controller
             'page' => $this->page,
         ]);
     }
+
+    public function add(): View
+    {
+        return view('_admin.questions.add', [
+            'page' => $this->page,
+        ]);
+    }
+
+    public function doCreate(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'skill' => 'required|string|in:grammar,vocabulary,reading,listening,speaking',
+            'cefr' => 'required|in:A1,A2,B1,B2,C1,C2',
+            'type' => 'required|string|in:MCQ,open_ended,speaking',
+            'question' => 'required|string',
+            'answer' => 'required|string',
+            'options' => 'nullable|array',
+            'audio_script' => 'nullable|string',
+            'audio_url' => 'nullable|string',
+            'explanation' => 'nullable|string',
+        ]);
+
+        $res = $this->usecase->create($request->all());
+
+        if (empty($res['data'])) {
+            return back()->withInput()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
+        }
+
+        return redirect()->route('admin.questions.index')->with('success', 'Soal placement test berhasil ditambahkan');
+    }
+
+    public function update(string $id): View|RedirectResponse
+    {
+        $data = $this->usecase->getByID($id);
+
+        if (empty($data['data']['item'])) {
+            return redirect()->route('admin.questions.index')->with('error', 'Soal tidak ditemukan');
+        }
+
+        return view('_admin.questions.update', [
+            'item' => (object) $data['data']['item'],
+            'page' => $this->page,
+        ]);
+    }
+
+    public function doUpdate(string $id, Request $request): RedirectResponse
+    {
+        $request->validate([
+            'skill' => 'required|string|in:grammar,vocabulary,reading,listening,speaking',
+            'cefr' => 'required|in:A1,A2,B1,B2,C1,C2',
+            'type' => 'required|string|in:MCQ,open_ended,speaking',
+            'question' => 'required|string',
+            'answer' => 'required|string',
+            'options' => 'nullable|array',
+            'audio_script' => 'nullable|string',
+            'audio_url' => 'nullable|string',
+            'explanation' => 'nullable|string',
+        ]);
+
+        $res = $this->usecase->update($id, $request->all());
+
+        if (empty($res['data'])) {
+            return back()->withInput()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
+        }
+
+        return redirect()->route('admin.questions.detail', $id)->with('success', 'Soal placement test berhasil diperbarui');
+    }
+
+    public function delete(string $id): RedirectResponse
+    {
+        $res = $this->usecase->delete($id);
+
+        if (empty($res['data'])) {
+            return back()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
+        }
+
+        return redirect()->route('admin.questions.index')->with('success', 'Soal placement test berhasil dihapus');
+    }
 }

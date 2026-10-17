@@ -64,4 +64,88 @@ class CurriculumModuleController extends Controller
             'page' => $this->page,
         ]);
     }
+
+    public function add(): View
+    {
+        $levels = $this->usecase->getLevels()['data']['levels'] ?? [];
+
+        return view('_admin.modules.add', [
+            'levels' => $levels,
+            'page' => $this->page,
+        ]);
+    }
+
+    public function doCreate(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'title' => 'required|string|max:150',
+            'cefr' => 'required|in:A1,A2,B1,B2,C1,C2',
+            'level_id' => 'required|string|max:20',
+            'group' => 'required|string|max:100',
+            'objective' => 'nullable|string',
+            'complexity' => 'required|in:easy,medium,hard',
+            'estimated_minutes' => 'nullable|integer|min:1',
+            'passing_score' => 'nullable|integer|min:0|max:100',
+            'order_index' => 'nullable|integer|min:1',
+        ]);
+
+        $res = $this->usecase->create($request->all());
+
+        if (empty($res['data'])) {
+            return back()->withInput()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
+        }
+
+        return redirect()->route('admin.modules.index')->with('success', 'Modul kurikulum berhasil ditambahkan');
+    }
+
+    public function update(string $id): View|RedirectResponse
+    {
+        $data = $this->usecase->getByID($id);
+
+        if (empty($data['data']['module'])) {
+            return redirect()->route('admin.modules.index')->with('error', 'Modul tidak ditemukan');
+        }
+
+        $levels = $this->usecase->getLevels()['data']['levels'] ?? [];
+
+        return view('_admin.modules.update', [
+            'module' => (object) $data['data']['module'],
+            'levels' => $levels,
+            'page' => $this->page,
+        ]);
+    }
+
+    public function doUpdate(string $id, Request $request): RedirectResponse
+    {
+        $request->validate([
+            'title' => 'required|string|max:150',
+            'cefr' => 'required|in:A1,A2,B1,B2,C1,C2',
+            'level_id' => 'required|string|max:20',
+            'group' => 'required|string|max:100',
+            'objective' => 'nullable|string',
+            'complexity' => 'required|in:easy,medium,hard',
+            'estimated_minutes' => 'nullable|integer|min:1',
+            'passing_score' => 'nullable|integer|min:0|max:100',
+            'order_index' => 'nullable|integer|min:1',
+        ]);
+
+        $res = $this->usecase->update($id, $request->all());
+
+        if (empty($res['data'])) {
+            return back()->withInput()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
+        }
+
+        return redirect()->route('admin.modules.detail', $id)->with('success', 'Modul kurikulum berhasil diperbarui');
+    }
+
+    public function delete(string $id): RedirectResponse
+    {
+        $res = $this->usecase->delete($id);
+
+        if (empty($res['data'])) {
+            return back()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
+        }
+
+        return redirect()->route('admin.modules.index')->with('success', 'Modul kurikulum berhasil dihapus');
+    }
 }

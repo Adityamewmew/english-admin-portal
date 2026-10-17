@@ -13,7 +13,7 @@
                         <path d="M19 12H5" />
                     </svg>
                 </a>
-                <div>
+                <div class="flex-1">
                     <div class="flex items-center gap-2">
                         <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded">
                             {{ $item->id }}
@@ -28,6 +28,22 @@
                     <h1 class="text-lg font-bold text-gray-900 dark:text-white mt-1">
                         Detail Butir Soal
                     </h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('admin.questions.update', $item->id) }}"
+                        class="py-2 px-3 inline-flex items-center gap-x-1.5 text-xs font-semibold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm">
+                        @include('_admin._layout.icons.pencil')
+                        Edit
+                    </a>
+                    <form action="{{ route('admin.questions.delete', $item->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus butir soal ini?')">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="py-2 px-3 inline-flex items-center gap-x-1.5 text-xs font-semibold rounded-xl bg-rose-600 text-white hover:bg-rose-700 shadow-sm cursor-pointer">
+                            @include('_admin._layout.icons.trash')
+                            Hapus
+                        </button>
+                    </form>
                 </div>
             </div>
 

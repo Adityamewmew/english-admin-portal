@@ -4,6 +4,10 @@
 
 @section('content')
     <x-admin.page-header :title="'Data ' . $page['title']" subtitle="Koleksi butir soal ujian penempatan (placement test) dan asesmen CEFR">
+        <x-admin.button href="{{ route('admin.questions.add') }}" size="sm" color="primary">
+            @include('_admin._layout.icons.add')
+            Tambah Butir Soal
+        </x-admin.button>
     </x-admin.page-header>
 
     {{-- Filters --}}
@@ -89,12 +93,26 @@
                                 {{ $q->answer }}
                             </span>
                         </x-admin.table.td>
-                        <x-admin.table.td innerClass="px-6 py-2 flex items-center justify-end">
+                        <x-admin.table.td innerClass="px-6 py-2 flex items-center justify-end gap-x-2">
                             <a navigate href="{{ route('admin.questions.detail', $q->id) }}"
-                                class="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400">
+                                class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400" title="Detail">
                                 @include('_admin._layout.icons.view_detail')
-                                Detail Soal
+                                Detail
                             </a>
+                            <a navigate href="{{ route('admin.questions.update', $q->id) }}"
+                                class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400" title="Edit">
+                                @include('_admin._layout.icons.pencil')
+                                Edit
+                            </a>
+                            <form action="{{ route('admin.questions.delete', $q->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus butir soal ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                    class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 cursor-pointer" title="Delete">
+                                    @include('_admin._layout.icons.trash')
+                                    Hapus
+                                </button>
+                            </form>
                         </x-admin.table.td>
                     </x-admin.table.tr>
                 @empty

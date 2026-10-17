@@ -17,7 +17,7 @@ export async function sidebarSeeder(): Promise<void> {
     {
       id: 2,
       key: 'akademik',
-      label: 'Kurikulum & Pembelajaran',
+      label: 'Curriculum & Learning',
       color: 'emerald',
       sortOrder: 2,
       createdAt: new Date(),
@@ -26,7 +26,7 @@ export async function sidebarSeeder(): Promise<void> {
     {
       id: 3,
       key: 'sistem',
-      label: 'Pengaturan Sistem',
+      label: 'System Settings',
       color: 'indigo',
       sortOrder: 3,
       createdAt: new Date(),
@@ -54,6 +54,10 @@ export async function sidebarSeeder(): Promise<void> {
   }
 
   // 2. Seed Menus
+  // Remove old standalone menu 4 if exists
+  await db.delete(sidebarMenuAccesses).where(eq(sidebarMenuAccesses.sidebarMenuId, 4));
+  await db.delete(sidebarMenus).where(eq(sidebarMenus.id, 4));
+
   const menus = [
     {
       id: 1,
@@ -70,7 +74,7 @@ export async function sidebarSeeder(): Promise<void> {
     {
       id: 2,
       parentId: null,
-      label: 'Pengguna Aplikasi',
+      label: 'Users',
       routeName: 'admin.users.index',
       icon: '_admin._layout.icons.sidebar.user',
       group: 'utama',
@@ -82,8 +86,8 @@ export async function sidebarSeeder(): Promise<void> {
     {
       id: 3,
       parentId: null,
-      label: 'Modul Kurikulum',
-      routeName: 'admin.modules.index',
+      label: 'Curriculum Management',
+      routeName: null,
       icon: '_admin._layout.icons.sidebar.data_master',
       group: 'akademik',
       sortOrder: 1,
@@ -92,11 +96,23 @@ export async function sidebarSeeder(): Promise<void> {
       updatedAt: new Date(),
     },
     {
-      id: 4,
-      parentId: null,
-      label: 'Bank Soal (Item Bank)',
-      routeName: 'admin.questions.index',
-      icon: 'partials.icons.sidebar.clipboard-list',
+      id: 301,
+      parentId: 3,
+      label: 'Modules',
+      routeName: 'admin.modules.index',
+      icon: null,
+      group: 'akademik',
+      sortOrder: 1,
+      isActive: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 302,
+      parentId: 3,
+      label: 'Sub Modules',
+      routeName: 'admin.sub_modules.index',
+      icon: null,
       group: 'akademik',
       sortOrder: 2,
       isActive: 1,
@@ -104,9 +120,21 @@ export async function sidebarSeeder(): Promise<void> {
       updatedAt: new Date(),
     },
     {
+      id: 303,
+      parentId: 3,
+      label: 'Placement Test',
+      routeName: 'admin.questions.index',
+      icon: null,
+      group: 'akademik',
+      sortOrder: 3,
+      isActive: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
       id: 5,
       parentId: null,
-      label: 'Manajemen Menu',
+      label: 'Menu Settings',
       routeName: 'admin.sidebar_menu.index',
       icon: '_admin._layout.icons.sidebar.settings',
       group: 'sistem',

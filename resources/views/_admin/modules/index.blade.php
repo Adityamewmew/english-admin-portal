@@ -4,6 +4,10 @@
 
 @section('content')
     <x-admin.page-header :title="'Data ' . $page['title']" subtitle="Katalog pembelajaran bahasa Inggris dari level A1 hingga C2">
+        <x-admin.button href="{{ route('admin.modules.add') }}" size="sm" color="primary">
+            @include('_admin._layout.icons.add')
+            Tambah Modul Baru
+        </x-admin.button>
     </x-admin.page-header>
 
     {{-- CEFR Filter Pills --}}
@@ -96,12 +100,26 @@
                                 </span>
                             @endif
                         </x-admin.table.td>
-                        <x-admin.table.td innerClass="px-6 py-2 flex items-center justify-end">
+                        <x-admin.table.td innerClass="px-6 py-2 flex items-center justify-end gap-x-2">
                             <a navigate href="{{ route('admin.modules.detail', $m->id) }}"
-                                class="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-semibold rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400">
+                                class="inline-flex items-center gap-1.5 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400" title="Inspect">
                                 @include('_admin._layout.icons.view_detail')
-                                Inspeksi Materi
+                                Detail
                             </a>
+                            <a navigate href="{{ route('admin.modules.update', $m->id) }}"
+                                class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400" title="Edit">
+                                @include('_admin._layout.icons.pencil')
+                                Edit
+                            </a>
+                            <form action="{{ route('admin.modules.delete', $m->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus modul ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                    class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 cursor-pointer" title="Delete">
+                                    @include('_admin._layout.icons.trash')
+                                    Hapus
+                                </button>
+                            </form>
                         </x-admin.table.td>
                     </x-admin.table.tr>
                 @empty

@@ -113,6 +113,104 @@ class CurriculumModuleUsecase extends Usecase
         }
     }
 
+    public function create(array $data): array
+    {
+        try {
+            $id = !empty($data['id']) ? trim($data['id']) : 'MOD-' . ($data['cefr'] ?? 'A1') . '-' . strtoupper(substr(uniqid(), -5));
+
+            $existing = DB::table(DatabaseConst::CURRICULUM_MODULES())
+                ->where('id', $id)
+                ->first();
+
+            if ($existing) {
+                return Response::buildErrorValidation(['id' => 'Module ID already exists']);
+            }
+
+            $insertData = [
+                'id' => $id,
+                'level_id' => $data['level_id'] ?? ($data['cefr'] . '.1'),
+                'title' => $data['title'],
+                'cefr' => $data['cefr'],
+                'group' => $data['group'] ?? 'General English',
+                'objective' => $data['objective'] ?? '',
+                'complexity' => $data['complexity'] ?? 'medium',
+                'estimated_minutes' => (int) ($data['estimated_minutes'] ?? 15),
+                'is_exam' => !empty($data['is_exam']),
+                'passing_score' => (int) ($data['passing_score'] ?? 70),
+                'order_index' => (int) ($data['order_index'] ?? 1),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            DB::table(DatabaseConst::CURRICULUM_MODULES())->insert($insertData);
+
+            return Response::buildSuccess(['id' => $id, 'module' => $insertData], ResponseConst::HTTP_CREATED);
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), ['method' => __METHOD__]);
+            return Response::buildErrorService($e->getMessage());
+        }
+    }
+
+    public function update(string $id, array $data): array
+    {
+        try {
+            $existing = DB::table(DatabaseConst::CURRICULUM_MODULES())
+                ->where('id', $id)
+                ->whereNull('deleted_at')
+                ->first();
+
+            if (!$existing) {
+                return Response::buildErrorNotFound('Modul kurikulum tidak ditemukan');
+            }
+
+            $updateData = [
+                'level_id' => $data['level_id'] ?? $existing->level_id,
+                'title' => $data['title'] ?? $existing->title,
+                'cefr' => $data['cefr'] ?? $existing->cefr,
+                'group' => $data['group'] ?? $existing->group,
+                'objective' => $data['objective'] ?? $existing->objective,
+                'complexity' => $data['complexity'] ?? $existing->complexity,
+                'estimated_minutes' => isset($data['estimated_minutes']) ? (int) $data['estimated_minutes'] : $existing->estimated_minutes,
+                'is_exam' => isset($data['is_exam']) ? (bool) $data['is_exam'] : $existing->is_exam,
+                'passing_score' => isset($data['passing_score']) ? (int) $data['passing_score'] : $existing->passing_score,
+                'order_index' => isset($data['order_index']) ? (int) $data['order_index'] : $existing->order_index,
+                'updated_at' => now(),
+            ];
+
+            DB::table(DatabaseConst::CURRICULUM_MODULES())
+                ->where('id', $id)
+                ->update($updateData);
+
+            return Response::buildSuccess(['id' => $id]);
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), ['method' => __METHOD__]);
+            return Response::buildErrorService($e->getMessage());
+        }
+    }
+
+    public function delete(string $id): array
+    {
+        try {
+            $existing = DB::table(DatabaseConst::CURRICULUM_MODULES())
+                ->where('id', $id)
+                ->whereNull('deleted_at')
+                ->first();
+
+            if (!$existing) {
+                return Response::buildErrorNotFound('Modul kurikulum tidak ditemukan');
+            }
+
+            DB::table(DatabaseConst::CURRICULUM_MODULES())
+                ->where('id', $id)
+                ->update(['deleted_at' => now()]);
+
+            return Response::buildSuccess(['id' => $id]);
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), ['method' => __METHOD__]);
+            return Response::buildErrorService($e->getMessage());
+        }
+    }
+
     public function getLevels(): array
     {
         try {
@@ -122,8 +220,7 @@ class CurriculumModuleUsecase extends Usecase
 
             return Response::buildSuccess(['levels' => $levels]);
         } catch (Exception $e) {
-            Log::error(message: $e->getMessage(), context: ['method' => __METHOD__]);
-
+            Log::error($e->getMessage(), ['method' => __METHOD__]);
             return Response::buildErrorService($e->getMessage());
         }
     }

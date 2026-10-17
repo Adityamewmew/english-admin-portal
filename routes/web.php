@@ -37,14 +37,37 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/reset-password/{id}', [UserController::class, 'resetPassword'])->name('resetPassword');
     });
 
+    // Modules Routes
     Route::middleware('access_type:1')->prefix('modules')->name('modules.')->group(function () {
         Route::get('/', [CurriculumModuleController::class, 'index'])->name('index');
+        Route::get('/add', [CurriculumModuleController::class, 'add'])->name('add');
+        Route::post('/create', [CurriculumModuleController::class, 'doCreate'])->name('create');
         Route::get('/detail/{id}', [CurriculumModuleController::class, 'detail'])->name('detail');
+        Route::get('/update/{id}', [CurriculumModuleController::class, 'update'])->name('update');
+        Route::post('/update/{id}', [CurriculumModuleController::class, 'doUpdate'])->name('doUpdate');
+        Route::delete('/delete/{id}', [CurriculumModuleController::class, 'delete'])->name('delete');
     });
 
+    // Sub Modules Routes
+    Route::middleware('access_type:1')->prefix('sub-modules')->name('sub_modules.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SubModuleController::class, 'index'])->name('index');
+        Route::get('/add', [\App\Http\Controllers\Admin\SubModuleController::class, 'add'])->name('add');
+        Route::post('/create', [\App\Http\Controllers\Admin\SubModuleController::class, 'doCreate'])->name('create');
+        Route::get('/detail/{id}', [\App\Http\Controllers\Admin\SubModuleController::class, 'detail'])->name('detail');
+        Route::get('/update/{id}', [\App\Http\Controllers\Admin\SubModuleController::class, 'update'])->name('update');
+        Route::post('/update/{id}', [\App\Http\Controllers\Admin\SubModuleController::class, 'doUpdate'])->name('doUpdate');
+        Route::delete('/delete/{id}', [\App\Http\Controllers\Admin\SubModuleController::class, 'delete'])->name('delete');
+    });
+
+    // Questions (Placement Test) Routes
     Route::middleware('access_type:1')->prefix('questions')->name('questions.')->group(function () {
         Route::get('/', [QuestionBankController::class, 'index'])->name('index');
+        Route::get('/add', [QuestionBankController::class, 'add'])->name('add');
+        Route::post('/create', [QuestionBankController::class, 'doCreate'])->name('create');
         Route::get('/detail/{id}', [QuestionBankController::class, 'detail'])->name('detail');
+        Route::get('/update/{id}', [QuestionBankController::class, 'update'])->name('update');
+        Route::post('/update/{id}', [QuestionBankController::class, 'doUpdate'])->name('doUpdate');
+        Route::delete('/delete/{id}', [QuestionBankController::class, 'delete'])->name('delete');
     });
 
     Route::middleware('access_type:1')->prefix('sidebar-menu')->name('sidebar_menu.')->group(function () {

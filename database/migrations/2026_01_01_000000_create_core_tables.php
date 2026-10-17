@@ -77,6 +77,7 @@ return new class extends Migration
                 $table->string('title', 150);
                 $table->integer('order_index')->default(1);
                 $table->timestamps();
+                $table->softDeletes();
             });
         }
 

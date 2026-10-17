@@ -117,6 +117,8 @@ export const subModules = pgTable('sub_modules', {
   title: varchar('title', { length: 150 }).notNull(),
   orderIndex: integer('order_index').notNull().default(1),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at'),
 });
 
 // 8. Module Sections Table
