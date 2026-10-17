@@ -38,7 +38,8 @@ RUN bun install
 COPY . .
 
 # 4. Generate optimized autoloader & build Vite assets
-RUN composer dump-autoload --optimize --no-dev
+RUN git config --global --add safe.directory /var/www/html \
+    && composer dump-autoload --optimize --no-dev --no-scripts
 RUN bun run build
 
 # 5. Konfigurasi PHP & Permissions
