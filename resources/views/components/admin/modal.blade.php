@@ -53,7 +53,9 @@
                     <form id="{{ $formId }}" action="{{ $formAction }}"
                         method="{{ strtoupper($formMethod) === 'GET' ? 'GET' : 'POST' }}"
                         {{ $attributes->merge(['class' => $formClass]) }} navigate-form>
-                        @csrf
+                        @unblaze
+                            @csrf
+                        @endunblaze
                         @if (!in_array(strtoupper($formMethod), ['GET', 'POST']))
                             @method($formMethod)
                         @endif
