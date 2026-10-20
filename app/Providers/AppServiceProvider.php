@@ -25,7 +25,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Blaze::optimize()->in(
             resource_path('views/components'),
-            fold: true,
         );
 
         View::composer('_admin._layout.sidebar.*', function ($view) {
