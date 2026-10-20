@@ -22,11 +22,22 @@
                         Detail Pengguna
                     </h2>
                 </div>
-                <a navigate href="{{ route('admin.users.update', $data->id) }}"
-                    class="py-1.5 px-3 text-xs font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center gap-x-1.5">
-                    @include('_admin._layout.icons.pencil')
-                    Edit Pengguna
-                </a>
+                <div class="flex items-center gap-2">
+                    @if ((int) $data->access_type === UserConst::STUDENT)
+                        <a navigate href="{{ route('admin.gradebook.detail', $data->id) }}"
+                            class="py-1.5 px-3 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 inline-flex items-center gap-x-1.5 shadow-2xs">
+                            <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2m-6 9 2 2 4-4" />
+                            </svg>
+                            Rekap Nilai Siswa
+                        </a>
+                    @endif
+                    <a navigate href="{{ route('admin.users.update', $data->id) }}"
+                        class="py-1.5 px-3 text-xs font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center gap-x-1.5">
+                        @include('_admin._layout.icons.pencil')
+                        Edit Pengguna
+                    </a>
+                </div>
             </div>
 
             <div class="p-6">

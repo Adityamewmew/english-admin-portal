@@ -51,6 +51,11 @@ class DatabaseConst
         return 'user_module_progress';
     }
 
+    public static function USER_SUB_MODULE_PROGRESS(): string
+    {
+        return 'user_sub_module_progress';
+    }
+
     public static function ITEM_BANK(): string
     {
         return 'item_bank';

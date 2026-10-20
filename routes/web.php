@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CurriculumModuleController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\GradebookController;
 use App\Http\Controllers\Admin\QuestionBankController;
 use App\Http\Controllers\Admin\SidebarMenuController;
 use App\Http\Controllers\Admin\UserController;
@@ -35,6 +36,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/update/{id}', [UserController::class, 'doUpdate'])->name('doUpdate');
         Route::delete('/delete/{id}', [UserController::class, 'delete'])->name('delete');
         Route::post('/reset-password/{id}', [UserController::class, 'resetPassword'])->name('resetPassword');
+    });
+
+    // Gradebook (Rekap Nilai Siswa) Routes
+    Route::middleware('access_type:1')->prefix('gradebook')->name('gradebook.')->group(function () {
+        Route::get('/', [GradebookController::class, 'index'])->name('index');
+        Route::get('/student/{id}', [GradebookController::class, 'detail'])->name('detail');
     });
 
     // Modules Routes

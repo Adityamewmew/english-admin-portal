@@ -58,6 +58,19 @@ class SidebarMenuSeeder extends Seeder
         ]);
         $this->assignAccess($penggunaId, $superadminOnly, $now);
 
+        // 2.1 Rekap Nilai Siswa (Gradebook)
+        $gradebookId = DB::table(DatabaseConst::SIDEBAR_MENU())->insertGetId([
+            'label' => 'Rekap Nilai Siswa',
+            'route_name' => 'admin.gradebook.index',
+            'icon' => '_admin._layout.icons.sidebar.gradebook',
+            'group' => 'utama',
+            'sort_order' => 25,
+            'is_active' => 1,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $this->assignAccess($gradebookId, $superadminOnly, $now);
+
         // 3. Parent: Curriculum Management
         $curriculumParentId = DB::table(DatabaseConst::SIDEBAR_MENU())->insertGetId([
             'label' => 'Curriculum Management',

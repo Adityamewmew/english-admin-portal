@@ -28,6 +28,7 @@ class DashboardController extends Controller
 
         $allowedRoutes = [
             'admin.users.index',
+            'admin.gradebook.index',
             'admin.modules.index',
             'admin.questions.index',
             'admin.sidebar_menu.index',
