@@ -56,17 +56,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/detail/{id}/section/create', [CurriculumModuleController::class, 'doCreateSection'])->name('section.create');
         Route::post('/detail/{id}/section/{sectionId}/update', [CurriculumModuleController::class, 'doUpdateSection'])->name('section.update');
         Route::delete('/detail/{id}/section/{sectionId}/delete', [CurriculumModuleController::class, 'doDeleteSection'])->name('section.delete');
+        Route::post('/detail/{id}/submodule/{subModuleId}/update', [CurriculumModuleController::class, 'doUpdateSubModule'])->name('submodule.update');
     });
 
-    // Sub Modules Routes
+    // Sub Modules Routes (Redirected to Modules)
     Route::middleware('access_type:1')->prefix('sub-modules')->name('sub_modules.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Admin\SubModuleController::class, 'index'])->name('index');
-        Route::get('/add', [\App\Http\Controllers\Admin\SubModuleController::class, 'add'])->name('add');
-        Route::post('/create', [\App\Http\Controllers\Admin\SubModuleController::class, 'doCreate'])->name('create');
-        Route::get('/detail/{id}', [\App\Http\Controllers\Admin\SubModuleController::class, 'detail'])->name('detail');
-        Route::get('/update/{id}', [\App\Http\Controllers\Admin\SubModuleController::class, 'update'])->name('update');
-        Route::post('/update/{id}', [\App\Http\Controllers\Admin\SubModuleController::class, 'doUpdate'])->name('doUpdate');
-        Route::delete('/delete/{id}', [\App\Http\Controllers\Admin\SubModuleController::class, 'delete'])->name('delete');
+        Route::get('/', fn () => redirect()->route('admin.modules.index'))->name('index');
     });
 
     // Questions (Placement Test) Routes

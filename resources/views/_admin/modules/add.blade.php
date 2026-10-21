@@ -145,14 +145,12 @@
                 </div>
 
                 <div class="pt-4 border-t border-gray-200 dark:border-neutral-700 flex justify-end gap-x-2">
-                    <a href="{{ route('admin.modules.index') }}"
-                        class="py-2.5 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-xl border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white">
-                        Cancel
-                    </a>
-                    <button type="submit"
-                        class="py-2.5 px-5 inline-flex items-center gap-x-2 text-sm font-semibold rounded-xl border border-transparent bg-blue-600 text-white hover:bg-blue-700">
-                        Save Module
-                    </button>
+                    <x-admin.button href="{{ route('admin.modules.index') }}" color="secondary">
+                        Batal
+                    </x-admin.button>
+                    <x-admin.button type="submit" color="primary" class="font-bold">
+                        Simpan & Lanjut ke Sub-Modul (Reading ➔ Listening...) 🚀
+                    </x-admin.button>
                 </div>
             </form>
         </div>

@@ -318,6 +318,15 @@
             .replace(/'/g, "&#039;");
     }
 
+    function openEditSubModuleModal(subModuleId, title) {
+        const form = document.getElementById('editSubModuleForm');
+        form.action = "{{ url('admin/modules/detail/' . $module->id . '/submodule') }}/" + subModuleId + "/update";
+        document.getElementById('editSubModuleTitleInput').value = title;
+        if (window.HSOverlay) {
+            window.HSOverlay.open('#editSubModuleModal');
+        }
+    }
+
     // Auto-select tab from URL on page load
     document.addEventListener('DOMContentLoaded', function () {
         const urlParams = new URLSearchParams(window.location.search);

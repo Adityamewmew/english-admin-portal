@@ -176,7 +176,61 @@ class CurriculumModuleUsecase extends Usecase
 
             DB::table(DatabaseConst::CURRICULUM_MODULES())->insert($insertData);
 
-            return Response::buildSuccess(['id' => $id, 'module' => $insertData], ResponseConst::HTTP_CREATED);
+            // Auto-provision 5 standard sub-modules (Reading -> Listening -> Writing -> Speaking -> Assessment)
+            $cleanId = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $id));
+            $skills = [
+                ['skill' => 'reading', 'title' => 'Reading & Vocabulary', 'order' => 1],
+                ['skill' => 'listening', 'title' => 'Listening & Spoken Dialogue', 'order' => 2],
+                ['skill' => 'writing', 'title' => 'Sentence Building & Writing', 'order' => 3],
+                ['skill' => 'speaking', 'title' => 'Speaking & Pronunciation', 'order' => 4],
+                ['skill' => 'assessment', 'title' => 'Unit Final Mission & Assessment', 'order' => 5],
+            ];
+
+            $subModuleRows = [];
+            $firstSubModuleId = null;
+            foreach ($skills as $s) {
+                $smId = 'sub-' . $cleanId . '-' . $s['skill'];
+                if (!$firstSubModuleId) {
+                    $firstSubModuleId = $smId;
+                }
+                $subModuleRows[] = [
+                    'id' => $smId,
+                    'module_id' => $id,
+                    'skill_type' => $s['skill'],
+                    'title' => $s['title'],
+                    'order_index' => $s['order'],
+                    'created_at' => now(),
+                ];
+            }
+
+            DB::table(DatabaseConst::SUB_MODULES())->insert($subModuleRows);
+
+            return Response::buildSuccess([
+                'id' => $id,
+                'module' => $insertData,
+                'first_sub_module_id' => $firstSubModuleId,
+            ], ResponseConst::HTTP_CREATED);
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), ['method' => __METHOD__]);
+            return Response::buildErrorService($e->getMessage());
+        }
+    }
+
+    public function updateSubModule(string $moduleId, string $subModuleId, array $data): array
+    {
+        try {
+            $updated = DB::table(DatabaseConst::SUB_MODULES())
+                ->where('id', $subModuleId)
+                ->where('module_id', $moduleId)
+                ->update([
+                    'title' => $data['title'],
+                ]);
+
+            if (!$updated) {
+                return Response::buildErrorNotFound('Sub-modul tidak ditemukan');
+            }
+
+            return Response::buildSuccess(['id' => $subModuleId]);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
             return Response::buildErrorService($e->getMessage());

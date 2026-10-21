@@ -81,6 +81,65 @@
             </div>
         </x-admin.card>
 
+        {{-- Wizard Stepper Card (Shown when redirected after creating module or ?wizard=1) --}}
+        @if(request('wizard') == 1)
+            @php
+                $wizardActiveSubModuleId = request('sub_module', $subModules->first()->id ?? '');
+            @endphp
+            <x-admin.card fit="true" class="border-blue-300 dark:border-blue-900/60 bg-blue-50/40">
+                <div class="p-2 sm:p-3">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-blue-100 dark:border-blue-950/60">
+                        <div class="flex items-center gap-3">
+                            <div class="size-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0">
+                                🚀
+                            </div>
+                            <div>
+                                <h2 class="text-sm font-bold text-blue-950 dark:text-blue-100">
+                                    Alur Wizard: Pengisian Materi 5 Sub-Modul
+                                </h2>
+                                <p class="text-xs text-blue-800/80 dark:text-blue-300">
+                                    Modul baru berhasil dibuat! 5 sub-modul skill telah disiapkan otomatis. Silakan lengkapi materi per skill secara berurutan.
+                                </p>
+                            </div>
+                        </div>
+                        <x-admin.button href="{{ route('admin.modules.detail', $module->id) }}" size="sm" color="outline-secondary" class="self-start sm:self-auto text-xs shrink-0">
+                            Selesai / Buka Mode Standar
+                        </x-admin.button>
+                    </div>
+
+                    {{-- Stepper Progress Bar --}}
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                        @foreach ($subModules as $stepIdx => $smStep)
+                            @php
+                                $isCurrent = ($smStep->id === $wizardActiveSubModuleId);
+                                $stepSecCount = $sections->where('sub_module_id', $smStep->id)->count();
+                                $stepLabels = [
+                                    'reading' => '1. 📖 Reading',
+                                    'listening' => '2. 🎧 Listening',
+                                    'writing' => '3. ✍️ Writing',
+                                    'speaking' => '4. 🎙️ Speaking',
+                                    'assessment' => '5. 🏆 Assessment',
+                                ];
+                            @endphp
+                            <button type="button"
+                                onclick="switchSubModuleTab('{{ $smStep->id }}')"
+                                class="p-2.5 rounded-xl border text-left transition-all cursor-pointer {{ $isCurrent ? 'bg-blue-600 text-white border-blue-600 shadow-xs' : 'bg-white dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 hover:border-blue-300' }}">
+                                <div class="text-[11px] font-bold flex items-center justify-between">
+                                    <span>{{ $stepLabels[strtolower($smStep->skill_type)] ?? ($stepIdx + 1 . '. ' . $smStep->title) }}</span>
+                                    @if ($stepSecCount > 0)
+                                        <span class="size-4 rounded-full {{ $isCurrent ? 'bg-white text-blue-600' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' }} text-[9px] font-bold flex items-center justify-center">✓</span>
+                                    @endif
+                                </div>
+                                <div class="text-[10px] mt-0.5 {{ $isCurrent ? 'text-white/80' : 'text-gray-400' }}">
+                                    {{ $stepSecCount }} Bagian Materi
+                                </div>
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+            </x-admin.card>
+        @endif
+
         {{-- Sub-Modules Tabs Navigation --}}
         <div>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
@@ -145,20 +204,33 @@
                             <div class="flex items-center gap-2.5">
                                 <span class="text-xl">{{ $skillIcons[strtolower($sm->skill_type)] ?? '📄' }}</span>
                                 <div>
-                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">
-                                        Sub-Modul: {{ $sm->title }}
-                                    </h3>
+                                    <div class="flex items-center gap-2">
+                                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">
+                                            Sub-Modul: {{ $sm->title }}
+                                        </h3>
+                                        <button type="button"
+                                            onclick="openEditSubModuleModal('{{ $sm->id }}', '{{ addslashes($sm->title) }}')"
+                                            title="Ubah Nama Sub-Modul"
+                                            class="p-1 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-neutral-700 dark:hover:text-blue-400 cursor-pointer transition-colors">
+                                            <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M12 20h9"/>
+                                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
                                     <span class="text-xs text-gray-500 dark:text-neutral-400">
                                         Skill: <strong class="uppercase text-blue-600 dark:text-blue-400">{{ $sm->skill_type }}</strong> &bull; Total {{ count($subSections) }} bagian materi
                                     </span>
                                 </div>
                             </div>
-                            <button type="button"
+                            <x-admin.button type="button"
+                                size="sm"
+                                color="primary"
                                 onclick="openAddSectionModal('{{ $sm->id }}')"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 text-xs font-bold transition-colors cursor-pointer">
+                                class="text-xs font-bold">
                                 <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                                 + Tambah Materi di Sub-Modul Ini
-                            </button>
+                            </x-admin.button>
                         </div>
 
                         <div class="space-y-4">
@@ -187,6 +259,39 @@
                                 </div>
                             @endforelse
                         </div>
+
+                        {{-- Wizard Next Step Footer --}}
+                        @if(request('wizard') == 1)
+                            @php
+                                $currentIndex = $subModules->search(fn($item) => $item->id === $sm->id);
+                                $nextSubModule = $subModules->get($currentIndex + 1);
+                            @endphp
+                            <div class="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+                                <div class="text-xs text-gray-600 dark:text-neutral-400">
+                                    @if ($nextSubModule)
+                                        Tahap berikutnya: <strong class="text-gray-900 dark:text-white">{{ $nextSubModule->title }}</strong>
+                                    @else
+                                        Semua 5 tahapan sub-modul selesai!
+                                    @endif
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    @if ($nextSubModule)
+                                        <x-admin.button type="button"
+                                            onclick="switchSubModuleTab('{{ $nextSubModule->id }}')"
+                                            color="primary"
+                                            size="sm">
+                                            Lanjut ke Sub-Modul {{ $nextSubModule->title }} ➔
+                                        </x-admin.button>
+                                    @else
+                                        <x-admin.button href="{{ route('admin.modules.detail', $module->id) }}"
+                                            color="success"
+                                            size="sm">
+                                            Selesai Setup Modul ✓
+                                        </x-admin.button>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 @endforeach
             </div>
@@ -195,6 +300,7 @@
 
     {{-- Modals --}}
     @include('_admin.modules.partials.section-modal', ['module' => $module, 'subModules' => $subModules])
+    @include('_admin.modules.partials.submodule-modal', ['module' => $module])
     @include('_admin.modules.partials.delete-section-modal', ['module' => $module])
 
 @endsection
@@ -202,3 +308,4 @@
 @push('scripts')
     @include('_admin.modules.partials.section-scripts', ['module' => $module])
 @endpush
+

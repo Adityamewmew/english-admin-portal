@@ -115,7 +115,30 @@ class CurriculumModuleController extends Controller
             return back()->withInput()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
         }
 
-        return redirect()->route('admin.modules.index')->with('success', 'Modul kurikulum berhasil ditambahkan');
+        $id = $res['data']['id'];
+        $firstSubModuleId = $res['data']['first_sub_module_id'] ?? null;
+        $redirectUrl = route('admin.modules.detail', $id) . '?wizard=1&step=1' . ($firstSubModuleId ? ('&sub_module=' . $firstSubModuleId) : '');
+
+        return redirect()->to($redirectUrl)->with('success', 'Modul berhasil dibuat! 5 Sub-Modul (Reading, Listening, Writing, Speaking, Assessment) telah disiapkan. Silakan susun materi.');
+    }
+
+    public function doUpdateSubModule(string $id, string $subModuleId, Request $request): RedirectResponse
+    {
+        $request->validate([
+            'title' => 'required|string|max:150',
+        ]);
+
+        $res = $this->usecase->updateSubModule($id, $subModuleId, [
+            'title' => $request->input('title'),
+        ]);
+
+        if (empty($res['data'])) {
+            return back()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
+        }
+
+        $query = '?sub_module=' . $subModuleId . ($request->has('wizard') ? '&wizard=' . $request->input('wizard') : '') . ($request->has('step') ? '&step=' . $request->input('step') : '');
+
+        return redirect()->to(route('admin.modules.detail', $id) . $query)->with('success', 'Nama sub-modul berhasil diperbarui');
     }
 
     public function update(string $id): View|RedirectResponse
