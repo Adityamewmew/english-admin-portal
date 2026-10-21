@@ -15,6 +15,11 @@
                             <path d="M19 12H5" />
                         </svg>
                     </a>
+                    @if(!empty($module->banner_url))
+                        <div class="size-14 rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-700 shrink-0 bg-gray-50">
+                            <img src="{{ $module->banner_url }}" alt="Banner" class="w-full h-full object-cover">
+                        </div>
+                    @endif
                     <div>
                         <div class="flex items-center gap-2">
                             <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded">

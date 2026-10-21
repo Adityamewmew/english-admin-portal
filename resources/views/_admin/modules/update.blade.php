@@ -19,7 +19,7 @@
                 </div>
             </div>
 
-            <form class="p-6 space-y-4" action="{{ route('admin.modules.doUpdate', $module->id) }}" method="POST">
+            <form class="p-6 space-y-4" action="{{ route('admin.modules.doUpdate', $module->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -71,6 +71,27 @@
                         <input type="text" id="group" name="group" value="{{ old('group', $module->group) }}"
                             class="py-2.5 px-3.5 block w-full border border-gray-200 rounded-lg text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-white focus:ring-blue-500 focus:border-blue-500" required>
                     </div>
+                </div>
+
+                {{-- Banner Image Input (JPG, PNG) --}}
+                <div>
+                    <label for="banner" class="block text-sm font-medium mb-1 dark:text-neutral-200">
+                        Gambar Banner Modul <span class="text-xs text-gray-400 font-normal">(Opsional - format JPG, PNG maks 5MB)</span>
+                    </label>
+                    <div class="flex items-center gap-4">
+                        <input type="file" id="banner" name="banner" accept="image/png,image/jpeg,image/jpg"
+                            onchange="previewBanner(this)"
+                            class="py-2 px-3 block w-full border border-gray-200 rounded-lg text-sm file:me-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-blue-950 dark:file:text-blue-300 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-300 cursor-pointer">
+                        <div id="banner-preview-wrap" class="{{ empty($module->banner_url) ? 'hidden' : '' }} shrink-0 size-16 rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-900">
+                            <img id="banner-preview" src="{{ $module->banner_url ?? '#' }}" alt="Banner" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    @if(!empty($module->banner_url))
+                        <p class="text-xs text-gray-500 dark:text-neutral-400 mt-1">Banner saat ini: <span class="font-mono">{{ $module->banner_url }}</span> (Unggah file baru untuk menggantinya)</p>
+                    @endif
+                    @error('banner')
+                        <p class="text-xs text-rose-500 mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
@@ -132,4 +153,19 @@
             </form>
         </div>
     </div>
+
+    <script>
+        function previewBanner(input) {
+            const previewWrap = document.getElementById('banner-preview-wrap');
+            const preview = document.getElementById('banner-preview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    previewWrap.classList.remove('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
 @endsection

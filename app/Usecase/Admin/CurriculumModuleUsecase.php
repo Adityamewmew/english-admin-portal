@@ -30,6 +30,7 @@ class CurriculumModuleUsecase extends Usecase
                     'cm.is_exam',
                     'cm.passing_score',
                     'cm.order_index',
+                    'cm.banner_url',
                     DB::raw('(SELECT COUNT(*) FROM '.DatabaseConst::MODULE_SECTIONS().' WHERE module_id = cm.id) as sections_count'),
                 ])
                 ->whereNull('cm.deleted_at')
@@ -168,6 +169,7 @@ class CurriculumModuleUsecase extends Usecase
                 'is_exam' => !empty($data['is_exam']),
                 'passing_score' => (int) ($data['passing_score'] ?? 70),
                 'order_index' => (int) ($data['order_index'] ?? 1),
+                'banner_url' => $data['banner_url'] ?? null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -206,6 +208,10 @@ class CurriculumModuleUsecase extends Usecase
                 'order_index' => isset($data['order_index']) ? (int) $data['order_index'] : $existing->order_index,
                 'updated_at' => now(),
             ];
+
+            if (array_key_exists('banner_url', $data)) {
+                $updateData['banner_url'] = $data['banner_url'];
+            }
 
             DB::table(DatabaseConst::CURRICULUM_MODULES())
                 ->where('id', $id)

@@ -144,9 +144,14 @@
                                 </div>
                             @endif
 
-                            {{-- Illustration Image --}}
-                            <img src="{{ $style['img'] }}" alt="{{ $m->title }}"
-                                class="w-full h-full object-contain pointer-events-none drop-shadow-2xs" />
+                            {{-- Banner Image or Thematic Illustration --}}
+                            @if(!empty($m->banner_url))
+                                <img src="{{ $m->banner_url }}" alt="{{ $m->title }}"
+                                    class="w-full h-full object-cover pointer-events-none rounded-lg" />
+                            @else
+                                <img src="{{ $style['img'] }}" alt="{{ $m->title }}"
+                                    class="w-full h-full object-contain pointer-events-none drop-shadow-2xs" />
+                            @endif
                         </div>
 
                         {{-- Middle Body: Meta, Title & Description --}}

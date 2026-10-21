@@ -93,9 +93,23 @@ class CurriculumModuleController extends Controller
             'estimated_minutes' => 'nullable|integer|min:1',
             'passing_score' => 'nullable|integer|min:0|max:100',
             'order_index' => 'nullable|integer|min:1',
+            'banner' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
         ]);
 
-        $res = $this->usecase->create($request->all());
+        $data = $request->all();
+
+        if ($request->hasFile('banner')) {
+            $file = $request->file('banner');
+            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/modules');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $filename);
+            $data['banner_url'] = '/uploads/modules/' . $filename;
+        }
+
+        $res = $this->usecase->create($data);
 
         if (empty($res['data'])) {
             return back()->withInput()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
@@ -133,9 +147,23 @@ class CurriculumModuleController extends Controller
             'estimated_minutes' => 'nullable|integer|min:1',
             'passing_score' => 'nullable|integer|min:0|max:100',
             'order_index' => 'nullable|integer|min:1',
+            'banner' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
         ]);
 
-        $res = $this->usecase->update($id, $request->all());
+        $data = $request->all();
+
+        if ($request->hasFile('banner')) {
+            $file = $request->file('banner');
+            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $destinationPath = public_path('uploads/modules');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            $file->move($destinationPath, $filename);
+            $data['banner_url'] = '/uploads/modules/' . $filename;
+        }
+
+        $res = $this->usecase->update($id, $data);
 
         if (empty($res['data'])) {
             return back()->withInput()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
