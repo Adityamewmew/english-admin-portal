@@ -97,11 +97,19 @@
 
     {{-- Card Base Grid Layout using <x-admin.card> and <x-admin.button> --}}
     @php
-        $cardStyles = [
-            ['bg' => '#F8FAFC', 'border' => '#E2E8F0', 'img' => asset('illustrations/hero-learning.svg'), 'badge' => 'bg-[#0D3B66] text-white'],
-            ['bg' => '#FFFBEB', 'border' => '#FDE68A', 'img' => asset('illustrations/student-books.svg'), 'badge' => 'bg-[#F4B41A] text-[#0F172A]'],
-            ['bg' => '#FEF2F2', 'border' => '#FECACA', 'img' => asset('illustrations/article-vocab.svg'), 'badge' => 'bg-[#9E1B1B] text-white'],
-            ['bg' => '#F0F9FF', 'border' => '#BAE6FD', 'img' => asset('illustrations/article-guide.svg'), 'badge' => 'bg-[#1B4965] text-white'],
+        $cefrBadges = [
+            'A1' => 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+            'A2' => 'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800',
+            'B1' => 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+            'B2' => 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
+            'C1' => 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800',
+            'C2' => 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800',
+        ];
+        $fallbackIllustrations = [
+            asset('illustrations/hero-learning.svg'),
+            asset('illustrations/student-books.svg'),
+            asset('illustrations/article-vocab.svg'),
+            asset('illustrations/article-guide.svg'),
         ];
     @endphp
 
@@ -110,21 +118,19 @@
             @foreach($data as $m)
                 @php
                     $isExam = !empty($m->is_exam) || str_contains($m->id, 'M13');
-                    $style = $cardStyles[$loop->index % count($cardStyles)];
                 @endphp
                 <x-admin.card class="hover:border-blue-500/40 dark:hover:border-blue-400/40 transition-all duration-200">
                     <div class="h-full flex flex-col justify-between gap-3">
                         
-                        {{-- Top Thematic Illustration Banner Frame --}}
-                        <div style="background-color: {{ $style['bg'] }}"
-                            class="w-full h-32 rounded-xl flex items-center justify-center relative overflow-hidden border border-black/5 p-2 group-hover:scale-[1.01] transition-transform">
+                        {{-- Top Thematic Illustration / Banner Frame --}}
+                        <div class="w-full h-32 rounded-xl flex items-center justify-center relative overflow-hidden border border-gray-100 dark:border-neutral-700/80 bg-slate-50 dark:bg-neutral-800/80 p-2 group-hover:scale-[1.01] transition-transform">
                             
                             {{-- Top-Left Badges: CEFR & ID --}}
                             <div class="absolute top-2.5 start-2.5 z-10 flex items-center gap-1.5">
-                                <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full font-mono shadow-2xs {{ $style['badge'] }}">
+                                <span class="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full font-mono border shadow-2xs {{ $cefrBadges[$m->cefr] ?? 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700' }}">
                                     CEFR {{ $m->cefr }}
                                 </span>
-                                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/90 dark:bg-neutral-900/90 text-gray-700 dark:text-neutral-300 shadow-2xs">
+                                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/95 dark:bg-neutral-900/95 text-gray-700 dark:text-neutral-300 border border-gray-200/60 dark:border-neutral-700 shadow-2xs">
                                     {{ $m->id }}
                                 </span>
                             </div>
@@ -136,10 +142,10 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                                     </svg>
-                                    <span>Ujian</span>
+                                    <span>Ujian Akhir</span>
                                 </div>
                             @else
-                                <div class="absolute top-2.5 end-2.5 z-10 px-2 py-0.5 rounded-full bg-white/90 dark:bg-neutral-900/90 text-gray-600 dark:text-neutral-400 font-semibold text-[10px] shadow-2xs">
+                                <div class="absolute top-2.5 end-2.5 z-10 px-2 py-0.5 rounded-full bg-white/95 dark:bg-neutral-900/95 text-gray-600 dark:text-neutral-300 font-semibold text-[10px] border border-gray-200/60 dark:border-neutral-700 shadow-2xs">
                                     ±{{ $m->estimated_minutes ?? 15 }} mnt
                                 </div>
                             @endif
@@ -149,8 +155,8 @@
                                 <img src="{{ $m->banner_url }}" alt="{{ $m->title }}"
                                     class="w-full h-full object-cover pointer-events-none rounded-lg" />
                             @else
-                                <img src="{{ $style['img'] }}" alt="{{ $m->title }}"
-                                    class="w-full h-full object-contain pointer-events-none drop-shadow-2xs" />
+                                <img src="{{ $fallbackIllustrations[$loop->index % count($fallbackIllustrations)] }}" alt="{{ $m->title }}"
+                                    class="w-full h-full object-contain pointer-events-none drop-shadow-2xs p-2" />
                             @endif
                         </div>
 

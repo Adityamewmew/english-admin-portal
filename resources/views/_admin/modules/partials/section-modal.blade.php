@@ -113,10 +113,10 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <input type="text" name="theory_trap_wrong" id="theoryTrapWrong"
                             class="w-full text-xs rounded-xl border-red-200 bg-white py-2 px-3 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white text-red-700"
-                            placeholder="Contoh Kalimat Salah (❌)">
+                            placeholder="Contoh Kalimat Kurang Tepat">
                         <input type="text" name="theory_trap_correct" id="theoryTrapCorrect"
                             class="w-full text-xs rounded-xl border-emerald-200 bg-white py-2 px-3 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white text-emerald-700"
-                            placeholder="Contoh Kalimat Benar (✅)">
+                            placeholder="Contoh Kalimat Disarankan">
                     </div>
                     <textarea name="theory_trap_explanation" id="theoryTrapExplanation" rows="2"
                         class="w-full text-xs rounded-xl border-gray-200 bg-white py-2 px-3 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white"

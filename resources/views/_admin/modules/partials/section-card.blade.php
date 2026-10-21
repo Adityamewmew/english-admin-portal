@@ -274,14 +274,24 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         @if (!empty($trap['wrong']))
                             <div class="p-2.5 rounded-lg bg-white dark:bg-neutral-800 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400">
-                                <span class="font-bold block text-[11px] text-red-600 mb-0.5">❌ Sering Salah:</span>
-                                "{{ $trap['wrong'] }}"
+                                <div class="flex items-center gap-1.5 font-bold text-[11px] text-red-600 dark:text-red-400 mb-1">
+                                    <svg class="size-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                                    <span>Bentuk Kurang Tepat</span>
+                                </div>
+                                <div class="text-xs text-gray-800 dark:text-neutral-200 italic">
+                                    "{{ $trap['wrong'] }}"
+                                </div>
                             </div>
                         @endif
                         @if (!empty($trap['correct']))
                             <div class="p-2.5 rounded-lg bg-white dark:bg-neutral-800 border border-emerald-200 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400">
-                                <span class="font-bold block text-[11px] text-emerald-600 mb-0.5">✅ Yang Benar:</span>
-                                "{{ $trap['correct'] }}"
+                                <div class="flex items-center gap-1.5 font-bold text-[11px] text-emerald-600 dark:text-emerald-400 mb-1">
+                                    <svg class="size-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                                    <span>Bentuk Disarankan</span>
+                                </div>
+                                <div class="text-xs text-gray-800 dark:text-neutral-200 italic font-medium">
+                                    "{{ $trap['correct'] }}"
+                                </div>
                             </div>
                         @endif
                     </div>

@@ -2,6 +2,27 @@
 
 @section('title', 'Detail Modul: ' . $module->title)
 
+@php
+    $cefrColors = [
+        'A1' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/50',
+        'A2' => 'bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-300 border border-teal-200/60 dark:border-teal-800/50',
+        'B1' => 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/50',
+        'B2' => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800/50',
+        'C1' => 'bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/50',
+        'C2' => 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200/60 dark:border-rose-800/50',
+    ];
+    $cefrClass = $cefrColors[$module->cefr] ?? 'bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700';
+
+    $skillIcons = [
+        'reading' => '<svg class="size-4 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+        'listening' => '<svg class="size-4 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>',
+        'writing' => '<svg class="size-4 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>',
+        'speaking' => '<svg class="size-4 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>',
+        'assessment' => '<svg class="size-4 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>',
+    ];
+    $defaultSkillIcon = '<svg class="size-4 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>';
+@endphp
+
 @section('content')
     <div class="space-y-6">
         {{-- Header Card --}}
@@ -16,20 +37,20 @@
                             </svg>
                         </x-admin.button>
                         @if(!empty($module->banner_url))
-                            <div class="size-14 rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-700 shrink-0 bg-gray-50">
+                            <div class="size-14 rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-700 shrink-0 bg-gray-50 dark:bg-neutral-800">
                                 <img src="{{ $module->banner_url }}" alt="Banner" class="w-full h-full object-cover">
                             </div>
                         @endif
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded">
+                                <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded border border-blue-100 dark:border-blue-900/50">
                                     {{ $module->id }}
                                 </span>
-                                <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200">
+                                <span class="px-2 py-0.5 rounded text-xs font-mono font-bold {{ $cefrClass }}">
                                     CEFR {{ $module->cefr }}
                                 </span>
                                 @if (!empty($module->is_exam))
-                                    <span class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                                    <span class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/50">
                                         Ujian Kelulusan
                                     </span>
                                 @endif
@@ -86,19 +107,22 @@
             @php
                 $wizardActiveSubModuleId = request('sub_module', $subModules->first()->id ?? '');
             @endphp
-            <x-admin.card fit="true" class="border-blue-300 dark:border-blue-900/60 bg-blue-50/40">
+            <x-admin.card fit="true" class="border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20">
                 <div class="p-2 sm:p-3">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-blue-100 dark:border-blue-950/60">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-blue-100 dark:border-blue-900/50">
                         <div class="flex items-center gap-3">
-                            <div class="size-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0">
-                                🚀
+                            <div class="size-9 rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-200/60 dark:border-blue-800/50">
+                                <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                                    <line x1="4" x2="4" y1="22" y2="15"/>
+                                </svg>
                             </div>
                             <div>
                                 <h2 class="text-sm font-bold text-blue-950 dark:text-blue-100">
                                     Alur Wizard: Pengisian Materi 5 Sub-Modul
                                 </h2>
                                 <p class="text-xs text-blue-800/80 dark:text-blue-300">
-                                    Modul baru berhasil dibuat! 5 sub-modul skill telah disiapkan otomatis. Silakan lengkapi materi per skill secara berurutan.
+                                    Modul baru berhasil dibuat. 5 sub-modul skill telah disiapkan otomatis. Silakan lengkapi materi per skill secara berurutan.
                                 </p>
                             </div>
                         </div>
@@ -113,24 +137,24 @@
                             @php
                                 $isCurrent = ($smStep->id === $wizardActiveSubModuleId);
                                 $stepSecCount = $sections->where('sub_module_id', $smStep->id)->count();
-                                $stepLabels = [
-                                    'reading' => '1. 📖 Reading',
-                                    'listening' => '2. 🎧 Listening',
-                                    'writing' => '3. ✍️ Writing',
-                                    'speaking' => '4. 🎙️ Speaking',
-                                    'assessment' => '5. 🏆 Assessment',
-                                ];
+                                $typeKey = strtolower($smStep->skill_type);
+                                $stepIcon = $skillIcons[$typeKey] ?? $defaultSkillIcon;
                             @endphp
                             <button type="button"
                                 onclick="switchSubModuleTab('{{ $smStep->id }}')"
                                 class="p-2.5 rounded-xl border text-left transition-all cursor-pointer {{ $isCurrent ? 'bg-blue-600 text-white border-blue-600 shadow-xs' : 'bg-white dark:bg-neutral-800 border-gray-200 dark:border-neutral-700 text-gray-700 dark:text-neutral-300 hover:border-blue-300' }}">
                                 <div class="text-[11px] font-bold flex items-center justify-between">
-                                    <span>{{ $stepLabels[strtolower($smStep->skill_type)] ?? ($stepIdx + 1 . '. ' . $smStep->title) }}</span>
+                                    <div class="flex items-center gap-1.5 truncate">
+                                        <span class="opacity-80">{!! $stepIcon !!}</span>
+                                        <span class="truncate">{{ $stepIdx + 1 }}. {{ ucfirst($typeKey) }}</span>
+                                    </div>
                                     @if ($stepSecCount > 0)
-                                        <span class="size-4 rounded-full {{ $isCurrent ? 'bg-white text-blue-600' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' }} text-[9px] font-bold flex items-center justify-center">✓</span>
+                                        <span class="size-4 rounded-full {{ $isCurrent ? 'bg-white text-blue-600' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' }} flex items-center justify-center shrink-0">
+                                            <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                        </span>
                                     @endif
                                 </div>
-                                <div class="text-[10px] mt-0.5 {{ $isCurrent ? 'text-white/80' : 'text-gray-400' }}">
+                                <div class="text-[10px] mt-1 {{ $isCurrent ? 'text-white/80' : 'text-gray-400' }}">
                                     {{ $stepSecCount }} Bagian Materi
                                 </div>
                             </button>
@@ -162,32 +186,26 @@
                 </x-admin.button>
             </div>
 
-            {{-- Skill Tab Buttons --}}
             @php
-                $skillIcons = [
-                    'reading' => '📖',
-                    'listening' => '🎧',
-                    'writing' => '✍️',
-                    'speaking' => '🎙️',
-                    'assessment' => '🏆',
-                ];
                 $activeSubModuleId = request('sub_module', $subModules->first()->id ?? 'all');
             @endphp
 
+            {{-- Skill Tab Buttons --}}
             <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
                 @foreach ($subModules as $sm)
                     @php
                         $subSecCount = $sections->where('sub_module_id', $sm->id)->count();
                         $isActive = ($sm->id === $activeSubModuleId);
-                        $icon = $skillIcons[strtolower($sm->skill_type)] ?? '📄';
+                        $typeKey = strtolower($sm->skill_type);
+                        $tabIcon = $skillIcons[$typeKey] ?? $defaultSkillIcon;
                     @endphp
                     <button type="button"
                         onclick="switchSubModuleTab('{{ $sm->id }}')"
                         data-tab="{{ $sm->id }}"
-                        class="submodule-tab-btn shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border border-gray-200 dark:border-neutral-700 transition-all cursor-pointer {{ $isActive ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-neutral-800 dark:text-neutral-300' }}">
-                        <span>{{ $icon }}</span>
+                        class="submodule-tab-btn shrink-0 inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer {{ $isActive ? 'bg-blue-600 text-white border-blue-600 shadow-xs' : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 hover:border-gray-300 dark:hover:border-neutral-600' }}">
+                        <span class="{{ $isActive ? 'text-white' : 'text-gray-500 dark:text-neutral-400' }}">{!! $tabIcon !!}</span>
                         <span>{{ $sm->title }}</span>
-                        <span class="px-1.5 py-0.5 rounded-full text-[10px] {{ $isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300' }}">
+                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold {{ $isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300' }}">
                             {{ $subSecCount }}
                         </span>
                     </button>
@@ -200,12 +218,16 @@
                     @php
                         $subSections = $sections->where('sub_module_id', $sm->id)->sortBy('order_index');
                         $isActive = ($sm->id === $activeSubModuleId);
+                        $typeKey = strtolower($sm->skill_type);
+                        $paneIcon = $skillIcons[$typeKey] ?? $defaultSkillIcon;
                     @endphp
 
                     <div id="pane-{{ $sm->id }}" class="submodule-tab-pane space-y-4 {{ $isActive ? '' : 'hidden' }}">
                         <div class="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 flex flex-wrap items-center justify-between gap-3 shadow-xs">
-                            <div class="flex items-center gap-2.5">
-                                <span class="text-xl">{{ $skillIcons[strtolower($sm->skill_type)] ?? '📄' }}</span>
+                            <div class="flex items-center gap-3">
+                                <div class="size-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-900/40">
+                                    {!! $paneIcon !!}
+                                </div>
                                 <div>
                                     <div class="flex items-center gap-2">
                                         <h3 class="text-sm font-bold text-gray-900 dark:text-white">
@@ -234,7 +256,7 @@
                                 onclick="openAddSectionModal('{{ $sm->id }}')"
                                 class="text-xs font-bold">
                                 <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                                + Tambah Materi di Sub-Modul Ini
+                                Tambah Materi di Sub-Modul Ini
                             </x-admin.button>
                         </div>
 
@@ -279,7 +301,7 @@
                                     @if ($nextSubModule)
                                         Tahap berikutnya: <strong class="text-gray-900 dark:text-white">{{ $nextSubModule->title }}</strong>
                                     @else
-                                        Semua 5 tahapan sub-modul selesai!
+                                        Semua 5 tahapan sub-modul selesai dikonfigurasi!
                                     @endif
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -288,13 +310,15 @@
                                             onclick="switchSubModuleTab('{{ $nextSubModule->id }}')"
                                             color="primary"
                                             size="sm">
-                                            Lanjut ke Sub-Modul {{ $nextSubModule->title }} ➔
+                                            <span>Lanjut ke Sub-Modul {{ $nextSubModule->title }}</span>
+                                            <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                                         </x-admin.button>
                                     @else
                                         <x-admin.button href="{{ route('admin.modules.detail', $module->id) }}"
                                             color="success"
                                             size="sm">
-                                            Selesai Setup Modul ✓
+                                            <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                            <span>Selesai Setup Modul</span>
                                         </x-admin.button>
                                     @endif
                                 </div>
@@ -316,4 +340,3 @@
 @push('scripts')
     @include('_admin.modules.partials.section-scripts', ['module' => $module])
 @endpush
-
