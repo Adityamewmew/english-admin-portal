@@ -68,6 +68,36 @@ class CurriculumModuleUsecase extends Usecase
         }
     }
 
+    public function getStats(): array
+    {
+        try {
+            $total = DB::table(DatabaseConst::CURRICULUM_MODULES())
+                ->whereNull('deleted_at')
+                ->count();
+
+            $examCount = DB::table(DatabaseConst::CURRICULUM_MODULES())
+                ->whereNull('deleted_at')
+                ->where('is_exam', true)
+                ->count();
+
+            $learningCount = $total - $examCount;
+
+            return Response::buildSuccess([
+                'total' => $total,
+                'learning_count' => $learningCount,
+                'exam_count' => $examCount,
+            ]);
+        } catch (Exception $e) {
+            Log::error(message: $e->getMessage(), context: ['method' => __METHOD__]);
+
+            return Response::buildSuccess([
+                'total' => 0,
+                'learning_count' => 0,
+                'exam_count' => 0,
+            ]);
+        }
+    }
+
     public function getByID(string $id): array
     {
         try {

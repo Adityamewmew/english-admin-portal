@@ -37,10 +37,16 @@ class CurriculumModuleController extends Controller
         $data = $data['data']['list'] ?? [];
 
         $levels = $this->usecase->getLevels()['data']['levels'] ?? [];
+        $stats = $this->usecase->getStats()['data'] ?? [
+            'total' => 0,
+            'learning_count' => 0,
+            'exam_count' => 0,
+        ];
 
         return view('_admin.modules.index', [
             'data' => $data,
             'levels' => $levels,
+            'stats' => $stats,
             'page' => $this->page,
             'cefr' => $cefr,
             'keywords' => $keywords,
