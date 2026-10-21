@@ -19,7 +19,7 @@
                 </div>
             </div>
 
-            <form class="p-6 space-y-4" action="{{ route('admin.modules.create') }}" method="POST" enctype="multipart/form-data">
+            <form class="p-6 space-y-4" navigate-form action="{{ route('admin.modules.create') }}" method="POST" enctype="multipart/form-data">
                 @csrf
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -1,7 +1,7 @@
 @props(['module'])
 
 <x-admin.modal id="editSubModuleModal" title="Ubah Nama Sub-Modul" size="sm:max-w-md">
-    <form id="editSubModuleForm" method="POST" action="">
+    <form id="editSubModuleForm" method="POST" action="" navigate-form>
         @csrf
         <input type="hidden" name="wizard" value="{{ request('wizard') }}">
         <input type="hidden" name="step" value="{{ request('step') }}">

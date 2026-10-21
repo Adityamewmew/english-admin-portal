@@ -1,7 +1,7 @@
 @props(['module', 'subModules'])
 
 <x-admin.modal id="sectionModal" title="Kelola Bagian Materi" size="sm:max-w-3xl">
-    <form id="sectionForm" method="POST" action="">
+    <form id="sectionForm" method="POST" action="" navigate-form>
         @csrf
         <input type="hidden" name="section_id" id="modalSectionId" value="">
 

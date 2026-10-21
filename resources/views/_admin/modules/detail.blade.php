@@ -151,7 +151,10 @@
                         Pilih sub-modul (skill) di bawah untuk mengelola materi secara terfokus
                     </p>
                 </div>
-                <x-admin.button type="button" onclick="openAddSectionModal('{{ $subModules->first()->id ?? '' }}')" class="py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto cursor-pointer">
+                <x-admin.button type="button"
+                    data-hs-overlay="#sectionModal"
+                    onclick="openAddSectionModal('{{ $subModules->first()->id ?? '' }}')"
+                    class="py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto cursor-pointer">
                     <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M5 12h14"/><path d="M12 5v14"/>
                     </svg>
@@ -209,6 +212,7 @@
                                             Sub-Modul: {{ $sm->title }}
                                         </h3>
                                         <button type="button"
+                                            data-hs-overlay="#editSubModuleModal"
                                             onclick="openEditSubModuleModal('{{ $sm->id }}', '{{ addslashes($sm->title) }}')"
                                             title="Ubah Nama Sub-Modul"
                                             class="p-1 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-gray-100 dark:hover:bg-neutral-700 dark:hover:text-blue-400 cursor-pointer transition-colors">
@@ -226,6 +230,7 @@
                             <x-admin.button type="button"
                                 size="sm"
                                 color="primary"
+                                data-hs-overlay="#sectionModal"
                                 onclick="openAddSectionModal('{{ $sm->id }}')"
                                 class="text-xs font-bold">
                                 <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -253,7 +258,10 @@
                                     <p class="text-xs text-gray-500 max-w-sm mx-auto">
                                         Mulai tambahkan teori, kosakata, percakapan, atau kuis pilihan ganda untuk sub-modul ini.
                                     </p>
-                                    <x-admin.button type="button" onclick="openAddSectionModal('{{ $sm->id }}')" class="py-2 px-4 rounded-xl text-xs font-bold">
+                                    <x-admin.button type="button"
+                                        data-hs-overlay="#sectionModal"
+                                        onclick="openAddSectionModal('{{ $sm->id }}')"
+                                        class="py-2 px-4 rounded-xl text-xs font-bold">
                                         + Tambah Bagian Pertama
                                     </x-admin.button>
                                 </div>

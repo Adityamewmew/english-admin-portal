@@ -1,7 +1,7 @@
 @props(['module'])
 
 <x-admin.modal id="deleteSectionModal" title="Hapus Bagian Materi" size="sm:max-w-md">
-    <form id="deleteSectionForm" method="POST" action="">
+    <form id="deleteSectionForm" method="POST" action="" navigate-form>
         @csrf
         @method('DELETE')
         <input type="hidden" name="sub_module_id" id="deleteSectionSubModuleId" value="">

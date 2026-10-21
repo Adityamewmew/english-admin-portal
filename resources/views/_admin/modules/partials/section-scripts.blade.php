@@ -58,7 +58,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <input type="text" name="vocab_words[${idx}][word]" value="${escapeHtml(data.word || '')}"
                     class="rounded-xl border-gray-200 bg-white py-1.5 px-2.5 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white font-bold"
-                    placeholder="Kata (e.g. Greeting)" required>
+                    placeholder="Kata (e.g. Greeting)">
                 <input type="text" name="vocab_words[${idx}][phonetic]" value="${escapeHtml(data.phonetic || '')}"
                     class="rounded-xl border-gray-200 bg-white py-1.5 px-2.5 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white font-mono"
                     placeholder="Fonetik (e.g. /ˈɡriːtɪŋ/)">
@@ -69,7 +69,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input type="text" name="vocab_words[${idx}][meaningId]" value="${escapeHtml(data.meaningId || data.meaning || '')}"
                     class="rounded-xl border-gray-200 bg-white py-1.5 px-2.5 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white"
-                    placeholder="Arti Bahasa Indonesia" required>
+                    placeholder="Arti Bahasa Indonesia">
                 <input type="text" name="vocab_words[${idx}][exampleSentence]" value="${escapeHtml(data.exampleSentence || data.example || '')}"
                     class="rounded-xl border-gray-200 bg-white py-1.5 px-2.5 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white italic"
                     placeholder="Contoh kalimat">
@@ -101,7 +101,7 @@
                 <div class="sm:col-span-3">
                     <input type="text" name="dialogue_lines[${idx}][text]" value="${escapeHtml(data.text || '')}"
                         class="w-full rounded-xl border-gray-200 bg-white py-1.5 px-2.5 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white"
-                        placeholder="Kalimat Bahasa Inggris" required>
+                        placeholder="Kalimat Bahasa Inggris">
                 </div>
             </div>
             <input type="text" name="dialogue_lines[${idx}][translation]" value="${escapeHtml(data.translation || '')}"
@@ -132,7 +132,7 @@
                 <label class="block font-semibold text-gray-700 dark:text-neutral-300 mb-1">Pertanyaan Soal</label>
                 <input type="text" name="quiz_questions[${idx}][question]" value="${escapeHtml(data.question || '')}"
                     class="w-full rounded-xl border-gray-200 bg-white py-1.5 px-2.5 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white font-medium"
-                    placeholder="Misal: What is the correct response to 'How are you?'" required>
+                    placeholder="Misal: What is the correct response to 'How are you?'">
             </div>
             <div class="space-y-1.5">
                 <label class="block font-semibold text-gray-700 dark:text-neutral-300">Pilihan Jawaban (Ketik pilihan & tentukan kunci)</label>
@@ -149,7 +149,7 @@
                     <label class="block font-semibold text-emerald-700 dark:text-emerald-400 mb-1">Kunci Jawaban Tepat</label>
                     <input type="text" name="quiz_questions[${idx}][answer]" value="${escapeHtml(currentAnswer)}"
                         class="w-full rounded-xl border-emerald-300 bg-emerald-50/40 py-1.5 px-2.5 dark:bg-emerald-950/20 dark:border-emerald-700 dark:text-emerald-300 font-bold"
-                        placeholder="Ketik teks jawaban yang benar persis" required>
+                        placeholder="Ketik teks jawaban yang benar persis">
                 </div>
                 <div>
                     <label class="block font-semibold text-gray-700 dark:text-neutral-300 mb-1">Pembahasan (Opsional)</label>
@@ -160,6 +160,28 @@
             </div>
         `;
         container.appendChild(div);
+    }
+
+    function openModal(modalId) {
+        const el = document.getElementById(modalId);
+        if (!el) return;
+        if (window.HSOverlay && typeof window.HSOverlay.open === 'function') {
+            try {
+                window.HSOverlay.open(el);
+                return;
+            } catch (e) {
+                console.warn('HSOverlay.open error, using fallback:', e);
+            }
+        }
+        el.classList.remove('hidden');
+        el.classList.add('open');
+        setTimeout(() => {
+            const inner = el.querySelector('.hs-overlay-open\\:opacity-100');
+            if (inner) {
+                inner.classList.remove('opacity-0');
+                inner.classList.add('opacity-100');
+            }
+        }, 10);
     }
 
     function openAddSectionModal(subModuleId) {
@@ -194,8 +216,17 @@
 
         handleSectionTypeChange('theory');
 
-        if (window.HSOverlay) {
-            window.HSOverlay.open('#sectionModal');
+        openModal('sectionModal');
+    }
+
+    function openEditSectionModalById(id) {
+        const tpl = document.getElementById('sec-data-' + id);
+        if (!tpl) return;
+        try {
+            const sec = JSON.parse(tpl.innerHTML);
+            openEditSectionModal(sec);
+        } catch (e) {
+            console.error('Error parsing section data:', e);
         }
     }
 
@@ -267,9 +298,17 @@
             }
         }
 
-        if (window.HSOverlay) {
-            window.HSOverlay.open('#sectionModal');
+        openModal('sectionModal');
+    }
+
+    function confirmDeleteSectionById(id, subModuleId) {
+        const card = document.getElementById('section-card-' + id);
+        let title = 'Materi';
+        if (card) {
+            const titleEl = card.querySelector('h3');
+            if (titleEl) title = titleEl.innerText.trim();
         }
+        confirmDeleteSection(id, title, subModuleId);
     }
 
     function confirmDeleteSection(id, title, subModuleId) {
@@ -278,9 +317,7 @@
         document.getElementById('deleteSectionTitle').innerText = title;
         document.getElementById('deleteSectionSubModuleId').value = subModuleId || '';
 
-        if (window.HSOverlay) {
-            window.HSOverlay.open('#deleteSectionModal');
-        }
+        openModal('deleteSectionModal');
     }
 
     function switchSubModuleTab(tabId) {
@@ -322,9 +359,7 @@
         const form = document.getElementById('editSubModuleForm');
         form.action = "{{ url('admin/modules/detail/' . $module->id . '/submodule') }}/" + subModuleId + "/update";
         document.getElementById('editSubModuleTitleInput').value = title;
-        if (window.HSOverlay) {
-            window.HSOverlay.open('#editSubModuleModal');
-        }
+        openModal('editSubModuleModal');
     }
 
     // Auto-select tab from URL on page load

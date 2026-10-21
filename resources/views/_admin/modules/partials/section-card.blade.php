@@ -35,10 +35,12 @@
         </div>
 
         <div class="flex items-center gap-2">
+            <template id="sec-data-{{ $sec->id }}">{!! json_encode($sec, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) !!}</template>
             <x-admin.button type="button"
                 size="sm"
                 color="outline-secondary"
-                onclick='openEditSectionModal(@json($sec))'
+                data-hs-overlay="#sectionModal"
+                onclick="openEditSectionModalById('{{ $sec->id }}')"
                 class="text-xs">
                 <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 20h9"/>
@@ -49,7 +51,8 @@
             <x-admin.button type="button"
                 size="sm"
                 color="outline-danger"
-                onclick="confirmDeleteSection('{{ $sec->id }}', '{{ addslashes($sec->title) }}', '{{ $sec->sub_module_id }}')"
+                data-hs-overlay="#deleteSectionModal"
+                onclick="confirmDeleteSectionById('{{ $sec->id }}', '{{ $sec->sub_module_id }}')"
                 class="text-xs">
                 <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M3 6h18"/>
