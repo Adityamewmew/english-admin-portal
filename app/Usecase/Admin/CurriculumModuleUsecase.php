@@ -260,4 +260,90 @@ class CurriculumModuleUsecase extends Usecase
             return Response::buildErrorService($e->getMessage());
         }
     }
+
+    public function createSection(string $moduleId, array $data): array
+    {
+        try {
+            $maxOrder = DB::table(DatabaseConst::MODULE_SECTIONS())
+                ->where('module_id', $moduleId)
+                ->max('order_index') ?? 0;
+
+            $id = 'sec-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $moduleId)) . '-' . substr(uniqid(), -6);
+
+            $insertData = [
+                'id' => $id,
+                'module_id' => $moduleId,
+                'sub_module_id' => !empty($data['sub_module_id']) ? $data['sub_module_id'] : null,
+                'section_type' => $data['section_type'],
+                'title' => $data['title'],
+                'content' => is_array($data['content']) ? json_encode($data['content']) : $data['content'],
+                'order_index' => isset($data['order_index']) ? (int) $data['order_index'] : ($maxOrder + 1),
+                'created_at' => now(),
+            ];
+
+            DB::table(DatabaseConst::MODULE_SECTIONS())->insert($insertData);
+
+            return Response::buildSuccess(['id' => $id], ResponseConst::HTTP_CREATED);
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), ['method' => __METHOD__]);
+            return Response::buildErrorService($e->getMessage());
+        }
+    }
+
+    public function updateSection(string $moduleId, string $sectionId, array $data): array
+    {
+        try {
+            $existing = DB::table(DatabaseConst::MODULE_SECTIONS())
+                ->where('id', $sectionId)
+                ->where('module_id', $moduleId)
+                ->first();
+
+            if (!$existing) {
+                return Response::buildErrorNotFound('Bagian materi tidak ditemukan');
+            }
+
+            $updateData = [
+                'title' => $data['title'] ?? $existing->title,
+                'section_type' => $data['section_type'] ?? $existing->section_type,
+                'order_index' => isset($data['order_index']) ? (int) $data['order_index'] : $existing->order_index,
+            ];
+
+            if (array_key_exists('sub_module_id', $data)) {
+                $updateData['sub_module_id'] = !empty($data['sub_module_id']) ? $data['sub_module_id'] : null;
+            }
+
+            if (isset($data['content'])) {
+                $updateData['content'] = is_array($data['content']) ? json_encode($data['content']) : $data['content'];
+            }
+
+            DB::table(DatabaseConst::MODULE_SECTIONS())
+                ->where('id', $sectionId)
+                ->update($updateData);
+
+            return Response::buildSuccess(['id' => $sectionId]);
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), ['method' => __METHOD__]);
+            return Response::buildErrorService($e->getMessage());
+        }
+    }
+
+    public function deleteSection(string $moduleId, string $sectionId): array
+    {
+        try {
+            $deleted = DB::table(DatabaseConst::MODULE_SECTIONS())
+                ->where('id', $sectionId)
+                ->where('module_id', $moduleId)
+                ->delete();
+
+            if (!$deleted) {
+                return Response::buildErrorNotFound('Bagian materi tidak ditemukan');
+            }
+
+            return Response::buildSuccess(['id' => $sectionId]);
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), ['method' => __METHOD__]);
+            return Response::buildErrorService($e->getMessage());
+        }
+    }
 }
+

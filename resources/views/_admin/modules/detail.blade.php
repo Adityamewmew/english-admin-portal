@@ -5,152 +5,200 @@
 @section('content')
     <div class="space-y-6">
         {{-- Header Card --}}
-        <div class="bg-white overflow-hidden shadow-sm rounded-2xl dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-neutral-700 flex items-center justify-between">
-                <div class="flex items-center gap-x-3">
-                    <a href="{{ route('admin.modules.index') }}"
-                        class="p-2 inline-flex items-center rounded-xl border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white">
-                        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="m12 19-7-7 7-7" />
-                            <path d="M19 12H5" />
-                        </svg>
-                    </a>
-                    @if(!empty($module->banner_url))
-                        <div class="size-14 rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-700 shrink-0 bg-gray-50">
-                            <img src="{{ $module->banner_url }}" alt="Banner" class="w-full h-full object-cover">
-                        </div>
-                    @endif
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded">
-                                {{ $module->id }}
-                            </span>
-                            <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200">
-                                CEFR {{ $module->cefr }}
-                            </span>
-                            @if (!empty($module->is_exam))
-                                <span class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
-                                    Ujian Kelulusan
+        <x-admin.card fit="true">
+            <div class="p-2 sm:p-3">
+                <div class="pb-4 border-b border-gray-100 dark:border-neutral-700/80 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <x-admin.button href="{{ route('admin.modules.index') }}" size="sm" color="outline-secondary" class="p-2!">
+                            <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m12 19-7-7 7-7" />
+                                <path d="M19 12H5" />
+                            </svg>
+                        </x-admin.button>
+                        @if(!empty($module->banner_url))
+                            <div class="size-14 rounded-xl overflow-hidden border border-gray-200 dark:border-neutral-700 shrink-0 bg-gray-50">
+                                <img src="{{ $module->banner_url }}" alt="Banner" class="w-full h-full object-cover">
+                            </div>
+                        @endif
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded">
+                                    {{ $module->id }}
                                 </span>
-                            @endif
+                                <span class="px-2 py-0.5 rounded text-xs font-mono font-bold bg-neutral-100 text-neutral-800 dark:bg-neutral-700 dark:text-neutral-200">
+                                    CEFR {{ $module->cefr }}
+                                </span>
+                                @if (!empty($module->is_exam))
+                                    <span class="px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+                                        Ujian Kelulusan
+                                    </span>
+                                @endif
+                            </div>
+                            <h1 class="text-xl font-bold text-gray-900 dark:text-white mt-1">
+                                {{ $module->title }}
+                            </h1>
                         </div>
-                        <h1 class="text-xl font-bold text-gray-900 dark:text-white mt-1">
-                            {{ $module->title }}
-                        </h1>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <x-admin.button href="{{ route('admin.modules.update', $module->id) }}" size="sm" color="outline-secondary">
+                            <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 20h9"/>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                            </svg>
+                            Edit Info Modul
+                        </x-admin.button>
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <div class="mb-4">
+                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Tujuan Pembelajaran (Objective)</span>
+                        <p class="text-sm text-gray-700 dark:text-neutral-300 bg-gray-50/80 dark:bg-neutral-900/50 p-3.5 rounded-xl border border-gray-100 dark:border-neutral-700/80 leading-relaxed">
+                            {{ $module->objective }}
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                        <div class="p-3 bg-gray-50/80 dark:bg-neutral-900/50 rounded-xl border border-gray-100 dark:border-neutral-700/80">
+                            <span class="text-xs text-gray-400 block mb-0.5">Level Kurikulum</span>
+                            <span class="text-sm font-semibold text-gray-800 dark:text-neutral-200">{{ $module->level_title ?? $module->level_id }}</span>
+                        </div>
+                        <div class="p-3 bg-gray-50/80 dark:bg-neutral-900/50 rounded-xl border border-gray-100 dark:border-neutral-700/80">
+                            <span class="text-xs text-gray-400 block mb-0.5">Estimasi Waktu</span>
+                            <span class="text-sm font-semibold text-gray-800 dark:text-neutral-200">±{{ $module->estimated_minutes }} Menit</span>
+                        </div>
+                        <div class="p-3 bg-gray-50/80 dark:bg-neutral-900/50 rounded-xl border border-gray-100 dark:border-neutral-700/80">
+                            <span class="text-xs text-gray-400 block mb-0.5">Passing Score</span>
+                            <span class="text-sm font-semibold text-gray-800 dark:text-neutral-200">{{ $module->passing_score }}%</span>
+                        </div>
+                        <div class="p-3 bg-gray-50/80 dark:bg-neutral-900/50 rounded-xl border border-gray-100 dark:border-neutral-700/80">
+                            <span class="text-xs text-gray-400 block mb-0.5">Total Bagian Materi</span>
+                            <span class="text-sm font-semibold text-gray-800 dark:text-neutral-200">{{ count($sections) }} Bagian</span>
+                        </div>
                     </div>
                 </div>
             </div>
+        </x-admin.card>
 
-            <div class="p-6">
-                <div class="mb-4">
-                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Tujuan Pembelajaran (Objective)</span>
-                    <p class="text-sm text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900/50 p-3.5 rounded-xl border border-gray-100 dark:border-neutral-700">
-                        {{ $module->objective }}
+        {{-- Sub-Modules Tabs Navigation --}}
+        <div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div>
+                    <h2 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        Struktur Materi Pembelajaran
+                    </h2>
+                    <p class="text-xs text-gray-500 dark:text-neutral-400">
+                        Pilih sub-modul (skill) di bawah untuk mengelola materi secara terfokus
                     </p>
                 </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div class="p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-xl border border-gray-100 dark:border-neutral-700">
-                        <span class="text-xs text-gray-400 block mb-0.5">Level Kurikulum</span>
-                        <span class="text-sm font-semibold text-gray-800 dark:text-neutral-200">{{ $module->level_title ?? $module->level_id }}</span>
-                    </div>
-                    <div class="p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-xl border border-gray-100 dark:border-neutral-700">
-                        <span class="text-xs text-gray-400 block mb-0.5">Estimasi Waktu</span>
-                        <span class="text-sm font-semibold text-gray-800 dark:text-neutral-200">±{{ $module->estimated_minutes }} Menit</span>
-                    </div>
-                    <div class="p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-xl border border-gray-100 dark:border-neutral-700">
-                        <span class="text-xs text-gray-400 block mb-0.5">Passing Score</span>
-                        <span class="text-sm font-semibold text-gray-800 dark:text-neutral-200">{{ $module->passing_score }}%</span>
-                    </div>
-                    <div class="p-3 bg-gray-50 dark:bg-neutral-900/50 rounded-xl border border-gray-100 dark:border-neutral-700">
-                        <span class="text-xs text-gray-400 block mb-0.5">Total Bagian Materi</span>
-                        <span class="text-sm font-semibold text-gray-800 dark:text-neutral-200">{{ count($sections) }} Bagian</span>
-                    </div>
-                </div>
+                <x-admin.button type="button" onclick="openAddSectionModal('{{ $subModules->first()->id ?? '' }}')" class="py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto cursor-pointer">
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M5 12h14"/><path d="M12 5v14"/>
+                    </svg>
+                    Tambah Bagian Materi
+                </x-admin.button>
             </div>
-        </div>
 
-        {{-- Sections List --}}
-        <div>
-            <h2 class="text-base font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                Struktur & Isi Bagian Materi ({{ count($sections) }})
-            </h2>
+            {{-- Skill Tab Buttons --}}
+            @php
+                $skillIcons = [
+                    'reading' => '📖',
+                    'listening' => '🎧',
+                    'writing' => '✍️',
+                    'speaking' => '🎙️',
+                    'assessment' => '🏆',
+                ];
+                $activeSubModuleId = request('sub_module', $subModules->first()->id ?? 'all');
+            @endphp
 
-            <div class="space-y-4">
-                @forelse($sections as $index => $sec)
-                    <div class="bg-white overflow-hidden shadow-sm rounded-2xl dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700">
-                        <div class="px-5 py-3.5 bg-gray-50/70 dark:bg-neutral-900/40 border-b border-gray-200 dark:border-neutral-700 flex items-center justify-between">
+            <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+                @foreach ($subModules as $sm)
+                    @php
+                        $subSecCount = $sections->where('sub_module_id', $sm->id)->count();
+                        $isActive = ($sm->id === $activeSubModuleId);
+                        $icon = $skillIcons[strtolower($sm->skill_type)] ?? '📄';
+                    @endphp
+                    <button type="button"
+                        onclick="switchSubModuleTab('{{ $sm->id }}')"
+                        data-tab="{{ $sm->id }}"
+                        class="submodule-tab-btn shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border border-gray-200 dark:border-neutral-700 transition-all cursor-pointer {{ $isActive ? 'bg-blue-600 text-white shadow-xs' : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-neutral-800 dark:text-neutral-300' }}">
+                        <span>{{ $icon }}</span>
+                        <span>{{ $sm->title }}</span>
+                        <span class="px-1.5 py-0.5 rounded-full text-[10px] {{ $isActive ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300' }}">
+                            {{ $subSecCount }}
+                        </span>
+                    </button>
+                @endforeach
+            </div>
+
+            {{-- Tab Panes --}}
+            <div class="mt-4">
+                @foreach ($subModules as $sm)
+                    @php
+                        $subSections = $sections->where('sub_module_id', $sm->id)->sortBy('order_index');
+                        $isActive = ($sm->id === $activeSubModuleId);
+                    @endphp
+
+                    <div id="pane-{{ $sm->id }}" class="submodule-tab-pane space-y-4 {{ $isActive ? '' : 'hidden' }}">
+                        <div class="p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 flex flex-wrap items-center justify-between gap-3 shadow-xs">
                             <div class="flex items-center gap-2.5">
-                                <span class="size-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">
-                                    {{ $index + 1 }}
-                                </span>
-                                <span class="text-sm font-bold text-gray-900 dark:text-white">
-                                    {{ $sec->title }}
-                                </span>
-                                <span class="px-2 py-0.5 rounded text-[11px] font-mono uppercase font-bold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
-                                    {{ $sec->section_type }}
-                                </span>
+                                <span class="text-xl">{{ $skillIcons[strtolower($sm->skill_type)] ?? '📄' }}</span>
+                                <div>
+                                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">
+                                        Sub-Modul: {{ $sm->title }}
+                                    </h3>
+                                    <span class="text-xs text-gray-500 dark:text-neutral-400">
+                                        Skill: <strong class="uppercase text-blue-600 dark:text-blue-400">{{ $sm->skill_type }}</strong> &bull; Total {{ count($subSections) }} bagian materi
+                                    </span>
+                                </div>
                             </div>
+                            <button type="button"
+                                onclick="openAddSectionModal('{{ $sm->id }}')"
+                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 text-xs font-bold transition-colors cursor-pointer">
+                                <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                + Tambah Materi di Sub-Modul Ini
+                            </button>
                         </div>
 
-                        <div class="p-5">
-                            @if ($sec->section_type === 'vocabulary' && !empty($sec->content['words']))
-                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                                    @foreach ($sec->content['words'] as $w)
-                                        <div class="p-3 rounded-xl bg-gray-50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-700 text-xs">
-                                            <div class="font-bold text-sm text-blue-600 dark:text-blue-400">{{ $w['word'] ?? '' }}</div>
-                                            <div class="text-gray-500 italic mb-1">{{ $w['phonetic'] ?? '' }} ({{ $w['partOfSpeech'] ?? '' }})</div>
-                                            <div class="font-medium text-gray-800 dark:text-neutral-200">{{ $w['meaningId'] ?? '' }}</div>
-                                            @if (!empty($w['exampleSentence']))
-                                                <div class="text-gray-600 dark:text-neutral-400 mt-1 text-[11px]">"{{ $w['exampleSentence'] }}"</div>
-                                            @endif
-                                        </div>
-                                    @endforeach
+                        <div class="space-y-4">
+                            @forelse ($subSections as $sec)
+                                @include('_admin.modules.partials.section-card', [
+                                    'sec' => $sec,
+                                    'index' => $loop->iteration,
+                                    'module' => $module,
+                                ])
+                            @empty
+                                <div class="p-8 text-center bg-white dark:bg-neutral-800 rounded-2xl border border-gray-200 dark:border-neutral-700 space-y-3 shadow-xs">
+                                    <div class="size-12 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 flex items-center justify-center mx-auto">
+                                        <svg class="size-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="text-sm font-semibold text-gray-800 dark:text-white">
+                                        Belum ada materi pada sub-modul {{ $sm->title }}
+                                    </div>
+                                    <p class="text-xs text-gray-500 max-w-sm mx-auto">
+                                        Mulai tambahkan teori, kosakata, percakapan, atau kuis pilihan ganda untuk sub-modul ini.
+                                    </p>
+                                    <x-admin.button type="button" onclick="openAddSectionModal('{{ $sm->id }}')" class="py-2 px-4 rounded-xl text-xs font-bold">
+                                        + Tambah Bagian Pertama
+                                    </x-admin.button>
                                 </div>
-                            @elseif ($sec->section_type === 'dialogue' && !empty($sec->content['lines']))
-                                <div class="space-y-2">
-                                    @foreach ($sec->content['lines'] as $line)
-                                        <div class="p-2.5 rounded-xl bg-gray-50 dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-700 text-xs flex gap-3">
-                                            <span class="font-bold text-blue-600 dark:text-blue-400 min-w-20">{{ $line['speaker'] ?? 'Speaker' }}:</span>
-                                            <div>
-                                                <div class="font-medium text-gray-800 dark:text-neutral-200">{{ $line['text'] ?? '' }}</div>
-                                                @if (!empty($line['translation']))
-                                                    <div class="text-gray-400 text-[11px] mt-0.5">{{ $line['translation'] }}</div>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @elseif ($sec->section_type === 'quiz' && !empty($sec->content['questions']))
-                                <div class="space-y-3">
-                                    @foreach ($sec->content['questions'] as $qIdx => $q)
-                                        <div class="p-3.5 rounded-xl bg-gray-50 dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-700 text-xs space-y-1.5">
-                                            <div class="font-bold text-gray-900 dark:text-white">
-                                                {{ $qIdx + 1 }}. {{ $q['question'] ?? '' }}
-                                            </div>
-                                            @if (!empty($q['options']))
-                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pl-3">
-                                                    @foreach ($q['options'] as $opt)
-                                                        <div class="px-2 py-1 rounded {{ ($opt === ($q['answer'] ?? '')) ? 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-300' : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-neutral-300' }}">
-                                                            {{ $opt }}
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @else
-                                <pre class="p-3 bg-gray-900 text-green-400 rounded-xl text-xs overflow-x-auto font-mono max-h-60">{{ json_encode($sec->content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
-                            @endif
+                            @endforelse
                         </div>
                     </div>
-                @empty
-                    <div class="p-8 text-center bg-white dark:bg-neutral-800 rounded-2xl border border-gray-200 dark:border-neutral-700 text-gray-500">
-                        Belum ada data bagian materi untuk modul ini.
-                    </div>
-                @endforelse
+                @endforeach
             </div>
         </div>
     </div>
+
+    {{-- Modals --}}
+    @include('_admin.modules.partials.section-modal', ['module' => $module, 'subModules' => $subModules])
+    @include('_admin.modules.partials.delete-section-modal', ['module' => $module])
+
 @endsection
+
+@push('scripts')
+    @include('_admin.modules.partials.section-scripts', ['module' => $module])
+@endpush
