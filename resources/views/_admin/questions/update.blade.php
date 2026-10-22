@@ -91,19 +91,29 @@
                     error="{{ $errors->first('answer') }}"
                 />
 
-                {{-- Audio Script & Audio URL (Listening) --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="audio_script" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300 mb-1.5">
-                            Audio Script / Transcript <span class="text-xs font-normal text-slate-400">(Optional)</span>
-                        </label>
-                        <textarea id="audio_script" name="audio_script" rows="2"
-                            class="py-2 px-3 block w-full bg-white border border-slate-300 rounded-[10px] text-sm text-slate-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white"
-                            placeholder="Transcript text for audio narration">{{ old('audio_script', $item->audio_script) }}</textarea>
+                {{-- Audio Script / Transcript (Listening) --}}
+                <div class="p-4 rounded-xl bg-surface/70 dark:bg-neutral-900/50 border border-slate-200 dark:border-neutral-700/80 space-y-3.5 card-tactile">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label for="audio_script" class="block text-xs font-heading font-extrabold text-primary dark:text-white uppercase tracking-wider">
+                                Audio Script / Transcript <span class="text-xs font-normal text-slate-400 normal-case tracking-normal">(Wajib jika tipe soal Listening)</span>
+                            </label>
+                            <p class="text-[11px] text-slate-500 dark:text-neutral-400 mt-0.5">
+                                Masukkan dialog atau teks percakapan narasi audio lengkap (mendukung multi-baris antar pembicara).
+                            </p>
+                        </div>
+                        <span class="text-[11px] font-mono font-bold text-secondary bg-white dark:bg-neutral-800 px-2 py-0.5 rounded border border-slate-200 dark:border-neutral-700">
+                            Listening Section
+                        </span>
                     </div>
+
+                    <textarea id="audio_script" name="audio_script" rows="6"
+                        class="py-2.5 px-3.5 block w-full bg-white border border-slate-300 rounded-[10px] text-xs sm:text-sm font-mono text-slate-800 placeholder-slate-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200 leading-relaxed resize-y"
+                        placeholder="Contoh format teks dialog:&#10;Receptionist: Hello. What is your name?&#10;Guest: My name is Anna. A-N-N-A.&#10;Receptionist: Where are you from?&#10;Guest: I am from Italy.&#10;Receptionist: What is your room number?&#10;Guest: Room five. Number five.">{{ old('audio_script', $item->audio_script) }}</textarea>
+
                     <div>
                         <x-admin.input
-                            label="Audio URL (Optional)"
+                            label="Audio URL (Opsional, file URL .mp3 jika ada)"
                             name="audio_url"
                             value="{{ old('audio_url', $item->audio_url) }}"
                             placeholder="https://.../audio.mp3"

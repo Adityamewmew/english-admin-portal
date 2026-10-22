@@ -61,42 +61,44 @@
         <x-admin.table>
             <x-admin.table.thead>
                 <tr>
-                    <x-admin.table.th>ID & Pertanyaan</x-admin.table.th>
-                    <x-admin.table.th>Skill</x-admin.table.th>
-                    <x-admin.table.th>CEFR</x-admin.table.th>
-                    <x-admin.table.th>Kunci Jawaban</x-admin.table.th>
-                    <x-admin.table.th align="end">Aksi</x-admin.table.th>
+                    <x-admin.table.th class="min-w-[260px]">ID & Pertanyaan</x-admin.table.th>
+                    <x-admin.table.th class="w-28 text-center" align="center">Skill</x-admin.table.th>
+                    <x-admin.table.th class="w-20 text-center" align="center">CEFR</x-admin.table.th>
+                    <x-admin.table.th class="w-56 max-w-[240px]">Kunci Jawaban</x-admin.table.th>
+                    <x-admin.table.th class="w-32 text-end sticky end-0 bg-surface/95 dark:bg-neutral-800/95 backdrop-blur-xs z-10 shadow-[-6px_0_10px_rgba(0,0,0,0.03)]" align="end">Aksi</x-admin.table.th>
                 </tr>
             </x-admin.table.thead>
             <x-admin.table.tbody>
                 @forelse($data as $q)
                     <x-admin.table.tr>
-                        <x-admin.table.td>
-                            <div class="space-y-1 max-w-lg">
-                                <span class="font-mono text-xs font-bold text-primary bg-surface px-1.5 py-0.5 rounded border border-slate-200">
+                        <x-admin.table.td innerClass="px-5 py-3">
+                            <div class="space-y-1">
+                                <span class="font-mono text-[11px] font-bold text-primary bg-surface px-1.5 py-0.5 rounded border border-slate-200 inline-block">
                                     {{ $q->id }}
                                 </span>
-                                <p class="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white line-clamp-2">
+                                <p class="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white line-clamp-2 leading-snug">
                                     {{ $q->question }}
                                 </p>
                             </div>
                         </x-admin.table.td>
-                        <x-admin.table.td>
+                        <x-admin.table.td innerClass="px-3 py-3 text-center">
                             <x-admin.badge variant="secondary" size="sm" class="capitalize">
                                 {{ $q->skill }}
                             </x-admin.badge>
                         </x-admin.table.td>
-                        <x-admin.table.td>
+                        <x-admin.table.td innerClass="px-3 py-3 text-center">
                             <x-admin.badge :cefr="$q->cefr" size="sm">
                                 {{ $q->cefr }}
                             </x-admin.badge>
                         </x-admin.table.td>
-                        <x-admin.table.td>
-                            <x-admin.badge variant="success" size="sm" class="font-mono">
-                                {{ $q->answer }}
-                            </x-admin.badge>
+                        <x-admin.table.td innerClass="px-5 py-3">
+                            <div class="max-w-[220px] truncate" title="{{ $q->answer }}">
+                                <x-admin.badge variant="success" size="sm" class="font-mono truncate max-w-full inline-block">
+                                    {{ $q->answer }}
+                                </x-admin.badge>
+                            </div>
                         </x-admin.table.td>
-                        <x-admin.table.td innerClass="px-5 py-2 flex items-center justify-end gap-x-1.5">
+                        <x-admin.table.td class="sticky end-0 bg-white dark:bg-neutral-800 z-10 shadow-[-6px_0_10px_rgba(0,0,0,0.03)]" innerClass="px-4 py-2 flex items-center justify-end gap-x-1.5">
                             <x-admin.button href="{{ route('admin.questions.detail', $q->id) }}" size="sm" color="outline-secondary" title="Detail">
                                 @include('_admin._layout.icons.view_detail')
                             </x-admin.button>

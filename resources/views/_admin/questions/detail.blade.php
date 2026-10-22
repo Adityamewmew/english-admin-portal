@@ -78,9 +78,14 @@
                 {{-- Audio Script if any --}}
                 @if (!empty($item->audio_script))
                     <div>
-                        <span class="text-xs font-heading font-extrabold text-primary/70 uppercase tracking-wider block mb-1.5">Transkrip Audio (Listening)</span>
-                        <div class="p-3.5 rounded-xl bg-surface border border-secondary/30 dark:bg-neutral-900/40 text-xs text-primary dark:text-neutral-200 italic font-medium leading-relaxed">
-                            "{{ $item->audio_script }}"
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="text-xs font-heading font-extrabold text-primary/70 uppercase tracking-wider block">Transkrip Audio (Listening)</span>
+                            <span class="text-[10px] font-mono font-bold text-secondary bg-surface px-2 py-0.5 rounded border border-secondary/30">
+                                Audio Dialogue
+                            </span>
+                        </div>
+                        <div class="p-4 rounded-xl bg-surface border border-secondary/30 dark:bg-neutral-900/40 text-xs sm:text-sm font-mono text-primary dark:text-neutral-200 font-medium leading-relaxed whitespace-pre-line">
+{{ $item->audio_script }}
                         </div>
                     </div>
                 @endif
