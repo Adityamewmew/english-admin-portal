@@ -100,7 +100,11 @@ class CurriculumModuleController extends Controller
 
         if ($request->hasFile('banner')) {
             $file = $request->file('banner');
-            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $ext = strtolower($file->guessExtension() ?: 'jpg');
+            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+                $ext = 'jpg';
+            }
+            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $ext;
             $destinationPath = public_path('uploads/modules');
             if (!file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
@@ -177,7 +181,11 @@ class CurriculumModuleController extends Controller
 
         if ($request->hasFile('banner')) {
             $file = $request->file('banner');
-            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $ext = strtolower($file->guessExtension() ?: 'jpg');
+            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+                $ext = 'jpg';
+            }
+            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $ext;
             $destinationPath = public_path('uploads/modules');
             if (!file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);

@@ -198,7 +198,7 @@ class CertificateController extends Controller
         try {
             $targetDir = public_path('uploads/certificates');
             if (!file_exists($targetDir)) {
-                @mkdir($targetDir, 0777, true);
+                @mkdir($targetDir, 0755, true);
             }
             $filename = 'cert_' . strtolower($cefr) . '_' . time() . '.jpg';
             @file_put_contents($targetDir . '/' . $filename, $imageContent);
