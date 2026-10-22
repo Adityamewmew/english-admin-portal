@@ -76,6 +76,16 @@ class DatabaseConst
         return 'user_certificates';
     }
 
+    public static function COURSE_CLASSES(): string
+    {
+        return 'course_classes';
+    }
+
+    public static function USER_CLASS_ACCESS(): string
+    {
+        return 'user_class_access';
+    }
+
     public static function DB_CORE(): string
     {
         return config('database.connections.pgsql.database', 'db-eddys');
