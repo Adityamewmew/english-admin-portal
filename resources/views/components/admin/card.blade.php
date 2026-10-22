@@ -1,15 +1,19 @@
-@props(['fit' => false])
+@props([
+    'variant' => 'white', // 'white', 'surface', 'achievement'
+    'fit' => false,
+    'padding' => 'p-5 sm:p-6',
+])
 
 @php
     $heightClass = $fit ? 'h-auto' : 'h-full';
+
+    $variantClasses = match ($variant) {
+        'surface' => 'card-tactile-surface text-primary',
+        'achievement' => 'card-tactile-achievement text-primary',
+        default => 'card-tactile bg-white text-slate-800 dark:bg-neutral-800 dark:border-neutral-700',
+    };
 @endphp
 
-<div
-    {{ $attributes->merge(['class' => "border border-gray-200/50 rounded-3xl overflow-hidden dark:bg-gray-700 dark:border-gray-800 text-card-foreground shadow-sm {$heightClass} bg-sidebar p-2.5 bg-gray-50"]) }}>
-    <div
-        class="border border-gray-100 text-card-foreground shadow-2xl shadow-gray-500/20 {$heightClass} bg-sidebar p-2.5 rounded-2xl bg-white dark:bg-gray-800 dark:border-gray-800">
-        <div class="p-2">
-            {{ $slot }}
-        </div>
-    </div>
+<div {{ $attributes->merge(['class' => "rounded-2xl {$padding} {$heightClass} {$variantClasses} transition-all duration-150"]) }}>
+    {{ $slot }}
 </div>

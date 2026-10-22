@@ -4,18 +4,19 @@
 
 @section('content')
     <div class="max-w-3xl">
-        <div class="bg-white overflow-hidden shadow-sm rounded-2xl dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-neutral-700 flex items-center gap-x-3">
+        <x-admin.card variant="white" class="p-0 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-neutral-700/80 flex items-center gap-x-3 bg-surface/50 dark:bg-neutral-800/50">
                 <a href="{{ route('admin.questions.detail', $item->id) }}"
-                    class="p-2 inline-flex items-center rounded-xl border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white">
-                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    class="btn-tactile btn-tactile-outline !py-2 !px-2.5 !rounded-xl"
+                    title="Kembali ke Detail Butir Soal">
+                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="m12 19-7-7 7-7" />
                         <path d="M19 12H5" />
                     </svg>
                 </a>
                 <div>
-                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">Edit Question Item</h2>
-                    <p class="text-xs text-gray-500 dark:text-neutral-400">Update item details for ID: <span class="font-mono font-semibold">{{ $item->id }}</span></p>
+                    <h2 class="font-heading font-extrabold text-lg text-primary dark:text-white tracking-tight">Edit Question Item</h2>
+                    <p class="text-xs text-slate-500 dark:text-neutral-400">Update item details for ID: <span class="font-mono font-bold text-primary dark:text-accent">{{ $item->id }}</span></p>
                 </div>
             </div>
 
@@ -24,45 +25,41 @@
 
                 {{-- CEFR, Skill, Type --}}
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label for="cefr" class="block text-sm font-medium mb-1 dark:text-neutral-200">CEFR Level <span class="text-rose-500">*</span></label>
-                        <select id="cefr" name="cefr"
-                            class="py-2.5 px-3.5 block w-full border border-gray-200 rounded-lg text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-white focus:ring-blue-500 focus:border-blue-500" required>
-                            @foreach (['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as $lvl)
-                                <option value="{{ $lvl }}" {{ old('cefr', $item->cefr) == $lvl ? 'selected' : '' }}>Level {{ $lvl }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <x-admin.select
+                        label="CEFR Level"
+                        name="cefr"
+                        required
+                        :value="old('cefr', $item->cefr)"
+                        :options="['A1' => 'Level A1', 'A2' => 'Level A2', 'B1' => 'Level B1', 'B2' => 'Level B2', 'C1' => 'Level C1', 'C2' => 'Level C2']"
+                    />
 
-                    <div>
-                        <label for="skill" class="block text-sm font-medium mb-1 dark:text-neutral-200">Skill <span class="text-rose-500">*</span></label>
-                        <select id="skill" name="skill"
-                            class="py-2.5 px-3.5 block w-full border border-gray-200 rounded-lg text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-white focus:ring-blue-500 focus:border-blue-500" required>
-                            @foreach (['grammar' => 'Grammar', 'vocabulary' => 'Vocabulary', 'reading' => 'Reading', 'listening' => 'Listening', 'speaking' => 'Speaking'] as $k => $v)
-                                <option value="{{ $k }}" {{ old('skill', $item->skill) == $k ? 'selected' : '' }}>{{ $v }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <x-admin.select
+                        label="Skill"
+                        name="skill"
+                        required
+                        :value="old('skill', $item->skill)"
+                        :options="['grammar' => 'Grammar', 'vocabulary' => 'Vocabulary', 'reading' => 'Reading', 'listening' => 'Listening', 'speaking' => 'Speaking']"
+                    />
 
-                    <div>
-                        <label for="type" class="block text-sm font-medium mb-1 dark:text-neutral-200">Type <span class="text-rose-500">*</span></label>
-                        <select id="type" name="type"
-                            class="py-2.5 px-3.5 block w-full border border-gray-200 rounded-lg text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-white focus:ring-blue-500 focus:border-blue-500" required>
-                            <option value="MCQ" {{ old('type', $item->type) == 'MCQ' ? 'selected' : '' }}>Multiple Choice (MCQ)</option>
-                            <option value="open_ended" {{ old('type', $item->type) == 'open_ended' ? 'selected' : '' }}>Open Ended / Writing</option>
-                            <option value="speaking" {{ old('type', $item->type) == 'speaking' ? 'selected' : '' }}>Speaking</option>
-                        </select>
-                    </div>
+                    <x-admin.select
+                        label="Type"
+                        name="type"
+                        required
+                        :value="old('type', $item->type)"
+                        :options="['MCQ' => 'Multiple Choice (MCQ)', 'open_ended' => 'Open Ended / Writing', 'speaking' => 'Speaking']"
+                    />
                 </div>
 
                 {{-- Question Text --}}
                 <div>
-                    <label for="question" class="block text-sm font-medium mb-1 dark:text-neutral-200">Question / Prompt <span class="text-rose-500">*</span></label>
+                    <label for="question" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300 mb-1.5">
+                        Question / Prompt <span class="text-rose-500">*</span>
+                    </label>
                     <textarea id="question" name="question" rows="3"
-                        class="py-2.5 px-3.5 block w-full border border-gray-200 rounded-lg text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 @error('question') border-rose-500 @enderror"
+                        class="py-2.5 px-3.5 block w-full bg-white border border-slate-300 rounded-[10px] text-slate-800 placeholder-slate-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200 text-sm leading-relaxed @error('question') border-rose-500 @enderror"
                         required>{{ old('question', $item->question) }}</textarea>
                     @error('question')
-                        <p class="text-xs text-rose-500 mt-1">{{ $message }}</p>
+                        <p class="text-xs text-rose-500 mt-1 font-medium">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -70,14 +67,14 @@
                 @php
                     $optionsList = old('options', is_array($item->options) ? $item->options : []);
                 @endphp
-                <div id="mcq-options-container" class="space-y-3 p-4 rounded-xl bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 dark:border-neutral-700">
-                    <span class="text-xs font-semibold uppercase text-gray-500 dark:text-neutral-400 block tracking-wider">Multiple Choice Options (A, B, C, D)</span>
+                <div id="mcq-options-container" class="space-y-3 p-4 rounded-xl bg-surface dark:bg-neutral-900/50 border border-slate-200 dark:border-neutral-700 card-tactile">
+                    <span class="text-xs font-heading font-extrabold uppercase text-primary/80 dark:text-neutral-300 block tracking-wider">Multiple Choice Options (A, B, C, D)</span>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         @foreach (['A', 'B', 'C', 'D'] as $idx => $label)
                             <div>
-                                <label class="block text-xs font-medium text-gray-600 dark:text-neutral-300 mb-1">Option {{ $label }}</label>
+                                <label class="block text-xs font-semibold text-slate-600 dark:text-neutral-300 mb-1">Option {{ $label }}</label>
                                 <input type="text" name="options[]" value="{{ $optionsList[$idx] ?? '' }}"
-                                    class="py-2 px-3 block w-full border border-gray-200 rounded-lg text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                                    class="py-2 px-3 block w-full bg-white border border-slate-300 rounded-[10px] text-sm text-slate-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white"
                                     placeholder="Option {{ $label }} text">
                             </div>
                         @endforeach
@@ -85,48 +82,54 @@
                 </div>
 
                 {{-- Answer --}}
-                <div>
-                    <label for="answer" class="block text-sm font-medium mb-1 dark:text-neutral-200">Correct Answer <span class="text-rose-500">*</span></label>
-                    <input type="text" id="answer" name="answer" value="{{ old('answer', $item->answer) }}"
-                        class="py-2.5 px-3.5 block w-full border border-gray-200 rounded-lg text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-white focus:ring-blue-500 focus:border-blue-500 @error('answer') border-rose-500 @enderror"
-                        placeholder="Exact correct answer string" required>
-                    @error('answer')
-                        <p class="text-xs text-rose-500 mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+                <x-admin.input
+                    label="Correct Answer"
+                    name="answer"
+                    value="{{ old('answer', $item->answer) }}"
+                    placeholder="Exact correct answer string"
+                    required
+                    error="{{ $errors->first('answer') }}"
+                />
 
                 {{-- Audio Script & Audio URL (Listening) --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label for="audio_script" class="block text-sm font-medium mb-1 dark:text-neutral-200">Audio Script / Transcript <span class="text-xs font-normal text-gray-500">(Optional)</span></label>
+                        <label for="audio_script" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300 mb-1.5">
+                            Audio Script / Transcript <span class="text-xs font-normal text-slate-400">(Optional)</span>
+                        </label>
                         <textarea id="audio_script" name="audio_script" rows="2"
-                            class="py-2 px-3 block w-full border border-gray-200 rounded-lg text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-white focus:ring-blue-500 focus:border-blue-500">{{ old('audio_script', $item->audio_script) }}</textarea>
+                            class="py-2 px-3 block w-full bg-white border border-slate-300 rounded-[10px] text-sm text-slate-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white"
+                            placeholder="Transcript text for audio narration">{{ old('audio_script', $item->audio_script) }}</textarea>
                     </div>
                     <div>
-                        <label for="audio_url" class="block text-sm font-medium mb-1 dark:text-neutral-200">Audio URL <span class="text-xs font-normal text-gray-500">(Optional)</span></label>
-                        <input type="text" id="audio_url" name="audio_url" value="{{ old('audio_url', $item->audio_url) }}"
-                            class="py-2.5 px-3.5 block w-full border border-gray-200 rounded-lg text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-white focus:ring-blue-500 focus:border-blue-500">
+                        <x-admin.input
+                            label="Audio URL (Optional)"
+                            name="audio_url"
+                            value="{{ old('audio_url', $item->audio_url) }}"
+                            placeholder="https://.../audio.mp3"
+                        />
                     </div>
                 </div>
 
                 {{-- Explanation --}}
                 <div>
-                    <label for="explanation" class="block text-sm font-medium mb-1 dark:text-neutral-200">Explanation / Discussion <span class="text-xs font-normal text-gray-500">(Optional)</span></label>
+                    <label for="explanation" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300 mb-1.5">
+                        Explanation / Discussion <span class="text-xs font-normal text-slate-400">(Optional)</span>
+                    </label>
                     <textarea id="explanation" name="explanation" rows="2"
-                        class="py-2.5 px-3.5 block w-full border border-gray-200 rounded-lg text-sm dark:bg-neutral-900 dark:border-neutral-700 dark:text-white focus:ring-blue-500 focus:border-blue-500">{{ old('explanation', $item->explanation) }}</textarea>
+                        class="py-2.5 px-3.5 block w-full bg-white border border-slate-300 rounded-[10px] text-sm text-slate-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white leading-relaxed"
+                        placeholder="Explanation why this answer is correct">{{ old('explanation', $item->explanation) }}</textarea>
                 </div>
 
-                <div class="pt-4 border-t border-gray-200 dark:border-neutral-700 flex justify-end gap-x-2">
-                    <a href="{{ route('admin.questions.detail', $item->id) }}"
-                        class="py-2.5 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-xl border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white">
+                <div class="pt-4 border-t border-slate-200 dark:border-neutral-700 flex justify-end gap-x-2">
+                    <x-admin.button href="{{ route('admin.questions.detail', $item->id) }}" variant="outline" as="a" size="sm">
                         Cancel
-                    </a>
-                    <button type="submit"
-                        class="py-2.5 px-5 inline-flex items-center gap-x-2 text-sm font-semibold rounded-xl border border-transparent bg-blue-600 text-white hover:bg-blue-700">
-                        Update Question
-                    </button>
+                    </x-admin.button>
+                    <x-admin.button type="submit" variant="secondary" size="sm">
+                        Save Changes
+                    </x-admin.button>
                 </div>
             </form>
-        </div>
+        </x-admin.card>
     </div>
 @endsection

@@ -1,5 +1,5 @@
 @props([
-    'label',
+    'label' => null,
     'name',
     'id' => null,
     'options' => [],
@@ -14,22 +14,24 @@
     $selectId = $id ?? $name;
 
     $sizeClasses = match ($size) {
-        'sm' => 'py-1.5 px-3 text-sm',
-        'lg' => 'p-3.5 sm:p-5 pe-9 sm:pe-9 sm:text-sm',
-        default => 'py-2.5 sm:py-3 px-4 pe-9 sm:pe-9 sm:text-sm',
+        'sm' => 'py-2 px-3 text-xs',
+        'lg' => 'py-3.5 px-4 text-base',
+        default => 'py-2.5 px-3.5 text-sm',
     };
 
-    $baseClasses = "{$sizeClasses} block w-full border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400";
-    $disabledClass = $disabled ? 'opacity-50 cursor-not-allowed' : '';
+    $baseClasses = "{$sizeClasses} block w-full bg-white border border-slate-300 rounded-[10px] text-slate-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200 transition-all duration-150";
+    $disabledClass = $disabled ? 'opacity-50 cursor-not-allowed bg-slate-100' : '';
+    $errorClass = $error ? 'border-rose-400 focus:border-rose-500' : '';
     $customClass = $attributes->get('class');
-    $selectClass = trim(implode(' ', array_filter([$baseClasses, $disabledClass, $customClass])));
+    $selectClass = trim(implode(' ', array_filter([$baseClasses, $disabledClass, $errorClass, $customClass])));
 @endphp
-<div class="space-y-2">
+
+<div class="space-y-1.5">
     @if ($label)
-        <label for="{{ $selectId }}" class="text-sm text-gray-600 dark:text-neutral-200">
+        <label for="{{ $selectId }}" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300">
             {{ $label }}
             @if ($required)
-                <span class="text-red-500">*</span>
+                <span class="text-rose-500">*</span>
             @endif
         </label>
     @endif
@@ -38,12 +40,16 @@
         @if ($placeholder)
             <option value="">{{ $placeholder }}</option>
         @endif
-        @foreach ($options as $optionValue => $text)
-            <option value="{{ $optionValue }}" {{ (old($name) ?? $value) == $optionValue ? 'selected' : '' }}>
-                {{ $text }}</option>
-        @endforeach
+        @if (!empty($options))
+            @foreach ($options as $optionValue => $text)
+                <option value="{{ $optionValue }}" {{ (old($name) ?? $value) == $optionValue ? 'selected' : '' }}>
+                    {{ $text }}</option>
+            @endforeach
+        @else
+            {{ $slot }}
+        @endif
     </select>
     @if ($error)
-        <p class="text-xs text-red-600 mt-1">{{ $error }}</p>
+        <p class="text-xs text-rose-600 mt-1 font-medium">{{ $error }}</p>
     @endif
 </div>

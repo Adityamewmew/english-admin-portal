@@ -14,14 +14,14 @@
 
 <x-admin.card fit="true" id="section-card-{{ $sec->id }}" class="transition-all hover:border-gray-300 dark:hover:border-neutral-600">
     {{-- Card Header --}}
-    <div class="px-3 py-2 bg-gray-50/80 dark:bg-neutral-900/50 rounded-xl border border-gray-100 dark:border-neutral-700/80 flex flex-wrap items-center justify-between gap-3 mb-4">
+    <div class="px-3.5 py-2.5 bg-surface dark:bg-neutral-900/50 rounded-xl border border-slate-200 dark:border-neutral-700/80 flex flex-wrap items-center justify-between gap-3 mb-4">
         <div class="flex items-center gap-3">
-            <span class="size-7 rounded-lg bg-blue-600 text-white text-xs font-bold flex items-center justify-center shadow-xs">
+            <span class="size-7 rounded-lg bg-primary text-accent font-heading font-extrabold text-xs flex items-center justify-center border-b-2 border-slate-900 shadow-xs">
                 {{ $index }}
             </span>
             <div>
                 <div class="flex items-center gap-2">
-                    <h3 class="text-sm font-bold text-gray-900 dark:text-white">
+                    <h3 class="font-heading font-extrabold text-sm text-primary dark:text-white">
                         {{ $sec->title }}
                     </h3>
                     <span class="px-2 py-0.5 rounded text-[11px] font-semibold {{ $typeInfo['badge'] }}">
@@ -77,23 +77,23 @@
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                         @foreach ($words as $w)
-                            <div class="p-3.5 rounded-xl bg-gray-50/80 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-700/80 space-y-1.5">
+                            <div class="p-3.5 rounded-xl bg-surface/70 dark:bg-neutral-900/50 border border-slate-200 dark:border-neutral-700/80 space-y-1.5">
                                 <div class="flex items-baseline justify-between gap-2">
-                                    <span class="font-bold text-sm text-blue-600 dark:text-blue-400">{{ $w['word'] ?? '-' }}</span>
+                                    <span class="font-heading font-extrabold text-sm text-primary dark:text-accent">{{ $w['word'] ?? '-' }}</span>
                                     @if (!empty($w['partOfSpeech']))
-                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-200/70 text-gray-700 dark:bg-neutral-700 dark:text-neutral-300">
+                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-200/70 text-slate-700 dark:bg-neutral-700 dark:text-neutral-300">
                                             {{ $w['partOfSpeech'] }}
                                         </span>
                                     @endif
                                 </div>
                                 @if (!empty($w['phonetic']))
-                                    <div class="text-gray-400 font-mono text-[11px]">{{ $w['phonetic'] }}</div>
+                                     <div class="text-slate-400 font-mono text-[11px]">{{ $w['phonetic'] }}</div>
                                 @endif
-                                <div class="text-xs font-medium text-gray-800 dark:text-neutral-200">
+                                <div class="text-xs font-semibold text-slate-800 dark:text-neutral-200">
                                     {{ $w['meaningId'] ?? $w['meaning'] ?? '-' }}
                                 </div>
                                 @if (!empty($w['exampleSentence']) || !empty($w['example']))
-                                    <div class="text-[11px] text-gray-600 dark:text-neutral-400 bg-white dark:bg-neutral-800 p-2 rounded-lg border border-gray-100 dark:border-neutral-700/50 italic">
+                                    <div class="text-[11px] text-slate-600 dark:text-neutral-400 bg-white dark:bg-neutral-800 p-2 rounded-lg border border-slate-200 dark:border-neutral-700/50 italic">
                                         "{{ $w['exampleSentence'] ?? $w['example'] }}"
                                     </div>
                                 @endif
@@ -102,26 +102,26 @@
                     </div>
                 </div>
             @else
-                <div class="text-xs text-gray-400 italic">Belum ada daftar kata pada bagian kosakata ini.</div>
+                <div class="text-xs text-slate-400 italic">Belum ada daftar kata pada bagian kosakata ini.</div>
             @endif
 
         {{-- 2. DIALOGUE & PASSAGE SECTION --}}
         @elseif ($sec->section_type === 'dialogue')
             @if (!empty($content['context']))
-                <div class="p-3 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-xs text-blue-800 dark:text-blue-300">
-                    <span class="font-bold">Konteks:</span> {{ $content['context'] }}
+                <div class="p-3 rounded-xl bg-surface border border-secondary/30 text-xs text-primary dark:text-neutral-200 font-medium">
+                    <span class="font-bold text-secondary">Konteks:</span> {{ $content['context'] }}
                 </div>
             @endif
 
             @if (!empty($content['lines']))
                 <div class="space-y-2.5">
-                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <svg class="size-3.5 text-purple-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <div class="text-xs font-heading font-extrabold text-primary/70 uppercase tracking-wider flex items-center gap-1.5">
+                        <svg class="size-3.5 text-secondary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                         Percakapan ({{ count($content['lines']) }} Baris)
                     </div>
                     @foreach ($content['lines'] as $line)
-                        <div class="p-3 rounded-xl bg-gray-50/70 dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-700/80 text-xs flex gap-3">
-                            <span class="font-bold text-blue-600 dark:text-blue-400 shrink-0 w-24">
+                        <div class="p-3 rounded-xl bg-surface/60 dark:bg-neutral-900/40 border border-slate-200 dark:border-neutral-700/80 text-xs flex gap-3">
+                            <span class="font-heading font-bold text-primary dark:text-accent shrink-0 w-24">
                                 {{ $line['speaker'] ?? 'Speaker' }}
                             </span>
                             <div class="space-y-0.5">

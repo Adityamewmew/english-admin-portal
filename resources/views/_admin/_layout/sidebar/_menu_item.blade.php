@@ -61,8 +61,8 @@
         }
     }
 
-    $activeClass = 'bg-linear-to-r from-blue-50 to-indigo-50 text-blue-700 border-blue-200 dark:from-blue-900/20 dark:to-indigo-900/20 dark:text-blue-400 dark:border-blue-800';
-    $inactiveClass = 'text-gray-700 hover:bg-linear-to-r hover:from-gray-100 hover:to-gray-50 border-transparent hover:border-gray-200 dark:text-neutral-300 dark:hover:from-neutral-700/50 dark:hover:to-neutral-800/50 dark:hover:border-neutral-600';
+    $activeClass = 'bg-surface text-primary border-slate-200 border-b-2 font-bold shadow-xs dark:bg-neutral-800 dark:text-white dark:border-neutral-700';
+    $inactiveClass = 'text-slate-700 hover:bg-surface/70 hover:text-primary border-transparent hover:border-slate-200 transition-colors dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:border-neutral-700';
 @endphp
 
 @if (!$hasChildren)
@@ -77,27 +77,27 @@
                 }
             @endphp
             <a navigate
-                class="group flex items-center gap-x-3 py-2.5 px-3.5 {{ $isActive ? $activeClass : $inactiveClass }} text-sm font-light rounded-xl border transition-all duration-200"
+                class="group flex items-center gap-x-3 py-2.5 px-3.5 {{ $isActive ? $activeClass : $inactiveClass }} text-sm rounded-xl border transition-all duration-150"
                 href="{{ $url }}">
                 @if ($menu->icon)
-                    <span class="relative">
+                    <span class="relative shrink-0 {{ $isActive ? 'text-primary dark:text-white' : 'text-slate-500 group-hover:text-primary dark:text-neutral-400' }}">
                         @include($menu->icon)
-                        @if ($isActive)
-                            <span class="absolute -inset-1 bg-blue-500/20 rounded-lg blur-sm"></span>
-                        @endif
                     </span>
                 @endif
-                <span class="relative">{{ $menu->label }}</span>
+                <span class="truncate">{{ $menu->label }}</span>
+                @if ($isActive)
+                    <span class="ml-auto size-1.5 rounded-full bg-secondary"></span>
+                @endif
             </a>
         @else
             <span
-                class="group flex items-center gap-x-3 py-2.5 px-3.5 {{ $inactiveClass }} text-sm font-light rounded-xl border transition-all duration-200">
+                class="group flex items-center gap-x-3 py-2.5 px-3.5 {{ $inactiveClass }} text-sm rounded-xl border">
                 @if ($menu->icon)
-                    <span class="relative">
+                    <span class="relative shrink-0 text-slate-400">
                         @include($menu->icon)
                     </span>
                 @endif
-                <span class="relative">{{ $menu->label }}</span>
+                <span class="truncate">{{ $menu->label }}</span>
             </span>
         @endif
     </li>
@@ -105,26 +105,23 @@
     {{-- Accordion item with children --}}
     <li class="hs-accordion {{ $isActive ? 'active' : '' }}" id="{{ $accordionId }}">
         <button type="button"
-            class="hs-accordion-toggle group w-full text-start flex items-center justify-between gap-x-3 py-2.5 px-3.5 text-sm text-gray-700 font-light rounded-xl border hover:bg-linear-to-r hover:from-gray-100 hover:to-gray-50 border-transparent hover:border-gray-200 transition-all duration-200 dark:text-neutral-300 dark:hover:from-neutral-700/50 dark:hover:to-neutral-800/50 dark:hover:border-neutral-600 cursor-pointer {{ $isActive ? 'bg-linear-to-r from-blue-50 to-indigo-50 border-blue-200 dark:from-blue-900/20 dark:to-indigo-900/20 dark:border-blue-800' : '' }}"
+            class="hs-accordion-toggle group w-full text-start flex items-center justify-between gap-x-3 py-2.5 px-3.5 text-sm rounded-xl border transition-all duration-150 cursor-pointer {{ $isActive ? $activeClass : $inactiveClass }}"
             aria-expanded="{{ $isActive ? 'true' : 'false' }}"
             aria-controls="{{ $accordionId }}-child">
-            <div class="flex items-center gap-x-3">
+            <div class="flex items-center gap-x-3 truncate">
                 @if ($menu->icon)
-                    <span class="relative">
+                    <span class="relative shrink-0 {{ $isActive ? 'text-primary dark:text-white' : 'text-slate-500 group-hover:text-primary dark:text-neutral-400' }}">
                         @include($menu->icon)
-                        @if ($isActive)
-                            <span class="absolute -inset-1 bg-blue-500/20 rounded-lg blur-sm"></span>
-                        @endif
                     </span>
                 @endif
-                <span>{{ $menu->label }}</span>
+                <span class="truncate">{{ $menu->label }}</span>
             </div>
-            <svg class="hs-accordion-active:block hidden size-4 transition-transform duration-200"
+            <svg class="hs-accordion-active:block hidden size-4 shrink-0 transition-transform duration-200"
                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m18 15-6-6 6-6" />
             </svg>
-            <svg class="hs-accordion-active:hidden block size-4 transition-transform duration-200"
+            <svg class="hs-accordion-active:hidden block size-4 shrink-0 transition-transform duration-200 text-slate-400 group-hover:text-primary"
                 xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m9 18 6-6-6-6" />
@@ -132,9 +129,9 @@
         </button>
 
         <div id="{{ $accordionId }}-child"
-            class="hs-accordion-content w-full overflow-hidden transition-[height] duration-300 {{ $isActive ? 'block' : 'hidden' }}"
+            class="hs-accordion-content w-full overflow-hidden transition-[height] duration-200 {{ $isActive ? 'block' : 'hidden' }}"
             role="region" aria-labelledby="{{ $accordionId }}">
-            <ul class="ps-6 pt-2 space-y-1">
+            <ul class="ps-6 pt-1.5 space-y-1">
                 @foreach ($menu->children as $child)
                     @php
                         $childActive = $child->route_name
@@ -148,11 +145,11 @@
                     @endphp
                     <li>
                         <a navigate
-                            class="group flex items-center gap-x-2.5 py-2 px-3.5 text-sm rounded-lg {{ $childActive ? 'bg-blue-50 text-blue-700 font-semibold dark:bg-blue-900/20 dark:text-blue-400' : 'text-gray-600 hover:bg-gray-100 dark:text-neutral-400 dark:hover:bg-neutral-700/50' }} transition-all duration-200"
+                            class="group flex items-center gap-x-2.5 py-1.5 px-3 text-xs rounded-lg {{ $childActive ? 'bg-surface text-primary font-bold dark:bg-neutral-800 dark:text-white' : 'text-slate-600 hover:text-primary hover:bg-slate-100 dark:text-neutral-400 dark:hover:bg-neutral-700/50' }} transition-colors"
                             href="{{ $childUrl }}">
                             <span
-                                class="size-1.5 rounded-full {{ $childActive ? 'bg-blue-500' : 'bg-gray-300 group-hover:bg-gray-400 dark:bg-neutral-600 dark:group-hover:bg-neutral-500' }} transition-colors"></span>
-                            {{ $child->label }}
+                                class="size-1.5 rounded-full {{ $childActive ? 'bg-secondary' : 'bg-slate-300 group-hover:bg-slate-500 dark:bg-neutral-600' }} transition-colors"></span>
+                            <span class="truncate">{{ $child->label }}</span>
                         </a>
                     </li>
                 @endforeach

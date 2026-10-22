@@ -4,7 +4,7 @@
 
 @section('content')
     <x-admin.page-header :title="'Tambah Template Sertifikat'" subtitle="Unggah gambar desain sertifikat kosongan (JPG/PNG) untuk kategori level CEFR. Nama siswa akan otomatis dicetak pada sertifikat ini.">
-        <x-admin.button href="{{ route('admin.certificates.index') }}" size="sm" color="white">
+        <x-admin.button href="{{ route('admin.certificates.index') }}" size="sm" color="outline-secondary">
             <svg class="size-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -13,7 +13,7 @@
     </x-admin.page-header>
 
     @if ($errors->any())
-        <div class="mb-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-sm">
+        <div class="mb-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 border-b-2 border-b-rose-300 text-rose-800 dark:text-rose-200 text-sm shadow-2xs">
             <p class="font-bold mb-1">Terdapat kesalahan input:</p>
             <ul class="list-disc list-inside space-y-0.5">
                 @foreach ($errors->all() as $err)
@@ -27,7 +27,7 @@
         <form action="{{ route('admin.certificates.create') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
-            <x-admin.card fit="true" class="space-y-6 p-6">
+            <x-admin.card variant="white" padding="p-6 sm:p-8" class="space-y-6">
                 {{-- 1. CEFR Selection --}}
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
@@ -198,8 +198,8 @@
                 </div>
 
                 {{-- Action Buttons --}}
-                <div class="pt-4 border-t border-gray-100 dark:border-neutral-800 flex items-center justify-end gap-3">
-                    <x-admin.button href="{{ route('admin.certificates.index') }}" color="white" size="sm">
+                <div class="pt-4 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-end gap-3">
+                    <x-admin.button href="{{ route('admin.certificates.index') }}" color="outline-secondary" size="sm">
                         Batal
                     </x-admin.button>
                     <x-admin.button type="submit" color="primary" size="sm">

@@ -4,54 +4,52 @@
 
 @section('content')
     {{-- Top Action Bar (Hidden when printing) --}}
-    <div class="no-print mb-6 flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-white dark:bg-neutral-800 border border-gray-200/80 dark:border-neutral-700 shadow-xs">
-        <div class="flex items-center gap-3">
-            <a href="{{ route('admin.certificates.index') }}"
-               class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 transition-colors">
-                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Kembali ke Daftar
-            </a>
-            <div>
-                <h1 class="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    Pratinjau Sertifikat Level {{ $cefr }}
-                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold text-white shadow-2xs" style="background-color: {{ $template->theme_color ?? '#0D3B66' }}">
-                        {{ $cefr }}
-                    </span>
-                </h1>
-                <p class="text-xs text-gray-500 dark:text-neutral-400">
-                    Posisi Nama: Y = {{ $template->name_y_percent ?? 48 }}%, Ukuran Font = {{ $template->name_font_size ?? 36 }}px
-                </p>
+    <x-admin.card variant="white" padding="p-4 sm:p-5" class="no-print mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <x-admin.button href="{{ route('admin.certificates.index') }}" size="sm" color="outline-secondary">
+                    <svg class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Kembali
+                </x-admin.button>
+                <div>
+                    <h1 class="text-base font-extrabold text-primary dark:text-white flex items-center gap-2">
+                        Pratinjau Sertifikat Level {{ $cefr }}
+                        <x-admin.badge :cefr="$cefr" size="sm">
+                            {{ $cefr }}
+                        </x-admin.badge>
+                    </h1>
+                    <p class="text-xs text-slate-500 dark:text-neutral-400">
+                        Posisi Nama: Y = {{ $template->name_y_percent ?? 48 }}%, Ukuran Font = {{ $template->name_font_size ?? 36 }}px
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                @if ($template->background_url)
+                    <x-admin.button href="{{ route('admin.certificates.image', ['cefr' => $cefr]) }}" size="sm" color="outline-secondary" download="sertifikat-{{ strtolower($cefr) }}.jpg">
+                        <svg class="size-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Unduh Gambar
+                    </x-admin.button>
+                @endif
+
+                <x-admin.button href="{{ route('admin.certificates.edit', ['cefr' => $cefr]) }}" size="sm" color="outline-secondary">
+                    @include('_admin._layout.icons.pencil')
+                    Edit Penempatan
+                </x-admin.button>
+
+                <x-admin.button type="button" onclick="window.print()" size="sm" color="primary">
+                    <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Cetak / Simpan PDF
+                </x-admin.button>
             </div>
         </div>
-
-        <div class="flex items-center gap-2">
-            @if ($template->background_url)
-                <a href="{{ route('admin.certificates.image', ['cefr' => $cefr]) }}" download="sertifikat-{{ strtolower($cefr) }}.jpg"
-                   class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl border border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 transition-colors">
-                    <svg class="size-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                    Unduh Gambar
-                </a>
-            @endif
-
-            <a href="{{ route('admin.certificates.edit', ['cefr' => $cefr]) }}"
-               class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100 transition-colors">
-                @include('_admin._layout.icons.pencil')
-                Edit Penempatan
-            </a>
-
-            <button type="button" onclick="window.print()"
-                    class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#0D3B66] text-white hover:bg-[#082542] shadow-sm cursor-pointer transition-colors">
-                <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                Cetak / Simpan PDF
-            </button>
-        </div>
-    </div>
+    </x-admin.card>
 
     {{-- Certificate Visual Preview Stage --}}
     <div class="flex justify-center items-center py-4 sm:py-8 bg-gray-100/60 dark:bg-neutral-900/60 rounded-3xl border border-gray-200/80 dark:border-neutral-800 p-4 sm:p-8">

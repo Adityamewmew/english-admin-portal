@@ -6,12 +6,12 @@
     function handleSectionTypeChange(type) {
         document.querySelectorAll('.section-type-option').forEach(el => {
             if (el.dataset.type === type) {
-                el.classList.add('border-blue-500', 'bg-blue-50/50', 'dark:bg-blue-950/30');
-                el.classList.remove('border-gray-200', 'dark:border-neutral-700');
+                el.classList.add('border-primary', 'bg-surface', 'dark:bg-neutral-800');
+                el.classList.remove('border-slate-200', 'dark:border-neutral-700');
                 el.querySelector('input').checked = true;
             } else {
-                el.classList.remove('border-blue-500', 'bg-blue-50/50', 'dark:bg-blue-950/30');
-                el.classList.add('border-gray-200', 'dark:border-neutral-700');
+                el.classList.remove('border-primary', 'bg-surface', 'dark:bg-neutral-800');
+                el.classList.add('border-slate-200', 'dark:border-neutral-700');
             }
         });
 
@@ -323,11 +323,11 @@
     function switchSubModuleTab(tabId) {
         document.querySelectorAll('.submodule-tab-btn').forEach(btn => {
             if (btn.dataset.tab === tabId) {
-                btn.classList.add('bg-blue-600', 'text-white', 'shadow-xs');
-                btn.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50', 'dark:bg-neutral-800', 'dark:text-neutral-300');
+                btn.classList.add('btn-tactile-primary');
+                btn.classList.remove('btn-tactile-outline');
             } else {
-                btn.classList.remove('bg-blue-600', 'text-white', 'shadow-xs');
-                btn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-50', 'dark:bg-neutral-800', 'dark:text-neutral-300');
+                btn.classList.remove('btn-tactile-primary');
+                btn.classList.add('btn-tactile-outline');
             }
         });
 

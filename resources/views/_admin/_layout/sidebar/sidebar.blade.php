@@ -11,20 +11,20 @@
   fixed inset-y-0 start-0 z-60
   lg:block lg:translate-x-0 lg:end-auto lg:bottom-0
   dark:bg-neutral-800 dark:border-neutral-700
-  bg-white shadow-xl shadow-gray-300/20"
+  bg-white border-r border-slate-200 dark:border-neutral-700 shadow-xs"
     role="dialog" tabindex="-1" aria-label="Sidebar">
     <div class="relative flex flex-col h-full max-h-full">
-        <div class="px-2 pt-0 flex items-center bg-primary/3">
+        <div class="px-2 pt-0 flex items-center bg-surface/50 border-b border-slate-200 dark:border-neutral-700">
             <a class="flex-none rounded-xl text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80"
-                href="#" aria-label="Smart Project Starter Kit">
-                <img src="{{ asset('images/logo-light.png') }}" alt="Logo Smart Project Starter Kit" class="w-56 h-auto p-4">
+                href="#" aria-label="EDDY'S AI">
+                <img src="{{ asset('images/logo-light.png') }}" alt="Logo EDDY'S AI" class="w-56 h-auto p-4">
             </a>
         </div>
 
         <div
-            class="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 mt-4">
-            <nav class="hs-accordion-group p-4 w-full flex flex-col flex-wrap">
-                <ul class="flex flex-col space-y-1.5">
+            class="flex-1 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-slate-100 [&::-webkit-scrollbar-thumb]:bg-slate-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 mt-2">
+            <nav class="hs-accordion-group p-3 w-full flex flex-col flex-wrap">
+                <ul class="flex flex-col space-y-1">
                     @php
                         $user = Auth::user();
                         $dashboardRoute = match ($user->access_type) {
@@ -39,23 +39,23 @@
         </div>
 
         <div
-            class="p-4 border-t border-gray-200/80 dark:border-neutral-700/80 sticky bottom-0 z-10 bg-white/95 backdrop-blur-sm dark:bg-neutral-800/95">
+            class="p-3 border-t border-slate-200 dark:border-neutral-700 sticky bottom-0 z-10 bg-white/95 backdrop-blur-sm dark:bg-neutral-800/95">
             <div class="hs-dropdown relative inline-flex w-full [--placement:top-left]">
                 <button id="sidebar-bottom-dropdown" type="button"
-                    class="hs-dropdown-toggle w-full group flex items-center gap-x-3 py-2.5 px-3.5 text-start text-sm rounded-xl border border-gray-200/50 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 dark:border-neutral-700 dark:bg-neutral-800/50 dark:hover:bg-neutral-700 dark:hover:border-neutral-600"
+                    class="hs-dropdown-toggle w-full group flex items-center gap-x-3 py-2.5 px-3 text-start text-sm rounded-xl border border-slate-200 bg-surface hover:bg-slate-100/80 transition-all duration-150 card-tactile dark:border-neutral-700 dark:bg-neutral-800/50 dark:hover:bg-neutral-700"
                     aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
                     <div class="relative">
-                        <img class="shrink-0 size-10 rounded-full ring-2 ring-white shadow-sm"
-                            src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=random&length=2"
+                        <img class="shrink-0 size-9 rounded-xl ring-2 ring-white shadow-xs"
+                            src="https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=10375c&color=f3c623&bold=true&length=2"
                             alt="Avatar">
                         <span
-                            class="absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-white rounded-full dark:border-neutral-800"></span>
+                            class="absolute bottom-0 right-0 size-2.5 bg-emerald-500 border-2 border-white rounded-full dark:border-neutral-800"></span>
                     </div>
                     <div class="grow min-w-0">
-                        <p class="text-sm font-semibold text-gray-800 dark:text-neutral-200 truncate">
+                        <p class="text-xs font-heading font-extrabold text-primary dark:text-neutral-200 truncate">
                             {{ $user->name }}
                         </p>
-                        <p class="text-xs text-gray-500 dark:text-neutral-500">
+                        <p class="text-[10px] font-bold text-secondary uppercase tracking-wide">
                             {{ UserConst::getAccessTypes()[$user->access_type] ?? 'Unknown' }}
                         </p>
                     </div>

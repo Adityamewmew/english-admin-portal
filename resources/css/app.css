@@ -12,50 +12,176 @@
 @source '../../node_modules/preline/dist/*.js';
 
 @theme {
-    --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-heading: 'Plus Jakarta Sans', 'DM Sans', ui-sans-serif, system-ui, sans-serif;
 
-    /* Semantic Colors (Auto-adapt in dark mode via CSS variables below) */
-    --color-primary: var(--semantic-primary);
-    --color-secondary: var(--semantic-secondary);
-    --color-success: var(--semantic-success);
-    --color-danger: var(--semantic-danger);
-    --color-warning: var(--semantic-warning);
-    --color-info: var(--semantic-info);
+    /* EDDY'S AI Core Design Tokens (design.md) */
+    --color-primary: #10375C;
+    --color-primary-dark: #0A233A;
+    --color-primary-hover: #154573;
+    --color-on-primary: #FFFFFF;
 
-    /* Full primary scale mapped from Tailwind Blue */
-    --color-primary-50: var(--color-blue-50);
-    --color-primary-100: var(--color-blue-100);
-    --color-primary-200: var(--color-blue-200);
-    --color-primary-300: var(--color-blue-300);
-    --color-primary-400: var(--color-blue-400);
-    --color-primary-500: var(--color-blue-500);
-    --color-primary-600: var(--color-blue-600);
-    --color-primary-700: var(--color-blue-700);
-    --color-primary-800: var(--color-blue-800);
-    --color-primary-900: var(--color-blue-900);
-    --color-primary-950: var(--color-blue-950);
+    --color-secondary: #EB8317;
+    --color-secondary-dark: #B85F0A;
+    --color-secondary-hover: #F2922B;
+    --color-on-secondary: #FFFFFF;
+
+    --color-accent: #F3C623;
+    --color-accent-dark: #C99D0F;
+    --color-accent-hover: #F8D246;
+    --color-on-accent: #10375C;
+
+    --color-surface: #F4F6FF;
+    --color-surface-hover: #E8EDFB;
+    --color-surface-border: #DCE4F2;
+
+    --color-success: #059669;
+    --color-success-dark: #047857;
+    --color-danger: #DC2626;
+    --color-danger-dark: #991B1B;
+    --color-warning: #F59E0B;
+    --color-info: #0284C7;
+
+    /* Radius Tokens (design.md) */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-2xl: 28px;
 }
 
 @layer base {
-    :root {
-        /* Light mode semantic colors */
-        --semantic-primary: var(--color-blue-600);
-        --semantic-secondary: var(--color-slate-600);
-        --semantic-success: var(--color-emerald-600);
-        --semantic-danger: var(--color-red-600);
-        --semantic-warning: var(--color-amber-500);
-        --semantic-info: var(--color-cyan-600);
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-heading);
     }
 
-    .dark {
-        /* Dark mode semantic colors */
-        --semantic-primary: var(--color-blue-500);
-        --semantic-secondary: var(--color-slate-400);
-        --semantic-success: var(--color-emerald-500);
-        --semantic-danger: var(--color-red-500);
-        --semantic-warning: var(--color-amber-400);
-        --semantic-info: var(--color-cyan-500);
+    body {
+        font-family: var(--font-sans);
+        background-color: #F8FAFC;
+        color: #1E293B;
     }
+}
+
+/* Skeuomorphic Tactile Affordances (skeumorphism.md) */
+.btn-tactile {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-sans);
+    font-weight: 600;
+    transition: transform 0.08s ease, border-bottom-width 0.08s ease, filter 0.15s ease, background-color 0.15s ease;
+    user-select: none;
+}
+.btn-tactile:active:not(:disabled) {
+    transform: translateY(2px);
+}
+
+.btn-tactile-primary {
+    background-color: var(--color-primary);
+    color: var(--color-on-primary);
+    border: 1px solid #0D2D4B;
+    border-bottom: 4px solid var(--color-primary-dark);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.btn-tactile-primary:hover:not(:disabled) {
+    background-color: var(--color-primary-hover);
+}
+.btn-tactile-primary:active:not(:disabled) {
+    border-bottom-width: 2px;
+}
+
+.btn-tactile-secondary {
+    background-color: var(--color-secondary);
+    color: var(--color-on-secondary);
+    border: 1px solid #D4720F;
+    border-bottom: 4px solid var(--color-secondary-dark);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.btn-tactile-secondary:hover:not(:disabled) {
+    background-color: var(--color-secondary-hover);
+}
+.btn-tactile-secondary:active:not(:disabled) {
+    border-bottom-width: 2px;
+}
+
+.btn-tactile-accent {
+    background-color: var(--color-accent);
+    color: var(--color-on-accent);
+    font-weight: 700;
+    border: 1px solid #DFB215;
+    border-bottom: 4px solid var(--color-accent-dark);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+.btn-tactile-accent:hover:not(:disabled) {
+    background-color: var(--color-accent-hover);
+}
+.btn-tactile-accent:active:not(:disabled) {
+    border-bottom-width: 2px;
+}
+
+.btn-tactile-outline {
+    background-color: #FFFFFF;
+    color: var(--color-primary);
+    border: 1px solid #E2E8F0;
+    border-bottom: 3px solid #CBD5E1;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+.btn-tactile-outline:hover:not(:disabled) {
+    background-color: #F8FAFC;
+    border-color: #CBD5E1;
+    border-bottom-color: #94A3B8;
+}
+.btn-tactile-outline:active:not(:disabled) {
+    border-bottom-width: 1px;
+}
+
+.btn-tactile-danger {
+    background-color: var(--color-danger);
+    color: #FFFFFF;
+    border: 1px solid #B91C1C;
+    border-bottom: 4px solid var(--color-danger-dark);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.btn-tactile-danger:hover:not(:disabled) {
+    filter: brightness(1.05);
+}
+.btn-tactile-danger:active:not(:disabled) {
+    border-bottom-width: 2px;
+}
+
+.btn-tactile-success {
+    background-color: var(--color-success);
+    color: #FFFFFF;
+    border: 1px solid #047857;
+    border-bottom: 4px solid var(--color-success-dark);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.btn-tactile-success:hover:not(:disabled) {
+    filter: brightness(1.05);
+}
+.btn-tactile-success:active:not(:disabled) {
+    border-bottom-width: 2px;
+}
+
+/* Tactile Skeuomorphic Card Affordance */
+.card-tactile {
+    border: 1px solid #E2E8F0;
+    border-bottom: 4px solid #CBD5E1;
+    box-shadow: 0 1px 3px rgba(16, 55, 92, 0.04);
+}
+
+.card-tactile-surface {
+    background-color: var(--color-surface);
+    border: 1px solid #DCE4F2;
+    border-bottom: 4px solid #CAD6EC;
+}
+
+.card-tactile-achievement {
+    background-color: #FFFDF5;
+    border: 1px solid #FDE68A;
+    border-bottom: 4px solid var(--color-accent);
+    box-shadow: 0 4px 12px rgba(243, 198, 35, 0.12);
 }
 
 /* Form Input Styling for Tailwind CSS v4 */

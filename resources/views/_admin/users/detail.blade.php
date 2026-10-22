@@ -8,77 +8,73 @@
 
 @section('content')
     <div class="max-w-2xl">
-        <div class="bg-white overflow-hidden shadow-sm rounded-2xl dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700">
-            <div class="px-6 py-4 border-b border-gray-200 dark:border-neutral-700 flex items-center justify-between">
+        <x-admin.card variant="white" class="p-0 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-neutral-700/80 flex items-center justify-between bg-surface/50 dark:bg-neutral-800/50">
                 <div class="flex items-center gap-x-3">
                     <a href="{{ route('admin.users.index') }}"
-                        class="p-2 inline-flex items-center rounded-xl border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white">
-                        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        class="btn-tactile btn-tactile-outline !py-2 !px-2.5 !rounded-xl"
+                        title="Kembali ke Daftar Pengguna">
+                        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path d="m12 19-7-7 7-7" />
                             <path d="M19 12H5" />
                         </svg>
                     </a>
-                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">
-                        Detail Pengguna
-                    </h2>
+                    <div>
+                        <h2 class="font-heading font-extrabold text-lg text-primary dark:text-white tracking-tight">
+                            Detail Pengguna
+                        </h2>
+                        <p class="text-xs text-slate-500 dark:text-neutral-400">Informasi profil dan aktivitas pengguna</p>
+                    </div>
                 </div>
                 <div class="flex items-center gap-2">
                     @if ((int) $data->access_type === UserConst::STUDENT)
-                        <a navigate href="{{ route('admin.gradebook.detail', $data->id) }}"
-                            class="py-1.5 px-3 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 inline-flex items-center gap-x-1.5 shadow-2xs">
-                            <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2m-6 9 2 2 4-4" />
+                        <x-admin.button href="{{ route('admin.gradebook.detail', $data->id) }}" variant="accent" as="a" size="sm">
+                            <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2m-6 9 2 2 4-4" />
                             </svg>
-                            Rekap Nilai Siswa
-                        </a>
+                            Rekap Nilai
+                        </x-admin.button>
                     @endif
-                    <a navigate href="{{ route('admin.users.update', $data->id) }}"
-                        class="py-1.5 px-3 text-xs font-semibold rounded-lg bg-blue-600 text-white hover:bg-blue-700 inline-flex items-center gap-x-1.5">
+                    <x-admin.button href="{{ route('admin.users.update', $data->id) }}" variant="secondary" as="a" size="sm">
                         @include('_admin._layout.icons.pencil')
                         Edit Pengguna
-                    </a>
+                    </x-admin.button>
                 </div>
             </div>
 
             <div class="p-6">
-                <div class="flex items-center gap-x-4 mb-6 pb-6 border-b border-gray-100 dark:border-neutral-700/60">
-                    <div class="size-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-2xl font-bold flex items-center justify-center shadow-md shadow-blue-500/20">
+                <div class="flex items-center gap-x-4 mb-6 pb-6 border-b border-slate-100 dark:border-neutral-700/60">
+                    <div class="size-16 rounded-2xl bg-primary text-accent border-b-4 border-slate-900 font-heading font-extrabold text-2xl flex items-center justify-center shadow-sm">
                         {{ strtoupper(substr($data->name, 0, 1)) }}
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ $data->name }}</h3>
-                        <p class="text-sm text-gray-500 dark:text-neutral-400">{{ $data->email }}</p>
-                        <div class="mt-2 flex items-center gap-2">
+                        <h3 class="font-heading font-extrabold text-xl text-primary dark:text-white">{{ $data->name }}</h3>
+                        <p class="text-sm font-medium text-slate-500 dark:text-neutral-400">{{ $data->email }}</p>
+                        <div class="mt-2.5 flex items-center gap-2">
                             @if ((int) $data->access_type === UserConst::SUPERADMIN)
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300">
-                                    Administrator
-                                </span>
+                                <x-admin.badge type="role" value="admin" />
                             @else
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
-                                    Siswa (Student)
-                                </span>
+                                <x-admin.badge type="role" value="student" />
                             @endif
-                            <span class="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700">
-                                Level {{ $data->current_cefr ?? 'A1' }}
-                            </span>
+                            <x-admin.badge type="cefr" :value="$data->current_cefr ?? 'A1'" />
                         </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="p-4 rounded-xl bg-gray-50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-700">
-                        <span class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">User ID</span>
-                        <span class="block text-xs font-mono text-gray-800 dark:text-neutral-200 break-all">{{ $data->id }}</span>
+                    <div class="p-4 rounded-xl bg-surface border border-slate-200 dark:bg-neutral-900/50 dark:border-neutral-700">
+                        <span class="block text-[11px] font-bold text-slate-400 dark:text-neutral-400 uppercase tracking-wider mb-1">User ID</span>
+                        <span class="block text-xs font-mono font-bold text-primary dark:text-neutral-200 break-all select-all">{{ $data->id }}</span>
                     </div>
 
-                    <div class="p-4 rounded-xl bg-gray-50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-700">
-                        <span class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Tanggal Terdaftar</span>
-                        <span class="block text-sm font-semibold text-gray-800 dark:text-neutral-200">
+                    <div class="p-4 rounded-xl bg-surface border border-slate-200 dark:bg-neutral-900/50 dark:border-neutral-700">
+                        <span class="block text-[11px] font-bold text-slate-400 dark:text-neutral-400 uppercase tracking-wider mb-1">Tanggal Terdaftar</span>
+                        <span class="block text-sm font-bold text-primary dark:text-neutral-200">
                             {{ \Carbon\Carbon::parse($data->created_at)->translatedFormat('d F Y, H:i') }}
                         </span>
                     </div>
                 </div>
             </div>
-        </div>
+        </x-admin.card>
     </div>
 @endsection

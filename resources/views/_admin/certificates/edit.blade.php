@@ -4,7 +4,7 @@
 
 @section('content')
     <x-admin.page-header :title="'Edit Template Sertifikat CEFR ' . $cefr" subtitle="Sesuaikan judul, deskripsi pencapaian, dan unggah background kustom untuk kategori ini.">
-        <x-admin.button href="{{ route('admin.certificates.index') }}" size="sm" color="white">
+        <x-admin.button href="{{ route('admin.certificates.index') }}" size="sm" color="outline-secondary">
             <svg class="size-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
@@ -13,7 +13,7 @@
     </x-admin.page-header>
 
     @if ($errors->any())
-        <div class="mb-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-sm">
+        <div class="mb-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 border-b-2 border-b-rose-300 text-rose-800 dark:text-rose-200 text-sm shadow-2xs">
             <p class="font-bold mb-1">Terdapat kesalahan input:</p>
             <ul class="list-disc list-inside space-y-0.5">
                 @foreach ($errors->all() as $err)
@@ -27,15 +27,15 @@
         <form action="{{ route('admin.certificates.update', ['cefr' => $cefr]) }}" method="POST" enctype="multipart/form-data">
             @csrf
 
-            <x-admin.card fit="true" class="space-y-6 p-6">
+            <x-admin.card variant="white" padding="p-6 sm:p-8" class="space-y-6">
                 {{-- CEFR Level Indicator --}}
-                <div class="flex items-center gap-3 p-4 rounded-xl bg-gray-50 dark:bg-neutral-800/60 border border-gray-200/80 dark:border-neutral-700">
-                    <span class="size-12 rounded-xl flex items-center justify-center font-black text-white text-base shadow-sm" style="background-color: {{ $template->theme_color ?? '#0D3B66' }}">
+                <div class="flex items-center gap-3 p-4 rounded-xl bg-surface border border-slate-200 border-b-2 border-b-slate-300 dark:bg-neutral-800/60 dark:border-neutral-700">
+                    <x-admin.badge :cefr="$cefr" size="lg">
                         {{ $cefr }}
-                    </span>
+                    </x-admin.badge>
                     <div>
-                        <h4 class="font-bold text-gray-900 dark:text-white">Kategori Tingkat CEFR: {{ $cefr }}</h4>
-                        <p class="text-xs text-gray-500 dark:text-neutral-400">Template ini akan otomatis disematkan pada sertifikat siswa yang menuntaskan seluruh sub-level {{ $cefr }}.</p>
+                        <h4 class="font-extrabold text-primary dark:text-white">Kategori Tingkat CEFR: {{ $cefr }}</h4>
+                        <p class="text-xs text-slate-500 dark:text-neutral-400">Template ini akan otomatis disematkan pada sertifikat siswa yang menuntaskan seluruh sub-level {{ $cefr }}.</p>
                     </div>
                 </div>
 
@@ -199,8 +199,8 @@
                 </div>
 
                 {{-- Action Buttons --}}
-                <div class="pt-4 border-t border-gray-100 dark:border-neutral-800 flex items-center justify-end gap-3">
-                    <x-admin.button href="{{ route('admin.certificates.index') }}" color="white" size="sm">
+                <div class="pt-4 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-end gap-3">
+                    <x-admin.button href="{{ route('admin.certificates.index') }}" color="outline-secondary" size="sm">
                         Batal
                     </x-admin.button>
                     <x-admin.button type="submit" color="primary" size="sm">

@@ -11,17 +11,18 @@
     </x-admin.page-header>
 
     {{-- Filters --}}
-    <div class="mb-6 space-y-3">
+    <x-admin.card variant="white" padding="p-4 sm:p-5" class="mb-6 space-y-3.5">
         {{-- CEFR Pills --}}
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-xs font-bold text-slate-500 mr-1">Level:</span>
             <a navigate href="{{ route('admin.questions.index', ['cefr' => 'all', 'skill' => $skill, 'keywords' => $keywords]) }}"
-                class="px-3 py-1 rounded-full text-xs font-semibold {{ $cefr === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300' }}">
+                class="px-2.5 py-1 rounded-xl text-xs font-bold transition-all {{ $cefr === 'all' ? 'bg-primary text-white border-b-2 border-primary-dark shadow-xs' : 'bg-surface text-slate-700 hover:bg-slate-200 border border-slate-200' }}">
                 Semua Level
             </a>
             @foreach (['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as $lvl)
                 <a navigate href="{{ route('admin.questions.index', ['cefr' => $lvl, 'skill' => $skill, 'keywords' => $keywords]) }}"
-                    class="px-3 py-1 rounded-full text-xs font-semibold {{ $cefr === $lvl ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300' }}">
-                    Level {{ $lvl }}
+                    class="px-2.5 py-1 rounded-xl text-xs font-bold transition-all {{ $cefr === $lvl ? 'bg-primary text-white border-b-2 border-primary-dark shadow-xs' : 'bg-surface text-slate-700 hover:bg-slate-200 border border-slate-200' }}">
+                    {{ $lvl }}
                 </a>
             @endforeach
         </div>
@@ -30,7 +31,7 @@
         <form action="{{ route('admin.questions.index') }}" method="GET" navigate-form class="flex flex-col sm:flex-row items-center gap-3">
             <input type="hidden" name="cefr" value="{{ $cefr }}">
             <div class="w-full sm:w-44">
-                <select name="skill" class="py-2 px-3 block w-full border border-gray-200 rounded-lg text-xs dark:bg-neutral-900 dark:border-neutral-700 dark:text-white">
+                <select name="skill" class="py-2 px-3 block w-full bg-white border border-slate-300 rounded-[10px] text-xs text-slate-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white">
                     <option value="all" {{ $skill === 'all' ? 'selected' : '' }}>Semua Skill</option>
                     <option value="grammar" {{ $skill === 'grammar' ? 'selected' : '' }}>Grammar</option>
                     <option value="vocabulary" {{ $skill === 'vocabulary' ? 'selected' : '' }}>Vocabulary</option>
@@ -41,18 +42,20 @@
             <div class="w-full sm:w-72">
                 <x-admin.input name="keywords" :value="$keywords ?? ''" placeholder="Cari pertanyaan, jawaban, ID..." size="sm" />
             </div>
-            <x-admin.button type="submit" size="sm" color="primary">
-                @include('_admin._layout.icons.search')
-                Cari
-            </x-admin.button>
-            @if (!empty($keywords) || $cefr !== 'all' || $skill !== 'all')
-                <x-admin.button href="{{ route('admin.questions.index') }}" size="sm" color="outline-secondary">
-                    @include('_admin._layout.icons.reset')
-                    Reset
+            <div class="flex items-center gap-2">
+                <x-admin.button type="submit" size="sm" color="primary">
+                    @include('_admin._layout.icons.search')
+                    Cari
                 </x-admin.button>
-            @endif
+                @if (!empty($keywords) || $cefr !== 'all' || $skill !== 'all')
+                    <x-admin.button href="{{ route('admin.questions.index') }}" size="sm" color="outline-secondary">
+                        @include('_admin._layout.icons.reset')
+                        Reset
+                    </x-admin.button>
+                @endif
+            </div>
         </form>
-    </div>
+    </x-admin.card>
 
     <x-admin.table.wrapper>
         <x-admin.table>
@@ -70,55 +73,49 @@
                     <x-admin.table.tr>
                         <x-admin.table.td>
                             <div class="space-y-1 max-w-lg">
-                                <span class="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.5 rounded">
+                                <span class="font-mono text-xs font-bold text-primary bg-surface px-1.5 py-0.5 rounded border border-slate-200">
                                     {{ $q->id }}
                                 </span>
-                                <p class="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
+                                <p class="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white line-clamp-2">
                                     {{ $q->question }}
                                 </p>
                             </div>
                         </x-admin.table.td>
                         <x-admin.table.td>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold capitalize bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                            <x-admin.badge variant="secondary" size="sm" class="capitalize">
                                 {{ $q->skill }}
-                            </span>
+                            </x-admin.badge>
                         </x-admin.table.td>
                         <x-admin.table.td>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold bg-neutral-100 text-neutral-800 dark:bg-neutral-800 dark:text-neutral-200 border border-neutral-200 dark:border-neutral-700">
+                            <x-admin.badge :cefr="$q->cefr" size="sm">
                                 {{ $q->cefr }}
-                            </span>
+                            </x-admin.badge>
                         </x-admin.table.td>
                         <x-admin.table.td>
-                            <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-1 rounded border border-emerald-200 dark:border-emerald-800/50">
+                            <x-admin.badge variant="success" size="sm" class="font-mono">
                                 {{ $q->answer }}
-                            </span>
+                            </x-admin.badge>
                         </x-admin.table.td>
-                        <x-admin.table.td innerClass="px-6 py-2 flex items-center justify-end gap-x-2">
-                            <a navigate href="{{ route('admin.questions.detail', $q->id) }}"
-                                class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400" title="Detail">
+                        <x-admin.table.td innerClass="px-5 py-2 flex items-center justify-end gap-x-1.5">
+                            <x-admin.button href="{{ route('admin.questions.detail', $q->id) }}" size="sm" color="outline-secondary" title="Detail">
                                 @include('_admin._layout.icons.view_detail')
-                                Detail
-                            </a>
-                            <a navigate href="{{ route('admin.questions.update', $q->id) }}"
-                                class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400" title="Edit">
+                            </x-admin.button>
+                            <x-admin.button href="{{ route('admin.questions.update', $q->id) }}" size="sm" color="outline-secondary" title="Edit">
                                 @include('_admin._layout.icons.pencil')
-                                Edit
-                            </a>
+                            </x-admin.button>
                             <form action="{{ route('admin.questions.delete', $q->id) }}" method="POST" class="inline" onsubmit="return confirm('Hapus butir soal ini?')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit"
-                                    class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 cursor-pointer" title="Delete">
+                                <x-admin.button type="submit" size="sm" color="outline-danger" title="Hapus">
                                     @include('_admin._layout.icons.trash')
-                                    Hapus
-                                </button>
+                                </x-admin.button>
                             </form>
                         </x-admin.table.td>
                     </x-admin.table.tr>
                 @empty
                     <x-admin.table.tr>
                         <x-admin.table.td colspan="5" class="text-center py-8">
-                            <x-admin.empty-state text="Tidak ada butir soal ditemukan" />
+                            <x-admin.empty-state message="Tidak ada butir soal ditemukan." />
                         </x-admin.table.td>
                     </x-admin.table.tr>
                 @endforelse

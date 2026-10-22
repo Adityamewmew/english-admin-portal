@@ -10,10 +10,10 @@
     {{-- Favicon --}}
     @include('_admin._layout.favicon')
 
-    <!-- Fonts -->
+    <!-- Fonts: Plus Jakarta Sans (Headings) & DM Sans (Body/Labels) per design.md -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:ital,wght@0,100..900;1,100..900&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=Plus+Jakarta+Sans:ital,wght@0,500..800;1,500..800&display=swap"
         rel="stylesheet">
 
     <!-- Styles / Scripts -->
@@ -27,12 +27,12 @@
 <body>
     <!-- ========== HEADER ========== -->
     <header
-        class="inset-x-0 flex flex-wrap md:justify-start md:flex-nowrap z-[48] w-full bg-white border-b border-gray-200 text-sm py-1 lg:py-0 xl:py-0 lg:ps-65 dark:bg-neutral-800 dark:border-neutral-700 fixed top-0 left-0 right-0 shadow-lg">
+        class="inset-x-0 flex flex-wrap md:justify-start md:flex-nowrap z-[48] w-full bg-white border-b border-slate-200 text-sm py-1 lg:py-0 xl:py-0 lg:ps-65 dark:bg-neutral-800 dark:border-neutral-700 fixed top-0 left-0 right-0 shadow-xs">
         <nav class="px-4 sm:px-2 flex basis-full items-center w-full mx-auto">
             <div class="me-1 lg:me-0 lg:hidden flex items-center">
                 <!-- Navigation Toggle -->
                 <button type="button"
-                    class="me-0 size-8 px-3 flex justify-center items-center gap-x-2 border border-gray-200 text-gray-800 hover:text-gray-500 rounded-lg focus:outline-hidden focus:text-gray-500 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-neutral-200 dark:hover:text-neutral-500 dark:focus:text-neutral-500 shadow-lg"
+                    class="me-0 size-8 px-3 flex justify-center items-center gap-x-2 border border-slate-200 text-[#10375C] hover:bg-slate-100 rounded-lg focus:outline-hidden disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-neutral-200"
                     aria-haspopup="dialog" aria-expanded="false" aria-controls="hs-application-sidebar"
                     aria-label="Toggle navigation" data-hs-overlay="#hs-application-sidebar">
                     <span class="sr-only">Toggle Navigation</span>
@@ -47,16 +47,13 @@
                 <!-- End Navigation Toggle -->
                 <!-- Logo -->
                 <a class="flex-none rounded-md text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80"
-                    href="#" aria-label="Preline">
+                    href="#" aria-label="Logo">
                     <img src="{{ asset('images/logo-light.png') }}" alt="Logo Smart Project Starter Kit" class="w-40 h-auto p-4">
                 </a>
                 <!-- End Logo -->
-
             </div>
 
             <div class="w-full flex items-center justify-end ms-auto gap-x-1 md:gap-x-3">
-
-
             </div>
         </nav>
     </header>
@@ -66,8 +63,8 @@
     @include('_admin._layout.sidebar.sidebar')
 
     <!-- Content -->
-    <div class="w-full lg:ps-64 bg-gray-50 dark:bg-neutral-900 min-h-screen">
-        <div id="main-content" class="space-y-6 px-6 py-8 sm:px-8 sm:py-10 max-w-screen-2xl mx-auto w-full">
+    <div class="w-full lg:ps-64 bg-[#F8FAFC] dark:bg-neutral-900 min-h-screen">
+        <div id="main-content" class="space-y-6 px-4 py-6 sm:px-8 sm:py-8 max-w-screen-2xl mx-auto w-full">
             @if (session('success'))
                 <div id="spa-flash-success" style="display: none;">{{ session('success') }}</div>
             @endif
