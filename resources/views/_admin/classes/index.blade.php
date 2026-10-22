@@ -64,7 +64,7 @@
                     <tr>
                         <x-admin.table.th>Level CEFR</x-admin.table.th>
                         <x-admin.table.th>Nama Kelas & Ringkasan</x-admin.table.th>
-                        <x-admin.table.th>Tarif Akses (IDR)</x-admin.table.th>
+                        <x-admin.table.th>Tarif Tier (Basic / Pro / Ultra)</x-admin.table.th>
                         <x-admin.table.th class="text-center">Fasilitas</x-admin.table.th>
                         <x-admin.table.th class="text-center">Status</x-admin.table.th>
                         <x-admin.table.th class="text-center">Siswa Aktif</x-admin.table.th>
@@ -83,6 +83,10 @@
                                 'C2' => '#C239B3',
                             ];
                             $cefrColor = $colors[$c->cefr] ?? '#0D3B66';
+                            $tp = is_array($c->tier_plans) ? $c->tier_plans : [];
+                            $bPrice = $tp['basic']['price'] ?? (int) ($c->price * 0.65);
+                            $pPrice = $tp['pro']['price'] ?? $c->price;
+                            $uPrice = $tp['ultra']['price'] ?? (int) ($c->price * 1.65);
                         @endphp
                         <x-admin.table.tr>
                             {{-- CEFR Badge --}}
@@ -94,7 +98,7 @@
 
                             {{-- Name & Description --}}
                             <x-admin.table.td>
-                                <div class="max-w-md">
+                                <div class="max-w-xs sm:max-w-sm">
                                     <p class="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">
                                         {{ $c->name }}
                                     </p>
@@ -104,17 +108,24 @@
                                 </div>
                             </x-admin.table.td>
 
-                            {{-- Price & Original Price --}}
+                            {{-- 3 Tier Pricing (Basic / Pro / Ultra) --}}
                             <x-admin.table.td>
-                                <div>
-                                    <p class="font-bold text-gray-900 dark:text-white text-xs sm:text-sm font-mono">
-                                        Rp {{ number_format($c->price, 0, ',', '.') }}
-                                    </p>
-                                    @if ($c->original_price && $c->original_price > $c->price)
-                                        <p class="text-[11px] text-gray-400 dark:text-neutral-500 line-through font-mono">
-                                            Rp {{ number_format($c->original_price, 0, ',', '.') }}
-                                        </p>
-                                    @endif
+                                <div class="space-y-1 font-mono text-xs">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="px-1.5 py-0.2 rounded text-[10px] bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 font-bold">Basic</span>
+                                        <span class="font-bold text-gray-800 dark:text-neutral-200">Rp {{ number_format($bPrice, 0, ',', '.') }}</span>
+                                        <span class="text-[10px] text-gray-400 font-sans">(20c/5m)</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="px-1.5 py-0.2 rounded text-[10px] bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-bold">Pro</span>
+                                        <span class="font-bold text-indigo-900 dark:text-indigo-200">Rp {{ number_format($pPrice, 0, ',', '.') }}</span>
+                                        <span class="text-[10px] text-gray-400 font-sans">(100c/30m)</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="px-1.5 py-0.2 rounded text-[10px] bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 font-bold">Ultra</span>
+                                        <span class="font-bold text-amber-900 dark:text-amber-200">Rp {{ number_format($uPrice, 0, ',', '.') }}</span>
+                                        <span class="text-[10px] text-gray-400 font-sans">(∞/120m)</span>
+                                    </div>
                                 </div>
                             </x-admin.table.td>
 
@@ -216,6 +227,7 @@
                             <x-admin.table.th>Nama Siswa</x-admin.table.th>
                             <x-admin.table.th>Email Siswa</x-admin.table.th>
                             <x-admin.table.th class="text-center">Kelas Dibeli</x-admin.table.th>
+                            <x-admin.table.th class="text-center">Tier Paket</x-admin.table.th>
                             <x-admin.table.th class="text-center">Asal Akses</x-admin.table.th>
                             <x-admin.table.th class="text-center">Tanggal Mulai</x-admin.table.th>
                             <x-admin.table.th class="text-center">Status</x-admin.table.th>
@@ -235,6 +247,22 @@
                                     <span class="inline-block px-2.5 py-0.5 rounded font-black text-[11px] bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
                                         CEFR {{ $item->cefr }}
                                     </span>
+                                </x-admin.table.td>
+                                <x-admin.table.td class="text-center">
+                                    @php $t = strtolower($item->tier ?? 'basic'); @endphp
+                                    @if ($t === 'ultra')
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200">
+                                            ★ Ultra
+                                        </span>
+                                    @elseif ($t === 'pro')
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200">
+                                            Pro
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-neutral-800 dark:text-neutral-300 border border-slate-200">
+                                            Basic
+                                        </span>
+                                    @endif
                                 </x-admin.table.td>
                                 <x-admin.table.td class="text-center">
                                     <span class="text-xs font-medium text-gray-600 dark:text-neutral-300 capitalize">
@@ -263,7 +291,7 @@
                             </x-admin.table.tr>
                         @empty
                             <x-admin.table.tr>
-                                <x-admin.table.td colspan="7" class="text-center py-10">
+                                <x-admin.table.td colspan="8" class="text-center py-10">
                                     <x-admin.empty-state message="Belum ada data akses kelas siswa." />
                                 </x-admin.table.td>
                             </x-admin.table.tr>
@@ -311,6 +339,29 @@
                                 <span class="text-xs font-bold text-gray-800 dark:text-neutral-200">{{ $level }}</span>
                             </label>
                         @endforeach
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-gray-700 dark:text-neutral-300">
+                        Pilih Tier Paket AI <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="flex flex-col p-2.5 rounded-xl border border-gray-200 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-pointer text-center">
+                            <input type="radio" name="tier" value="basic" checked class="text-primary focus:ring-primary mx-auto mb-1">
+                            <span class="text-xs font-bold text-gray-800 dark:text-neutral-200">Basic</span>
+                            <span class="text-[10px] text-gray-400">20c / 5m</span>
+                        </label>
+                        <label class="flex flex-col p-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-950/20 hover:bg-indigo-50 cursor-pointer text-center">
+                            <input type="radio" name="tier" value="pro" class="text-indigo-600 focus:ring-indigo-600 mx-auto mb-1">
+                            <span class="text-xs font-bold text-indigo-900 dark:text-indigo-200">Pro</span>
+                            <span class="text-[10px] text-indigo-600">100c / 30m</span>
+                        </label>
+                        <label class="flex flex-col p-2.5 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50/30 dark:bg-amber-950/20 hover:bg-amber-50 cursor-pointer text-center">
+                            <input type="radio" name="tier" value="ultra" class="text-amber-600 focus:ring-amber-600 mx-auto mb-1">
+                            <span class="text-xs font-bold text-amber-900 dark:text-amber-200">Ultra</span>
+                            <span class="text-[10px] text-amber-600">∞ / 120m</span>
+                        </label>
                     </div>
                 </div>
             </div>

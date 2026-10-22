@@ -36,6 +36,9 @@ class CourseClassUsecase extends Usecase
                 if (is_string($c->features)) {
                     $c->features = json_decode($c->features, true) ?: [];
                 }
+                if (is_string($c->tier_plans)) {
+                    $c->tier_plans = json_decode($c->tier_plans, true) ?: [];
+                }
                 return $c;
             });
 
@@ -64,6 +67,9 @@ class CourseClassUsecase extends Usecase
 
             if (is_string($class->features)) {
                 $class->features = json_decode($class->features, true) ?: [];
+            }
+            if (is_string($class->tier_plans)) {
+                $class->tier_plans = json_decode($class->tier_plans, true) ?: [];
             }
 
             return Response::buildSuccess([
@@ -114,6 +120,10 @@ class CourseClassUsecase extends Usecase
                 'updated_at' => now(),
             ];
 
+            if (isset($data['tier_plans'])) {
+                $insertData['tier_plans'] = $this->formatTierPlans($cefr, $data['tier_plans']);
+            }
+
             DB::table(DatabaseConst::COURSE_CLASSES())->insert($insertData);
 
             return Response::buildSuccessCreated(null, "Paket kelas CEFR {$cefr} berhasil ditambahkan.");
@@ -129,6 +139,7 @@ class CourseClassUsecase extends Usecase
     public function updateClass(string $cefr, array $data): array
     {
         try {
+            $cefr = strtoupper($cefr);
             $updateData = [
                 'name' => $data['name'] ?? '',
                 'description' => $data['description'] ?? null,
@@ -145,8 +156,20 @@ class CourseClassUsecase extends Usecase
                 $updateData['features'] = json_encode(array_values($features));
             }
 
+            if (isset($data['tier_plans'])) {
+                $tierPlansJson = $this->formatTierPlans($cefr, $data['tier_plans']);
+                $updateData['tier_plans'] = $tierPlansJson;
+
+                // Sync base price with pro tier
+                $plansArray = json_decode($tierPlansJson, true);
+                if (isset($plansArray['pro']['price'])) {
+                    $updateData['price'] = (int) $plansArray['pro']['price'];
+                    $updateData['original_price'] = !empty($plansArray['pro']['originalPrice']) ? (int) $plansArray['pro']['originalPrice'] : null;
+                }
+            }
+
             DB::table(DatabaseConst::COURSE_CLASSES())
-                ->where('cefr', strtoupper($cefr))
+                ->where('cefr', $cefr)
                 ->update($updateData);
 
             return Response::buildSuccess(null, ResponseConst::HTTP_SUCCESS, "Paket kelas CEFR {$cefr} berhasil diperbarui.");
@@ -154,6 +177,38 @@ class CourseClassUsecase extends Usecase
             Log::error('CourseClassUsecase::updateClass Error: ' . $e->getMessage());
             return Response::buildErrorService($e->getMessage());
         }
+    }
+
+    /**
+     * Helper to format tier plans array into clean JSON
+     */
+    protected function formatTierPlans(string $cefr, array $input): string
+    {
+        $tiers = ['basic', 'pro', 'ultra'];
+        $defaults = [
+            'basic' => ['chat' => 20, 'voice' => 5, 'name' => "Paket Basic ({$cefr})"],
+            'pro' => ['chat' => 100, 'voice' => 30, 'name' => "Paket Pro ({$cefr})"],
+            'ultra' => ['chat' => -1, 'voice' => 120, 'name' => "Paket Ultra ({$cefr})"],
+        ];
+
+        $result = [];
+        foreach ($tiers as $t) {
+            $tData = $input[$t] ?? [];
+            $features = is_array($tData['features'] ?? null)
+                ? $tData['features']
+                : array_filter(array_map('trim', explode("\n", (string) ($tData['features'] ?? ''))));
+
+            $result[$t] = [
+                'name' => $tData['name'] ?? $defaults[$t]['name'],
+                'price' => (int) ($tData['price'] ?? 0),
+                'originalPrice' => !empty($tData['original_price']) ? (int) $tData['original_price'] : null,
+                'dailyChatLimit' => isset($tData['daily_chat_limit']) ? (int) $tData['daily_chat_limit'] : $defaults[$t]['chat'],
+                'dailyVoiceMinutes' => (int) ($tData['daily_voice_minutes'] ?? $defaults[$t]['voice']),
+                'features' => array_values($features),
+            ];
+        }
+
+        return json_encode($result);
     }
 
     /**
@@ -185,6 +240,7 @@ class CourseClassUsecase extends Usecase
                     'uca.id',
                     'uca.user_id',
                     'uca.cefr',
+                    'uca.tier',
                     'uca.granted_by',
                     'uca.status',
                     'uca.created_at',
@@ -225,12 +281,17 @@ class CourseClassUsecase extends Usecase
     }
 
     /**
-     * Grant manual class access to a student
+     * Grant manual class access to a student with specific tier
      */
-    public function grantManualAccess(string $userId, string $cefr): array
+    public function grantManualAccess(string $userId, string $cefr, string $tier = 'basic'): array
     {
         try {
             $cefr = strtoupper(trim($cefr));
+            $tier = strtolower(trim($tier));
+            if (!in_array($tier, ['basic', 'pro', 'ultra'])) {
+                $tier = 'basic';
+            }
+
             $user = DB::table(DatabaseConst::USER())->where('id', $userId)->first();
             if (!$user) {
                 return Response::buildErrorNotFound('Siswa tidak ditemukan.');
@@ -240,6 +301,7 @@ class CourseClassUsecase extends Usecase
                 ['user_id' => $userId, 'cefr' => $cefr],
                 [
                     'id' => (string) Str::uuid(),
+                    'tier' => $tier,
                     'granted_by' => 'admin',
                     'status' => 'active',
                     'updated_at' => now(),
@@ -247,7 +309,7 @@ class CourseClassUsecase extends Usecase
                 ]
             );
 
-            return Response::buildSuccess(null, ResponseConst::HTTP_SUCCESS, "Akses kelas CEFR {$cefr} berhasil diberikan kepada {$user->name}.");
+            return Response::buildSuccess(null, ResponseConst::HTTP_SUCCESS, "Akses kelas CEFR {$cefr} ({$tier}) berhasil diberikan kepada {$user->name}.");
         } catch (Exception $e) {
             Log::error('CourseClassUsecase::grantManualAccess Error: ' . $e->getMessage());
             return Response::buildErrorService($e->getMessage());

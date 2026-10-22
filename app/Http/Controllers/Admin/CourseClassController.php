@@ -126,12 +126,16 @@ class CourseClassController extends Controller
 
         $data = [
             'name' => $request->input('name'),
-            'price' => (int) $request->input('price'),
+            'price' => (int) $request->input('price', 0),
             'original_price' => $request->filled('original_price') ? (int) $request->input('original_price') : null,
             'description' => $request->input('description'),
             'features' => $request->input('features'),
             'is_active' => $request->boolean('is_active', true),
         ];
+
+        if ($request->has('tier_plans')) {
+            $data['tier_plans'] = $request->input('tier_plans');
+        }
 
         $res = $this->usecase->updateClass($cefr, $data);
 
@@ -163,6 +167,7 @@ class CourseClassController extends Controller
         $request->validate([
             'user_id' => 'required|string',
             'cefr' => 'required|string|in:A1,A2,B1,B2,C1,C2',
+            'tier' => 'nullable|string|in:basic,pro,ultra',
         ], [
             'user_id.required' => 'Pilih siswa penerima akses.',
             'cefr.required' => 'Pilih level kelas yang dibuka.',
@@ -170,7 +175,8 @@ class CourseClassController extends Controller
 
         $res = $this->usecase->grantManualAccess(
             $request->input('user_id'),
-            $request->input('cefr')
+            $request->input('cefr'),
+            $request->input('tier', 'basic')
         );
 
         if (!$res['success']) {
