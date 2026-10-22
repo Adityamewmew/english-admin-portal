@@ -58,23 +58,26 @@ class CertificateController extends Controller
     {
         $request->validate([
             'cefr' => 'required|string|in:A1,A2,B1,B2,C1,C2',
-            'title' => 'required|string|max:255',
+            'title' => 'nullable|string|max:255',
             'description' => 'nullable|string',
             'instructor_name' => 'nullable|string|max:150',
             'instructor_title' => 'nullable|string|max:150',
             'theme_color' => 'nullable|string|max:50',
-            'background_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'background_file' => 'required|image|mimes:jpeg,png,jpg,webp|max:8192',
+        ], [
+            'background_file.required' => 'File gambar desain sertifikat (JPG, PNG, WEBP) wajib diunggah.',
+            'cefr.required' => 'Pilih kategori level CEFR.',
         ]);
 
         $cefr = strtoupper($request->input('cefr'));
-        $data = $request->only([
-            'cefr',
-            'title',
-            'description',
-            'instructor_name',
-            'instructor_title',
-            'theme_color',
-        ]);
+        $data = [
+            'cefr' => $cefr,
+            'title' => $request->input('title') ?: "Certificate of CEFR {$cefr} English Proficiency",
+            'description' => $request->input('description') ?: "Has demonstrated comprehensive competence and communicative proficiency in CEFR {$cefr}.",
+            'instructor_name' => $request->input('instructor_name') ?: 'Mr. Khoirul, M.Pd.',
+            'instructor_title' => $request->input('instructor_title') ?: 'Head of English Academic Affairs',
+            'theme_color' => $request->input('theme_color') ?: '#0D3B66',
+        ];
 
         if ($request->hasFile('background_file')) {
             $file = $request->file('background_file');
@@ -126,7 +129,7 @@ class CertificateController extends Controller
             'instructor_name' => 'nullable|string|max:150',
             'instructor_title' => 'nullable|string|max:150',
             'theme_color' => 'nullable|string|max:50',
-            'background_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'background_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:8192',
         ]);
 
         $data = $request->only([

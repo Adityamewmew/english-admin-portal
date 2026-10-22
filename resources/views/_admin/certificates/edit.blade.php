@@ -90,22 +90,49 @@
 
                 {{-- Background / Latar Belakang Sertifikat --}}
                 <div class="space-y-2 pt-2 border-t border-gray-100 dark:border-neutral-800">
-                    <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
-                        Unggah Gambar Latar Belakang (Background Template)
-                    </label>
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
+                            Unggah Gambar Desain Sertifikat Baru (JPG, PNG)
+                        </label>
+                        <span class="text-[11px] font-semibold text-primary dark:text-primary-400 bg-primary/10 px-2 py-0.5 rounded">
+                            Rasio A4 Landscape (1.414 : 1)
+                        </span>
+                    </div>
                     <p class="text-xs text-gray-500 dark:text-neutral-400">
-                        Format landscape (rasio A4: 1.414 : 1, resolusi rekomendasi minimal 1754 x 1240 px). Format: JPG, PNG, WEBP (maksimal 5 MB).
+                        Unggah gambar desain sertifikat baru (JPG, PNG, WEBP hingga 8MB). Kosongkan jika tidak ingin mengganti gambar yang sudah ada.
                     </p>
 
-                    @if ($template->background_url)
-                        <div class="mb-3 p-3 rounded-xl border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800/40 max-w-md">
-                            <p class="text-xs font-semibold text-gray-700 dark:text-neutral-300 mb-1.5">Background Saat Ini:</p>
-                            <img src="{{ $template->background_url }}" alt="Background {{ $cefr }}" class="w-full h-auto rounded-lg border border-gray-200 dark:border-neutral-700 shadow-xs">
+                    {{-- Image Preview Area --}}
+                    <div id="preview-container" class="{{ $template->background_url ? '' : 'hidden' }} max-w-lg mx-auto my-3">
+                        <p class="text-xs font-semibold text-gray-600 dark:text-neutral-300 mb-1.5">Preview Desain Sertifikat:</p>
+                        <div class="relative aspect-[1.414/1] rounded-lg overflow-hidden border-2 border-primary shadow-md bg-white">
+                            <img id="image-preview" src="{{ $template->background_url ?? '#' }}" alt="Preview Sertifikat" class="w-full h-full object-contain">
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <div class="bg-black/60 backdrop-blur-xs px-4 py-1.5 rounded-full text-white text-xs font-serif font-bold tracking-wider border border-white/30">
+                                    [ Area Nama Siswa Akan Muncul di Sini ]
+                                </div>
+                            </div>
                         </div>
-                    @endif
+                    </div>
 
-                    <input type="file" name="background_file" accept="image/png,image/jpeg,image/webp"
-                           class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-600 cursor-pointer">
+                    {{-- Upload Dropzone Box --}}
+                    <div class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-neutral-700 border-dashed rounded-xl hover:border-primary transition-colors bg-gray-50/50 dark:bg-neutral-800/30">
+                        <div class="space-y-2 text-center w-full">
+                            <div class="flex flex-col items-center">
+                                <svg class="size-10 text-gray-400 dark:text-neutral-500 mb-2" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <div class="flex text-xs text-gray-600 dark:text-neutral-400">
+                                    <label for="file-upload-edit" class="relative cursor-pointer font-bold text-primary hover:text-primary-600 focus-within:outline-hidden">
+                                        <span>Pilih file gambar baru</span>
+                                        <input id="file-upload-edit" name="background_file" type="file" accept="image/png,image/jpeg,image/jpg,image/webp" class="sr-only">
+                                    </label>
+                                    <p class="pl-1">atau ganti gambar di sini</p>
+                                </div>
+                                <p class="text-[11px] text-gray-400 dark:text-neutral-500 mt-1">PNG, JPG, WEBP hingga 8MB</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Action Buttons --}}
@@ -123,4 +150,26 @@
             </x-admin.card>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.getElementById('file-upload-edit');
+            const previewContainer = document.getElementById('preview-container');
+            const imagePreview = document.getElementById('image-preview');
+
+            if (fileInput) {
+                fileInput.addEventListener('change', function () {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            imagePreview.src = e.target.result;
+                            previewContainer.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+    </script>
 @endsection
