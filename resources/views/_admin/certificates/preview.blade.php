@@ -67,8 +67,8 @@
                 {{-- Name Overlay at Configured Y Position --}}
                 <div class="absolute left-0 right-0 flex items-center justify-center pointer-events-none px-8 sm:px-12 z-20"
                      style="top: {{ $template->name_y_percent ?? 48 }}%; transform: translateY(-50%);">
-                    <h2 class="font-serif font-black text-[#0D3B66] text-center drop-shadow-xs tracking-wide leading-none"
-                        style="font-size: {{ $template->name_font_size ?? 36 }}px;">
+                    <h2 class="font-serif font-black text-[#0D3B66] text-center tracking-wide leading-none"
+                        style="font-size: clamp(16px, 4vw, {{ $template->name_font_size ?? 36 }}px);">
                         {{ $studentName }}
                     </h2>
                 </div>
@@ -179,6 +179,9 @@
                 object-fit: contain !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+            }
+            #printable-certificate h2 {
+                font-size: {{ $template->name_font_size ?? 36 }}px !important;
             }
             .no-print {
                 display: none !important;

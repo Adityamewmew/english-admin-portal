@@ -92,6 +92,8 @@ class CertificateUsecase extends Usecase
                 'instructor_name' => $data['instructor_name'] ?? 'Mr. Khoirul, M.Pd.',
                 'instructor_title' => $data['instructor_title'] ?? 'Head of English Academic Affairs',
                 'theme_color' => $data['theme_color'] ?? '#0D3B66',
+                'name_y_percent' => (int) ($data['name_y_percent'] ?? 48),
+                'name_font_size' => (int) ($data['name_font_size'] ?? 36),
                 'background_url' => $data['background_url'] ?? null,
                 'signature_url' => $data['signature_url'] ?? null,
                 'created_at' => now(),
@@ -138,6 +140,14 @@ class CertificateUsecase extends Usecase
                 'theme_color' => $data['theme_color'] ?? '#0D3B66',
                 'updated_at' => now(),
             ];
+
+            if (isset($data['name_y_percent'])) {
+                $updateData['name_y_percent'] = (int) $data['name_y_percent'];
+            }
+
+            if (isset($data['name_font_size'])) {
+                $updateData['name_font_size'] = (int) $data['name_font_size'];
+            }
 
             if (!empty($data['background_url'])) {
                 $updateData['background_url'] = $data['background_url'];

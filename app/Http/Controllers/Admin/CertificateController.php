@@ -222,7 +222,7 @@ class CertificateController extends Controller
 
         $studentName = $request->query('student', 'Muhammad Aditya Pratama');
         $certificateNumber = $request->query('number', 'EDDY-' . strtoupper($cefr) . '-SAMPLE-' . date('Ym') . '-001');
-        $issuedDate = $request->query('date', date('d F Y'));
+        $issuedDate = $request->query('date', \Carbon\Carbon::now()->translatedFormat('d F Y'));
         $score = (int) $request->query('score', 95);
 
         return view('_admin.certificates.preview', [
