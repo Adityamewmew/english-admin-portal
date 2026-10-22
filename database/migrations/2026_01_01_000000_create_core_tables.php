@@ -51,6 +51,7 @@ return new class extends Migration
                 $table->boolean('is_exam')->default(false);
                 $table->integer('passing_score')->default(70);
                 $table->integer('order_index')->default(1);
+                $table->string('banner_url', 255)->nullable();
                 $table->timestamps();
                 $table->softDeletes();
             });

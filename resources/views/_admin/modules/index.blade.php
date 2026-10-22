@@ -136,11 +136,11 @@
 
                             {{-- Banner Image or Illustration --}}
                             @if(!empty($m->banner_url))
-                                <img src="{{ $m->banner_url }}" alt="{{ $m->title }}"
+                                <img src="{{ $m->banner_url }}" alt="" aria-hidden="true"
                                     class="w-full h-full object-cover pointer-events-none rounded-lg" />
                             @else
-                                <img src="{{ $fallbackIllustrations[$loop->index % count($fallbackIllustrations)] }}" alt="{{ $m->title }}"
-                                    class="w-full h-full object-contain pointer-events-none p-2" />
+                                <img src="{{ $fallbackIllustrations[$loop->index % count($fallbackIllustrations)] }}" alt="" aria-hidden="true"
+                                    class="w-full h-full object-contain pointer-events-none p-3 opacity-80" />
                             @endif
                         </div>
 

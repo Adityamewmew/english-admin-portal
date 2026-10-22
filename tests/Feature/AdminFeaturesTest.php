@@ -91,7 +91,7 @@ test('admin can access question bank and detail', function () {
         ->assertSee('Third person singular takes is.');
 });
 
-test('admin can access sub modules and detail', function () {
+test('admin can access sub modules through module detail and redirect', function () {
     $admin = User::factory()->make([
         'id' => (string) Str::uuid(),
         'access_type' => UserConst::SUPERADMIN,
@@ -127,11 +127,10 @@ test('admin can access sub modules and detail', function () {
 
     $this->actingAs($admin)
         ->get(route('admin.sub_modules.index'))
-        ->assertSuccessful()
-        ->assertSee('Speaking Practice Section');
+        ->assertRedirect(route('admin.modules.index'));
 
     $this->actingAs($admin)
-        ->get(route('admin.sub_modules.detail', $subModuleId))
+        ->get(route('admin.modules.detail', 'MOD-TEST-SM'))
         ->assertSuccessful()
         ->assertSee('Speaking Practice Section');
 });
@@ -155,7 +154,8 @@ test('admin can create, update, and soft delete curriculum module', function () 
         'passing_score' => 75,
         'order_index' => 2,
     ]);
-    $response->assertRedirect(route('admin.modules.index'));
+    $response->assertRedirect();
+    expect($response->headers->get('Location'))->toContain('/admin/modules/detail/MOD-CRUD-01');
     expect(DB::table('curriculum_modules')->where('id', 'MOD-CRUD-01')->exists())->toBeTrue();
 
     $this->actingAs($admin)->post(route('admin.modules.doUpdate', 'MOD-CRUD-01'), [
@@ -178,7 +178,7 @@ test('admin can create, update, and soft delete curriculum module', function () 
     expect(DB::table('curriculum_modules')->where('id', 'MOD-CRUD-01')->whereNotNull('deleted_at')->exists())->toBeTrue();
 });
 
-test('admin can create, update, and soft delete sub module', function () {
+test('admin can manage sub module and sections', function () {
     $admin = User::factory()->make([
         'id' => (string) Str::uuid(),
         'access_type' => UserConst::SUPERADMIN,
@@ -201,29 +201,44 @@ test('admin can create, update, and soft delete sub module', function () {
         'updated_at' => now(),
     ]);
 
-    $this->actingAs($admin)->post(route('admin.sub_modules.create'), [
+    $subModuleId = (string) Str::uuid();
+    DB::table('sub_modules')->insert([
+        'id' => $subModuleId,
         'module_id' => 'MOD-PARENT-02',
         'skill_type' => 'listening',
         'title' => 'Airport Announcement',
         'order_index' => 1,
-    ])->assertRedirect(route('admin.sub_modules.index'));
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
 
-    $created = DB::table('sub_modules')->where('title', 'Airport Announcement')->first();
-    expect($created)->not->toBeNull();
-
-    $this->actingAs($admin)->post(route('admin.sub_modules.doUpdate', $created->id), [
-        'module_id' => 'MOD-PARENT-02',
-        'skill_type' => 'listening',
+    $this->actingAs($admin)->post(route('admin.modules.submodule.update', [
+        'id' => 'MOD-PARENT-02',
+        'subModuleId' => $subModuleId,
+    ]), [
         'title' => 'Airport Announcement Updated',
-        'order_index' => 2,
-    ])->assertRedirect(route('admin.sub_modules.detail', $created->id));
+    ])->assertRedirect();
 
-    expect(DB::table('sub_modules')->where('id', $created->id)->value('title'))->toBe('Airport Announcement Updated');
+    expect(DB::table('sub_modules')->where('id', $subModuleId)->value('title'))->toBe('Airport Announcement Updated');
 
-    $this->actingAs($admin)->delete(route('admin.sub_modules.delete', $created->id))
-        ->assertRedirect(route('admin.sub_modules.index'));
+    $this->actingAs($admin)->post(route('admin.modules.section.create', 'MOD-PARENT-02'), [
+        'sub_module_id' => $subModuleId,
+        'section_type' => 'theory',
+        'title' => 'Theory on Announcements',
+        'content_text' => 'Sample lesson theory content.',
+        'order_index' => 1,
+    ])->assertRedirect();
 
-    expect(DB::table('sub_modules')->where('id', $created->id)->whereNotNull('deleted_at')->exists())->toBeTrue();
+    $section = DB::table('module_sections')->where('module_id', 'MOD-PARENT-02')->first();
+    expect($section)->not->toBeNull();
+    expect($section->title)->toBe('Theory on Announcements');
+
+    $this->actingAs($admin)->delete(route('admin.modules.section.delete', [
+        'id' => 'MOD-PARENT-02',
+        'sectionId' => $section->id,
+    ]))->assertRedirect();
+
+    expect(DB::table('module_sections')->where('id', $section->id)->exists())->toBeFalse();
 });
 
 test('admin can create, update, and soft delete question item', function () {
