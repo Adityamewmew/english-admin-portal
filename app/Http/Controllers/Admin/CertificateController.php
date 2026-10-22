@@ -210,6 +210,72 @@ class CertificateController extends Controller
         return "data:{$mime};base64,{$base64}";
     }
 
+    public function preview(Request $request, string $cefr): View|RedirectResponse
+    {
+        $res = $this->usecase->getTemplateByCefr($cefr);
+        $template = $res['data']['template'] ?? null;
+
+        if (!$template) {
+            return redirect()->route('admin.certificates.index')
+                ->with('error', 'Template sertifikat tidak ditemukan.');
+        }
+
+        $studentName = $request->query('student', 'Muhammad Aditya Pratama');
+        $certificateNumber = $request->query('number', 'EDDY-' . strtoupper($cefr) . '-SAMPLE-' . date('Ym') . '-001');
+        $issuedDate = $request->query('date', date('d F Y'));
+        $score = (int) $request->query('score', 95);
+
+        return view('_admin.certificates.preview', [
+            'page' => $this->page,
+            'template' => $template,
+            'cefr' => strtoupper($cefr),
+            'studentName' => $studentName,
+            'certificateNumber' => $certificateNumber,
+            'issuedDate' => $issuedDate,
+            'score' => $score,
+        ]);
+    }
+
+    public function image(string $cefr): Response|RedirectResponse
+    {
+        $res = $this->usecase->getTemplateByCefr($cefr);
+        $template = $res['data']['template'] ?? null;
+
+        if (!$template || empty($template->background_url)) {
+            abort(404, 'Gambar sertifikat tidak ditemukan.');
+        }
+
+        $bg = $template->background_url;
+
+        if (str_starts_with($bg, 'data:')) {
+            $parts = explode(',', $bg, 2);
+            if (count($parts) === 2) {
+                $header = $parts[0];
+                $data = base64_decode($parts[1]);
+                $mime = 'image/jpeg';
+                if (preg_match('/data:([^;]+)/', $header, $matches)) {
+                    $mime = $matches[1];
+                }
+                return response($data, 200, [
+                    'Content-Type' => $mime,
+                    'Content-Disposition' => 'inline; filename="certificate-' . strtolower($cefr) . '.jpg"',
+                    'Cache-Control' => 'public, max-age=86400',
+                ]);
+            }
+        }
+
+        if (str_starts_with($bg, 'http://') || str_starts_with($bg, 'https://')) {
+            return redirect($bg);
+        }
+
+        $filePath = public_path(ltrim($bg, '/'));
+        if (file_exists($filePath)) {
+            return response()->file($filePath);
+        }
+
+        abort(404, 'File gambar tidak ditemukan.');
+    }
+
     public function delete(string $cefr): RedirectResponse
     {
         $res = $this->usecase->deleteTemplate($cefr);

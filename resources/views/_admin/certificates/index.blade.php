@@ -95,7 +95,7 @@
                             {{-- Background Thumbnail --}}
                             <x-admin.table.td>
                                 @if ($t->background_url)
-                                    <a href="{{ $t->background_url }}" target="_blank" class="inline-block group relative">
+                                    <a href="{{ route('admin.certificates.preview', ['cefr' => $t->cefr]) }}" class="inline-block group relative" title="Lihat Pratinjau Sertifikat">
                                         <img src="{{ $t->background_url }}" alt="Background {{ $t->cefr }}" class="h-10 w-16 object-cover rounded border border-gray-200 dark:border-neutral-700 shadow-2xs group-hover:scale-105 transition-transform">
                                     </a>
                                 @else
@@ -126,6 +126,12 @@
 
                             {{-- Actions --}}
                             <x-admin.table.td innerClass="px-6 py-2 flex items-center justify-end gap-x-2">
+                                <a href="{{ route('admin.certificates.preview', ['cefr' => $t->cefr]) }}"
+                                   class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400" title="Lihat Pratinjau">
+                                    @include('_admin._layout.icons.eye')
+                                    Lihat
+                                </a>
+
                                 <a href="{{ route('admin.certificates.edit', ['cefr' => $t->cefr]) }}"
                                    class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400" title="Edit">
                                     @include('_admin._layout.icons.pencil')
@@ -187,7 +193,8 @@
                             <x-admin.table.th>Email</x-admin.table.th>
                             <x-admin.table.th class="text-center">Level</x-admin.table.th>
                             <x-admin.table.th class="text-center">Skor Akhir</x-admin.table.th>
-                            <x-admin.table.th align="end">Tanggal Terbit</x-admin.table.th>
+                            <x-admin.table.th class="text-center">Tanggal Terbit</x-admin.table.th>
+                            <x-admin.table.th align="end">Aksi</x-admin.table.th>
                         </tr>
                     </x-admin.table.thead>
                     <x-admin.table.tbody>
@@ -210,13 +217,26 @@
                                 <x-admin.table.td class="text-center font-bold text-emerald-600 dark:text-emerald-400">
                                     {{ $item->score }}%
                                 </x-admin.table.td>
-                                <x-admin.table.td align="end" class="text-gray-500 dark:text-neutral-400">
+                                <x-admin.table.td class="text-center text-gray-500 dark:text-neutral-400 text-xs">
                                     {{ \Carbon\Carbon::parse($item->issued_at)->format('d M Y, H:i') }}
+                                </x-admin.table.td>
+                                <x-admin.table.td innerClass="px-6 py-2 flex items-center justify-end">
+                                    <a href="{{ route('admin.certificates.preview', [
+                                        'cefr' => $item->cefr_level,
+                                        'student' => $item->current_user_name ?? $item->cert_user_name,
+                                        'number' => $item->certificate_number,
+                                        'date' => \Carbon\Carbon::parse($item->issued_at)->translatedFormat('d F Y'),
+                                        'score' => $item->score,
+                                    ]) }}"
+                                       class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400" title="Lihat Sertifikat Siswa">
+                                        @include('_admin._layout.icons.eye')
+                                        Lihat
+                                    </a>
                                 </x-admin.table.td>
                             </x-admin.table.tr>
                         @empty
                             <x-admin.table.tr>
-                                <x-admin.table.td colspan="6" class="text-center py-10">
+                                <x-admin.table.td colspan="7" class="text-center py-10">
                                     <x-admin.empty-state message="Belum ada sertifikat siswa yang diterbitkan." />
                                 </x-admin.table.td>
                             </x-admin.table.tr>

@@ -82,6 +82,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/add', [CertificateController::class, 'add'])->name('add');
         Route::post('/create', [CertificateController::class, 'doCreate'])->name('create');
         Route::get('/edit/{cefr}', [CertificateController::class, 'edit'])->name('edit');
+        Route::get('/preview/{cefr}', [CertificateController::class, 'preview'])->name('preview');
+        Route::get('/image/{cefr}', [CertificateController::class, 'image'])->name('image');
         Route::post('/update/{cefr}', [CertificateController::class, 'doUpdate'])->name('update');
         Route::post('/do-update/{cefr}', [CertificateController::class, 'doUpdate'])->name('doUpdate');
         Route::delete('/delete/{cefr}', [CertificateController::class, 'delete'])->name('delete');
