@@ -57,9 +57,12 @@
     <div class="flex justify-center items-center py-4 sm:py-8 bg-gray-100/60 dark:bg-neutral-900/60 rounded-3xl border border-gray-200/80 dark:border-neutral-800 p-4 sm:p-8">
         <div id="printable-certificate"
              class="relative w-full max-w-[850px] aspect-[1.414/1] bg-[#FCFBF7] text-[#0D3B66] rounded-xl shadow-2xl border-8 border-double border-[#0D3B66]/20 overflow-hidden select-none flex flex-col justify-between"
-             style="background-image: {{ $template->background_url ? "url('" . $template->background_url . "')" : 'none' }}; background-size: cover; background-position: center; background-repeat: no-repeat;">
+             style="-webkit-print-color-adjust: exact; print-color-adjust: exact;">
             
             @if ($template->background_url)
+                {{-- Background Image (HTML <img> tag ensures browser prints it even if Background Graphics is unchecked) --}}
+                <img src="{{ $template->background_url }}" alt="Background Sertifikat" class="absolute inset-0 w-full h-full object-contain pointer-events-none select-none z-0">
+
                 {{-- Custom Uploaded Template Background Mode --}}
                 {{-- Name Overlay at Configured Y Position --}}
                 <div class="absolute left-0 right-0 flex items-center justify-center pointer-events-none px-8 sm:px-12 z-20"
@@ -142,6 +145,10 @@
 
     {{-- Print CSS Rules --}}
     <style>
+        #printable-certificate {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
         @media print {
             body * {
                 visibility: hidden !important;
@@ -157,10 +164,21 @@
                 width: 100vw !important;
                 height: 100vh !important;
                 max-width: none !important;
-                border: 8px double #0d3b66 !important;
+                border: none !important;
                 box-shadow: none !important;
                 margin: 0 !important;
                 border-radius: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            #printable-certificate img {
+                display: block !important;
+                visibility: visible !important;
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: contain !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             .no-print {
                 display: none !important;
