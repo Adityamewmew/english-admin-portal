@@ -47,6 +47,60 @@ class CertificateController extends Controller
         ]);
     }
 
+    public function add(): View
+    {
+        return view('_admin.certificates.add', [
+            'page' => $this->page,
+        ]);
+    }
+
+    public function doCreate(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'cefr' => 'required|string|in:A1,A2,B1,B2,C1,C2',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'instructor_name' => 'nullable|string|max:150',
+            'instructor_title' => 'nullable|string|max:150',
+            'theme_color' => 'nullable|string|max:50',
+            'background_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
+        $cefr = strtoupper($request->input('cefr'));
+        $data = $request->only([
+            'cefr',
+            'title',
+            'description',
+            'instructor_name',
+            'instructor_title',
+            'theme_color',
+        ]);
+
+        if ($request->hasFile('background_file')) {
+            $file = $request->file('background_file');
+            $filename = 'cert_' . strtolower($cefr) . '_' . time() . '.' . $file->getClientOriginalExtension();
+
+            $targetDir = public_path('uploads/certificates');
+            if (!file_exists($targetDir)) {
+                mkdir($targetDir, 0755, true);
+            }
+
+            $file->move($targetDir, $filename);
+            $data['background_url'] = '/uploads/certificates/' . $filename;
+        }
+
+        $res = $this->usecase->createTemplate($data);
+
+        if (!$res['success']) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $res['message'] ?? 'Gagal membuat template sertifikat.');
+        }
+
+        return redirect()->route('admin.certificates.index')
+            ->with('success', "Template sertifikat CEFR {$cefr} berhasil ditambahkan.");
+    }
+
     public function edit(string $cefr): View|RedirectResponse
     {
         $res = $this->usecase->getTemplateByCefr($cefr);
@@ -86,7 +140,7 @@ class CertificateController extends Controller
         if ($request->hasFile('background_file')) {
             $file = $request->file('background_file');
             $filename = 'cert_' . strtolower($cefr) . '_' . time() . '.' . $file->getClientOriginalExtension();
-            
+
             $targetDir = public_path('uploads/certificates');
             if (!file_exists($targetDir)) {
                 mkdir($targetDir, 0755, true);
@@ -106,5 +160,18 @@ class CertificateController extends Controller
 
         return redirect()->route('admin.certificates.index')
             ->with('success', "Template sertifikat CEFR {$cefr} berhasil diperbarui.");
+    }
+
+    public function delete(string $cefr): RedirectResponse
+    {
+        $res = $this->usecase->deleteTemplate($cefr);
+
+        if (!$res['success']) {
+            return redirect()->back()
+                ->with('error', $res['message'] ?? 'Gagal menghapus template.');
+        }
+
+        return redirect()->route('admin.certificates.index')
+            ->with('success', "Template sertifikat CEFR {$cefr} berhasil dihapus.");
     }
 }

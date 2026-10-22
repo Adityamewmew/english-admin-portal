@@ -3,7 +3,11 @@
 @section('title', 'Manajemen Sertifikat')
 
 @section('content')
-    <x-admin.page-header :title="'Manajemen Sertifikat'" subtitle="Kelola master template per level CEFR dan rekap sertifikat resmi yang telah diterbitkan untuk siswa.">
+    <x-admin.page-header :title="'Manajemen Sertifikat'" subtitle="Kelola master template sertifikat per level CEFR dan rekap sertifikat siswa yang telah diterbitkan.">
+        <x-admin.button href="{{ route('admin.certificates.add') }}" size="sm" color="primary">
+            @include('_admin._layout.icons.add')
+            Tambah Sertifikat Baru
+        </x-admin.button>
     </x-admin.page-header>
 
     @if (session('success'))
@@ -17,6 +21,17 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="mb-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-sm flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="size-5 text-rose-600 dark:text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{{ session('error') }}</span>
+            </div>
+        </div>
+    @endif
+
     {{-- Tabs Navigation --}}
     <div class="mb-6 flex items-center gap-2 border-b border-gray-200 dark:border-neutral-700">
         <a href="{{ route('admin.certificates.index', ['tab' => 'templates']) }}"
@@ -24,7 +39,10 @@
             <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            Master Template Kategori (A1 - C2)
+            Daftar Template Sertifikat (CRUD)
+            <span class="ml-1 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 font-bold">
+                {{ count($templates) }}
+            </span>
         </a>
         <a href="{{ route('admin.certificates.index', ['tab' => 'issued']) }}"
            class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors {{ $activeTab === 'issued' ? 'border-primary text-primary dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-neutral-200' }}">
@@ -39,70 +57,102 @@
     </div>
 
     @if ($activeTab === 'templates')
-        {{-- TAB 1: MASTER TEMPLATES PER CATEGORY --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            @foreach ($templates as $t)
-                <x-admin.card fit="true" class="flex flex-col justify-between border border-gray-200/80 dark:border-neutral-700/80 shadow-xs hover:shadow-md transition-all">
-                    <div>
-                        {{-- Top Header --}}
-                        <div class="flex items-center justify-between gap-3 mb-3">
-                            <span class="inline-flex items-center justify-center size-10 rounded-xl bg-primary text-white font-black text-sm shadow-sm" style="background-color: {{ $t->theme_color ?? '#0D3B66' }}">
-                                {{ $t->cefr }}
-                            </span>
-                            <div class="text-right">
-                                <span class="text-xs px-2.5 py-1 rounded-full font-semibold bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300">
-                                    {{ $t->issued_count }} Siswa Lulus
+        {{-- TAB 1: MASTER TEMPLATES CRUD TABLE --}}
+        <x-admin.table.wrapper>
+            <x-admin.table>
+                <x-admin.table.thead>
+                    <tr>
+                        <x-admin.table.th>Level CEFR</x-admin.table.th>
+                        <x-admin.table.th>Judul & Deskripsi</x-admin.table.th>
+                        <x-admin.table.th>Background Template</x-admin.table.th>
+                        <x-admin.table.th>Penandatangan</x-admin.table.th>
+                        <x-admin.table.th class="text-center">Siswa Lulus</x-admin.table.th>
+                        <x-admin.table.th align="end">Aksi</x-admin.table.th>
+                    </tr>
+                </x-admin.table.thead>
+                <x-admin.table.tbody>
+                    @forelse ($templates as $t)
+                        <x-admin.table.tr>
+                            {{-- CEFR Badge --}}
+                            <x-admin.table.td>
+                                <span class="inline-flex items-center justify-center size-9 rounded-xl font-black text-white text-xs shadow-xs" style="background-color: {{ $t->theme_color ?? '#0D3B66' }}">
+                                    {{ $t->cefr }}
                                 </span>
-                            </div>
-                        </div>
+                            </x-admin.table.td>
 
-                        <h3 class="text-base font-bold text-gray-900 dark:text-white leading-tight mb-1">
-                            {{ $t->title }}
-                        </h3>
-                        <p class="text-xs text-gray-500 dark:text-neutral-400 line-clamp-3 mb-4 leading-relaxed">
-                            {{ $t->description ?? 'Deskripsi kompetensi belum diatur.' }}
-                        </p>
-
-                        {{-- Template Preview / Background Thumbnail --}}
-                        <div class="mb-4 rounded-lg overflow-hidden border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800/50 aspect-video flex items-center justify-center relative">
-                            @if ($t->background_url)
-                                <img src="{{ $t->background_url }}" alt="Background Template {{ $t->cefr }}" class="w-full h-full object-cover">
-                                <div class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono">
-                                    Custom Background
+                            {{-- Title & Description --}}
+                            <x-admin.table.td>
+                                <div class="max-w-md">
+                                    <p class="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">
+                                        {{ $t->title }}
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-neutral-400 line-clamp-2 mt-0.5">
+                                        {{ $t->description ?? '-' }}
+                                    </p>
                                 </div>
-                            @else
-                                <div class="flex flex-col items-center justify-center text-gray-400 dark:text-neutral-500 p-4 text-center">
-                                    <svg class="size-8 mb-1 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <span class="text-xs">Background Standar EDDY'S</span>
+                            </x-admin.table.td>
+
+                            {{-- Background Thumbnail --}}
+                            <x-admin.table.td>
+                                @if ($t->background_url)
+                                    <a href="{{ $t->background_url }}" target="_blank" class="inline-block group relative">
+                                        <img src="{{ $t->background_url }}" alt="Background {{ $t->cefr }}" class="h-10 w-16 object-cover rounded border border-gray-200 dark:border-neutral-700 shadow-2xs group-hover:scale-105 transition-transform">
+                                    </a>
+                                @else
+                                    <span class="text-[11px] text-gray-400 dark:text-neutral-500 italic">
+                                        Default Template
+                                    </span>
+                                @endif
+                            </x-admin.table.td>
+
+                            {{-- Instructor --}}
+                            <x-admin.table.td>
+                                <div class="text-xs">
+                                    <p class="font-semibold text-gray-800 dark:text-neutral-200">
+                                        {{ $t->instructor_name ?? 'Academic Council' }}
+                                    </p>
+                                    <p class="text-[11px] text-gray-500 dark:text-neutral-400">
+                                        {{ $t->instructor_title ?? 'Head of Academic Affairs' }}
+                                    </p>
                                 </div>
-                            @endif
-                        </div>
+                            </x-admin.table.td>
 
-                        {{-- Signatory Info --}}
-                        <div class="p-2.5 rounded-lg bg-gray-50 dark:bg-neutral-800/40 border border-gray-100 dark:border-neutral-700/60 text-xs mb-4">
-                            <p class="font-semibold text-gray-800 dark:text-neutral-200 truncate">
-                                {{ $t->instructor_name ?? 'Academic Council' }}
-                            </p>
-                            <p class="text-[11px] text-gray-500 dark:text-neutral-400 truncate">
-                                {{ $t->instructor_title ?? 'Head of Academic Affairs' }}
-                            </p>
-                        </div>
-                    </div>
+                            {{-- Total Issued Count --}}
+                            <x-admin.table.td class="text-center">
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 dark:bg-neutral-800 text-gray-700 dark:text-neutral-300">
+                                    {{ $t->issued_count }}
+                                </span>
+                            </x-admin.table.td>
 
-                    {{-- Edit Action Button --}}
-                    <div class="pt-3 border-t border-gray-100 dark:border-neutral-800">
-                        <x-admin.button href="{{ route('admin.certificates.edit', ['cefr' => $t->cefr]) }}" size="sm" color="primary" class="w-full justify-center">
-                            <svg class="size-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            Edit Template & Background
-                        </x-admin.button>
-                    </div>
-                </x-admin.card>
-            @endforeach
-        </div>
+                            {{-- Actions --}}
+                            <x-admin.table.td innerClass="px-6 py-2 flex items-center justify-end gap-x-2">
+                                <a href="{{ route('admin.certificates.edit', ['cefr' => $t->cefr]) }}"
+                                   class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400" title="Edit">
+                                    @include('_admin._layout.icons.pencil')
+                                    Edit
+                                </a>
+
+                                <form action="{{ route('admin.certificates.delete', ['cefr' => $t->cefr]) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus template sertifikat level {{ $t->cefr }}?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-1 py-1.5 px-2.5 text-xs font-semibold rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-900/20 dark:text-rose-400 cursor-pointer" title="Hapus">
+                                        @include('_admin._layout.icons.trash')
+                                        Hapus
+                                    </button>
+                                </form>
+                            </x-admin.table.td>
+                        </x-admin.table.tr>
+                    @empty
+                        <x-admin.table.tr>
+                            <x-admin.table.td colspan="6" class="text-center py-10">
+                                <x-admin.empty-state message="Belum ada template sertifikat yang dibuat. Klik 'Tambah Sertifikat Baru' di atas untuk mulai membuat template." />
+                            </x-admin.table.td>
+                        </x-admin.table.tr>
+                    @endforelse
+                </x-admin.table.tbody>
+            </x-admin.table>
+        </x-admin.table.wrapper>
     @else
         {{-- TAB 2: REKAP SISWA PENERIMA SERTIFIKAT --}}
         <div class="space-y-4">
@@ -120,8 +170,7 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="text" name="keywords" value="{{ $keywords }}" placeholder="Cari nomor / siswa / email..."
-                           class="px-3.5 py-1.5 text-xs rounded-lg border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 text-gray-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-primary/20 w-60">
+                    <x-admin.input name="keywords" :value="$keywords ?? ''" placeholder="Cari nomor / siswa / email..." size="sm" />
                     <x-admin.button type="submit" size="sm" color="primary">
                         Cari
                     </x-admin.button>
@@ -129,61 +178,58 @@
             </form>
 
             {{-- Issued Certificates Table --}}
-            <x-admin.card fit="true">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr class="border-b border-gray-200 dark:border-neutral-700 bg-gray-50/75 dark:bg-neutral-800/60 font-semibold text-gray-600 dark:text-neutral-300">
-                                <th class="py-3 px-4">No. Sertifikat</th>
-                                <th class="py-3 px-4">Nama Siswa</th>
-                                <th class="py-3 px-4">Email</th>
-                                <th class="py-3 px-4 text-center">Level</th>
-                                <th class="py-3 px-4 text-center">Skor Akhir</th>
-                                <th class="py-3 px-4 text-right">Tanggal Terbit</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 dark:divide-neutral-800">
-                            @forelse ($issuedList as $item)
-                                <tr class="hover:bg-gray-50/50 dark:hover:bg-neutral-800/30 transition-colors">
-                                    <td class="py-3 px-4 font-mono font-semibold text-primary dark:text-primary-400">
-                                        {{ $item->certificate_number }}
-                                    </td>
-                                    <td class="py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                                        {{ $item->current_user_name ?? $item->cert_user_name }}
-                                    </td>
-                                    <td class="py-3 px-4 text-gray-500 dark:text-neutral-400">
-                                        {{ $item->user_email ?? '-' }}
-                                    </td>
-                                    <td class="py-3 px-4 text-center">
-                                        <span class="inline-block px-2.5 py-0.5 rounded font-black text-[11px] bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
-                                            {{ $item->cefr_level }}
-                                        </span>
-                                    </td>
-                                    <td class="py-3 px-4 text-center font-bold text-emerald-600 dark:text-emerald-400">
-                                        {{ $item->score }}%
-                                    </td>
-                                    <td class="py-3 px-4 text-right text-gray-500 dark:text-neutral-400">
-                                        {{ \Carbon\Carbon::parse($item->issued_at)->format('d M Y, H:i') }}
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="py-12 text-center text-gray-400 dark:text-neutral-500">
-                                        <p class="text-sm font-medium">Belum ada sertifikat siswa yang diterbitkan.</p>
-                                        <p class="text-xs mt-1">Sertifikat akan otomatis tercatat saat siswa mengklaim kelulusan level di aplikasi english-ai.</p>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+            <x-admin.table.wrapper>
+                <x-admin.table>
+                    <x-admin.table.thead>
+                        <tr>
+                            <x-admin.table.th>No. Sertifikat</x-admin.table.th>
+                            <x-admin.table.th>Nama Siswa</x-admin.table.th>
+                            <x-admin.table.th>Email</x-admin.table.th>
+                            <x-admin.table.th class="text-center">Level</x-admin.table.th>
+                            <x-admin.table.th class="text-center">Skor Akhir</x-admin.table.th>
+                            <x-admin.table.th align="end">Tanggal Terbit</x-admin.table.th>
+                        </tr>
+                    </x-admin.table.thead>
+                    <x-admin.table.tbody>
+                        @forelse ($issuedList as $item)
+                            <x-admin.table.tr>
+                                <x-admin.table.td class="font-mono font-semibold text-primary dark:text-primary-400">
+                                    {{ $item->certificate_number }}
+                                </x-admin.table.td>
+                                <x-admin.table.td class="font-semibold text-gray-900 dark:text-white">
+                                    {{ $item->current_user_name ?? $item->cert_user_name }}
+                                </x-admin.table.td>
+                                <x-admin.table.td class="text-gray-500 dark:text-neutral-400">
+                                    {{ $item->user_email ?? '-' }}
+                                </x-admin.table.td>
+                                <x-admin.table.td class="text-center">
+                                    <span class="inline-block px-2.5 py-0.5 rounded font-black text-[11px] bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+                                        {{ $item->cefr_level }}
+                                    </span>
+                                </x-admin.table.td>
+                                <x-admin.table.td class="text-center font-bold text-emerald-600 dark:text-emerald-400">
+                                    {{ $item->score }}%
+                                </x-admin.table.td>
+                                <x-admin.table.td align="end" class="text-gray-500 dark:text-neutral-400">
+                                    {{ \Carbon\Carbon::parse($item->issued_at)->format('d M Y, H:i') }}
+                                </x-admin.table.td>
+                            </x-admin.table.tr>
+                        @empty
+                            <x-admin.table.tr>
+                                <x-admin.table.td colspan="6" class="text-center py-10">
+                                    <x-admin.empty-state message="Belum ada sertifikat siswa yang diterbitkan." />
+                                </x-admin.table.td>
+                            </x-admin.table.tr>
+                        @endforelse
+                    </x-admin.table.tbody>
+                </x-admin.table>
+            </x-admin.table.wrapper>
 
-                @if (method_exists($issuedList, 'links'))
-                    <div class="p-4 border-t border-gray-100 dark:border-neutral-800">
-                        {{ $issuedList->links() }}
-                    </div>
-                @endif
-            </x-admin.card>
+            @if (method_exists($issuedList, 'links'))
+                <div class="mt-4">
+                    {{ $issuedList->links() }}
+                </div>
+            @endif
         </div>
     @endif
 @endsection

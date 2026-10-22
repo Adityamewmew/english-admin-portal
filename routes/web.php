@@ -79,8 +79,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Certificates Routes
     Route::middleware('access_type:1')->prefix('certificates')->name('certificates.')->group(function () {
         Route::get('/', [CertificateController::class, 'index'])->name('index');
+        Route::get('/add', [CertificateController::class, 'add'])->name('add');
+        Route::post('/create', [CertificateController::class, 'doCreate'])->name('create');
         Route::get('/edit/{cefr}', [CertificateController::class, 'edit'])->name('edit');
         Route::post('/update/{cefr}', [CertificateController::class, 'doUpdate'])->name('doUpdate');
+        Route::delete('/delete/{cefr}', [CertificateController::class, 'delete'])->name('delete');
     });
 
     Route::middleware('access_type:1')->prefix('sidebar-menu')->name('sidebar_menu.')->group(function () {

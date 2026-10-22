@@ -67,7 +67,65 @@ class CertificateUsecase extends Usecase
     }
 
     /**
-     * Update certificate template
+     * Create new certificate template
+     */
+    public function createTemplate(array $data): array
+    {
+        try {
+            $cefr = strtoupper(trim($data['cefr'] ?? ''));
+            if (empty($cefr)) {
+                return Response::buildErrorValidation(['cefr' => ['Kategori level CEFR wajib dipilih.']]);
+            }
+
+            $exists = DB::table(DatabaseConst::CERTIFICATE_TEMPLATES())
+                ->where('cefr', $cefr)
+                ->exists();
+
+            if ($exists) {
+                return Response::buildErrorConflict("Template sertifikat untuk CEFR {$cefr} sudah ada.");
+            }
+
+            $insertData = [
+                'cefr' => $cefr,
+                'title' => $data['title'] ?? "Certificate of CEFR {$cefr} English Proficiency",
+                'description' => $data['description'] ?? null,
+                'instructor_name' => $data['instructor_name'] ?? 'Mr. Khoirul, M.Pd.',
+                'instructor_title' => $data['instructor_title'] ?? 'Head of English Academic Affairs',
+                'theme_color' => $data['theme_color'] ?? '#0D3B66',
+                'background_url' => $data['background_url'] ?? null,
+                'signature_url' => $data['signature_url'] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            DB::table(DatabaseConst::CERTIFICATE_TEMPLATES())->insert($insertData);
+
+            return Response::buildSuccessCreated(null, "Template sertifikat CEFR {$cefr} berhasil dibuat.");
+        } catch (Exception $e) {
+            Log::error('CertificateUsecase::createTemplate Error: ' . $e->getMessage());
+            return Response::buildErrorService($e->getMessage());
+        }
+    }
+
+    /**
+     * Delete certificate template
+     */
+    public function deleteTemplate(string $cefr): array
+    {
+        try {
+            DB::table(DatabaseConst::CERTIFICATE_TEMPLATES())
+                ->where('cefr', strtoupper($cefr))
+                ->delete();
+
+            return Response::buildSuccess(null, ResponseConst::HTTP_SUCCESS, "Template sertifikat CEFR {$cefr} berhasil dihapus.");
+        } catch (Exception $e) {
+            Log::error('CertificateUsecase::deleteTemplate Error: ' . $e->getMessage());
+            return Response::buildErrorService($e->getMessage());
+        }
+    }
+
+    /**
+     * Get single template by CEFR
      */
     public function updateTemplate(string $cefr, array $data): array
     {
