@@ -86,6 +86,11 @@ class DatabaseConst
         return 'user_class_access';
     }
 
+    public static function USER_DAILY_AI_USAGE(): string
+    {
+        return 'user_daily_ai_usage';
+    }
+
     public static function DB_CORE(): string
     {
         return config('database.connections.pgsql.database', 'db-eddys');
