@@ -63,6 +63,8 @@ class CertificateController extends Controller
             'instructor_name' => 'nullable|string|max:150',
             'instructor_title' => 'nullable|string|max:150',
             'theme_color' => 'nullable|string|max:50',
+            'name_y_percent' => 'nullable|integer|between:10,90',
+            'name_font_size' => 'nullable|integer|between:14,72',
             'background_file' => 'required|image|mimes:jpeg,png,jpg,webp|max:8192',
         ], [
             'background_file.required' => 'File gambar desain sertifikat (JPG, PNG, WEBP) wajib diunggah.',
@@ -77,6 +79,8 @@ class CertificateController extends Controller
             'instructor_name' => $request->input('instructor_name') ?: 'Mr. Khoirul, M.Pd.',
             'instructor_title' => $request->input('instructor_title') ?: 'Head of English Academic Affairs',
             'theme_color' => $request->input('theme_color') ?: '#0D3B66',
+            'name_y_percent' => (int) ($request->input('name_y_percent') ?: 48),
+            'name_font_size' => (int) ($request->input('name_font_size') ?: 36),
         ];
 
         if ($request->hasFile('background_file')) {
@@ -129,6 +133,8 @@ class CertificateController extends Controller
             'instructor_name' => 'nullable|string|max:150',
             'instructor_title' => 'nullable|string|max:150',
             'theme_color' => 'nullable|string|max:50',
+            'name_y_percent' => 'nullable|integer|between:10,90',
+            'name_font_size' => 'nullable|integer|between:14,72',
             'background_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:8192',
         ]);
 
@@ -138,7 +144,16 @@ class CertificateController extends Controller
             'instructor_name',
             'instructor_title',
             'theme_color',
+            'name_y_percent',
+            'name_font_size',
         ]);
+
+        if ($request->has('name_y_percent')) {
+            $data['name_y_percent'] = (int) $request->input('name_y_percent');
+        }
+        if ($request->has('name_font_size')) {
+            $data['name_font_size'] = (int) $request->input('name_font_size');
+        }
 
         if ($request->hasFile('background_file')) {
             $file = $request->file('background_file');

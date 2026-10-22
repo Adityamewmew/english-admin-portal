@@ -63,14 +63,68 @@
                     {{-- Upload Dropzone Box --}}
                     <div class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-neutral-700 border-dashed rounded-xl hover:border-primary transition-colors bg-gray-50/50 dark:bg-neutral-800/30">
                         <div class="space-y-2 text-center w-full">
-                            {{-- Image Preview Area --}}
-                            <div id="preview-container" class="hidden max-w-lg mx-auto mb-3">
-                                <p class="text-xs font-semibold text-gray-600 dark:text-neutral-300 mb-1.5">Preview Desain Sertifikat:</p>
-                                <div class="relative aspect-[1.414/1] rounded-lg overflow-hidden border-2 border-primary shadow-md bg-white">
+                            {{-- Image Preview Area with Interactive Controls --}}
+                            <div id="preview-container" class="hidden max-w-xl mx-auto mb-4">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <p class="text-xs font-semibold text-gray-700 dark:text-neutral-300">Preview Desain Sertifikat & Penempatan Nama:</p>
+                                    <span class="text-[11px] text-gray-500 dark:text-neutral-400">Geser slider di bawah untuk pas dengan garis</span>
+                                </div>
+                                <div class="relative aspect-[1.414/1] rounded-xl overflow-hidden border-2 border-primary/50 shadow-md bg-white select-none">
                                     <img id="image-preview" src="#" alt="Preview Sertifikat" class="w-full h-full object-contain">
-                                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                        <div class="bg-black/60 backdrop-blur-xs px-4 py-1.5 rounded-full text-white text-xs font-serif font-bold tracking-wider border border-white/30">
-                                            [ Area Nama Siswa Akan Muncul di Sini ]
+                                    
+                                    {{-- Dynamic Student Name Overlay --}}
+                                    <div id="name-overlay-box" class="absolute left-0 right-0 flex items-center justify-center pointer-events-none px-6 transition-all duration-75"
+                                         style="top: {{ old('name_y_percent', 48) }}%; transform: translateY(-50%);">
+                                        <span id="name-overlay-text" class="font-serif font-black text-[#0D3B66] text-center drop-shadow-xs tracking-wide leading-none"
+                                              style="font-size: {{ (old('name_font_size', 36) * 0.75) }}px;">
+                                            Muhammad Aditya Pratama
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {{-- Interactive Position & Font Size Sliders --}}
+                                <div class="mt-3.5 p-3.5 rounded-xl bg-gray-50 dark:bg-neutral-800/60 border border-gray-200 dark:border-neutral-700 space-y-3 text-left">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
+                                            <svg class="size-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                                            Kustomisasi Peletakan Nama Siswa
+                                        </span>
+                                        <span class="text-[11px] text-primary font-medium">Live Interaktif</span>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                        {{-- Vertical Position Slider (Y%) --}}
+                                        <div class="space-y-1">
+                                            <div class="flex justify-between items-center text-xs">
+                                                <label for="y-slider" class="font-semibold text-gray-700 dark:text-neutral-300">
+                                                    Posisi Vertikal (Y):
+                                                </label>
+                                                <span id="y-value-label" class="font-mono font-bold text-primary">{{ old('name_y_percent', 48) }}%</span>
+                                            </div>
+                                            <input type="range" id="y-slider" name="name_y_percent" min="15" max="85" value="{{ old('name_y_percent', 48) }}"
+                                                   class="w-full h-2 bg-gray-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-primary">
+                                            <div class="flex justify-between text-[10px] text-gray-400">
+                                                <span>Atas (15%)</span>
+                                                <span>Tengah (50%)</span>
+                                                <span>Bawah (85%)</span>
+                                            </div>
+                                        </div>
+
+                                        {{-- Font Size Slider (px) --}}
+                                        <div class="space-y-1">
+                                            <div class="flex justify-between items-center text-xs">
+                                                <label for="font-size-slider" class="font-semibold text-gray-700 dark:text-neutral-300">
+                                                    Ukuran Font:
+                                                </label>
+                                                <span id="font-size-label" class="font-mono font-bold text-primary">{{ old('name_font_size', 36) }} px</span>
+                                            </div>
+                                            <input type="range" id="font-size-slider" name="name_font_size" min="16" max="64" value="{{ old('name_font_size', 36) }}"
+                                                   class="w-full h-2 bg-gray-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-primary">
+                                            <div class="flex justify-between text-[10px] text-gray-400">
+                                                <span>Kecil (16px)</span>
+                                                <span>Sedang (36px)</span>
+                                                <span>Besar (64px)</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -220,6 +274,30 @@
                     reader.readAsDataURL(file);
                 }
             });
+
+            // Sliders for dynamic name placement
+            const ySlider = document.getElementById('y-slider');
+            const yLabel = document.getElementById('y-value-label');
+            const fontSizeSlider = document.getElementById('font-size-slider');
+            const fontSizeLabel = document.getElementById('font-size-label');
+            const nameOverlayBox = document.getElementById('name-overlay-box');
+            const nameOverlayText = document.getElementById('name-overlay-text');
+
+            if (ySlider && nameOverlayBox && yLabel) {
+                ySlider.addEventListener('input', function () {
+                    const val = this.value;
+                    yLabel.textContent = val + '%';
+                    nameOverlayBox.style.top = val + '%';
+                });
+            }
+
+            if (fontSizeSlider && nameOverlayText && fontSizeLabel) {
+                fontSizeSlider.addEventListener('input', function () {
+                    const val = this.value;
+                    fontSizeLabel.textContent = val + ' px';
+                    nameOverlayText.style.fontSize = (val * 0.75) + 'px';
+                });
+            }
         });
     </script>
 @endsection
