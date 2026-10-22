@@ -109,8 +109,17 @@
                             <span class="text-[11px] text-gray-500 dark:text-neutral-400">Geser slider di bawah untuk pas dengan garis</span>
                         </div>
                         <div class="relative aspect-[1.414/1] rounded-xl overflow-hidden border-2 border-primary/50 shadow-md bg-white select-none">
-                            <img id="image-preview" src="{{ $template->background_url ?? '#' }}" alt="Preview Sertifikat" class="w-full h-full object-contain">
+                            <img id="image-preview" src="{{ $template->background_url ?? '#' }}" alt="Preview Sertifikat" class="w-full h-full object-contain"
+                                 onerror="this.style.opacity='0'; document.getElementById('no-image-notice')?.classList.remove('hidden');"
+                                 onload="this.style.opacity='1'; document.getElementById('no-image-notice')?.classList.add('hidden');">
                             
+                            {{-- Notice if image is missing --}}
+                            <div id="no-image-notice" class="hidden absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-gray-50/90 dark:bg-neutral-800/90 backdrop-blur-xs">
+                                <svg class="size-8 text-amber-500 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                <p class="text-xs font-bold text-gray-800 dark:text-neutral-200 mb-0.5">File Gambar Desain Perlu Diunggah</p>
+                                <p class="text-[11px] text-gray-500 dark:text-neutral-400">Pilih file gambar pada kotak upload di bawah untuk menampilkan desain sertifikat.</p>
+                            </div>
+
                             {{-- Dynamic Student Name Overlay --}}
                             <div id="name-overlay-box" class="absolute left-0 right-0 flex items-center justify-center pointer-events-none px-6 transition-all duration-75"
                                  style="top: {{ old('name_y_percent', $template->name_y_percent ?? 48) }}%; transform: translateY(-50%);">
@@ -218,6 +227,8 @@
                         const reader = new FileReader();
                         reader.onload = function (e) {
                             imagePreview.src = e.target.result;
+                            imagePreview.style.opacity = '1';
+                            document.getElementById('no-image-notice')?.classList.add('hidden');
                             previewContainer.classList.remove('hidden');
                         };
                         reader.readAsDataURL(file);

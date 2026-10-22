@@ -44,8 +44,9 @@ RUN bun run build
 
 # 5. Konfigurasi PHP & Permissions
 COPY ./deploy/php.ini /usr/local/etc/php/conf.d/custom.ini
-RUN chmod +x ./deploy/entrypoint.sh
-RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chmod +x ./deploy/entrypoint.sh \
+    && mkdir -p public/uploads/certificates \
+    && chown -R www-data:www-data storage bootstrap/cache public/uploads
 
 EXPOSE 80
 

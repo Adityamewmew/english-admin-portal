@@ -2,9 +2,9 @@
 set -e
 
 # Pastikan direktori storage & cache tersedia dengan permission penuh
-mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache/data storage/logs bootstrap/cache
-chmod -R 777 storage bootstrap/cache
-chown -R www-data:www-data storage bootstrap/cache || true
+mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache/data storage/logs bootstrap/cache public/uploads/certificates
+chmod -R 777 storage bootstrap/cache public/uploads
+chown -R www-data:www-data storage bootstrap/cache public/uploads || true
 
 # Pastikan symlink storage terhubung
 php artisan storage:link --force || true

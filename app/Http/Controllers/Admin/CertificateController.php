@@ -84,16 +84,7 @@ class CertificateController extends Controller
         ];
 
         if ($request->hasFile('background_file')) {
-            $file = $request->file('background_file');
-            $filename = 'cert_' . strtolower($cefr) . '_' . time() . '.' . $file->getClientOriginalExtension();
-
-            $targetDir = public_path('uploads/certificates');
-            if (!file_exists($targetDir)) {
-                mkdir($targetDir, 0755, true);
-            }
-
-            $file->move($targetDir, $filename);
-            $data['background_url'] = '/uploads/certificates/' . $filename;
+            $data['background_url'] = $this->processCertificateImage($request->file('background_file'), $cefr);
         }
 
         $res = $this->usecase->createTemplate($data);
@@ -156,16 +147,7 @@ class CertificateController extends Controller
         }
 
         if ($request->hasFile('background_file')) {
-            $file = $request->file('background_file');
-            $filename = 'cert_' . strtolower($cefr) . '_' . time() . '.' . $file->getClientOriginalExtension();
-
-            $targetDir = public_path('uploads/certificates');
-            if (!file_exists($targetDir)) {
-                mkdir($targetDir, 0755, true);
-            }
-
-            $file->move($targetDir, $filename);
-            $data['background_url'] = '/uploads/certificates/' . $filename;
+            $data['background_url'] = $this->processCertificateImage($request->file('background_file'), $cefr);
         }
 
         $res = $this->usecase->updateTemplate($cefr, $data);
@@ -178,6 +160,54 @@ class CertificateController extends Controller
 
         return redirect()->route('admin.certificates.index')
             ->with('success', "Template sertifikat CEFR {$cefr} berhasil diperbarui.");
+    }
+
+    /**
+     * Convert and optimize uploaded certificate image into persistent base64 data URL
+     * and also save to public/uploads/certificates as fallback.
+     */
+    protected function processCertificateImage($file, string $cefr): string
+    {
+        $imageContent = file_get_contents($file->getRealPath());
+        $mime = $file->getMimeType() ?: 'image/jpeg';
+
+        if (extension_loaded('gd')) {
+            $sourceImage = @imagecreatefromstring($imageContent);
+            if ($sourceImage) {
+                $origW = imagesx($sourceImage);
+                $origH = imagesy($sourceImage);
+                $maxDim = 1600;
+                if ($origW > $maxDim || $origH > $maxDim) {
+                    $scale = min($maxDim / $origW, $maxDim / $origH);
+                    $newW = (int) round($origW * $scale);
+                    $newH = (int) round($origH * $scale);
+                    $resized = imagecreatetruecolor($newW, $newH);
+                    imagecopyresampled($resized, $sourceImage, 0, 0, 0, 0, $newW, $newH, $origW, $origH);
+                    imagedestroy($sourceImage);
+                    $sourceImage = $resized;
+                }
+                ob_start();
+                imagejpeg($sourceImage, null, 85);
+                $imageContent = ob_get_clean();
+                $mime = 'image/jpeg';
+                imagedestroy($sourceImage);
+            }
+        }
+
+        // Also save to disk if directory writable
+        try {
+            $targetDir = public_path('uploads/certificates');
+            if (!file_exists($targetDir)) {
+                @mkdir($targetDir, 0777, true);
+            }
+            $filename = 'cert_' . strtolower($cefr) . '_' . time() . '.jpg';
+            @file_put_contents($targetDir . '/' . $filename, $imageContent);
+        } catch (\Throwable $e) {
+            // Ignore disk write errors, base64 is primary
+        }
+
+        $base64 = base64_encode($imageContent);
+        return "data:{$mime};base64,{$base64}";
     }
 
     public function delete(string $cefr): RedirectResponse
