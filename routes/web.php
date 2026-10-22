@@ -20,7 +20,7 @@ Route::get('/admin', function () {
 
 // Auth Routes (Login Admin di /admin/login)
 Route::get('/admin/login', [AuthController::class, 'login'])->name('login');
-Route::post('/admin/login', [AuthController::class, 'doLogin'])->name('login.post');
+Route::post('/admin/login', [AuthController::class, 'doLogin'])->middleware('throttle:5,1')->name('login.post');
 Route::get('/login', fn () => redirect()->route('login'));
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
