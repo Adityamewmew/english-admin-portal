@@ -67,22 +67,70 @@ test('admin can access question bank and detail', function () {
     ]);
 
     DB::table('item_bank')->insert([
-        'id' => 'Q-TEST-001',
-        'skill' => 'grammar',
-        'cefr' => 'A1',
-        'type' => 'MCQ',
-        'question' => 'She ___ a student.',
-        'options' => json_encode(['is', 'are', 'am', 'be']),
-        'answer' => 'is',
-        'explanation' => 'Third person singular takes is.',
-        'created_at' => now(),
-        'updated_at' => now(),
+        [
+            'id' => 'Q-TEST-001',
+            'skill' => 'grammar',
+            'cefr' => 'A1',
+            'type' => 'MCQ',
+            'question' => 'She ___ a student.',
+            'options' => json_encode(['is', 'are', 'am', 'be']),
+            'answer' => 'is',
+            'explanation' => 'Third person singular takes is.',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'id' => 'Q-TEST-002',
+            'skill' => 'speaking',
+            'cefr' => 'A2',
+            'type' => 'PROMPT',
+            'question' => 'Describe your favorite weekend activity.',
+            'options' => null,
+            'answer' => 'Open speaking response',
+            'explanation' => 'Fluency assessment',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'id' => 'Q-TEST-003',
+            'skill' => 'mcq',
+            'cefr' => 'B1',
+            'type' => 'MCQ',
+            'question' => 'They have lived here ___ 2010.',
+            'options' => json_encode(['since', 'for', 'in', 'at']),
+            'answer' => 'since',
+            'explanation' => 'Present perfect takes since.',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
     ]);
 
     $this->actingAs($admin)
         ->get(route('admin.questions.index'))
         ->assertSuccessful()
-        ->assertSee('She ___ a student.');
+        ->assertSee('She ___ a student.')
+        ->assertSee('Describe your favorite weekend activity.');
+
+    // Filter by speaking
+    $this->actingAs($admin)
+        ->get(route('admin.questions.index', ['skill' => 'speaking']))
+        ->assertSuccessful()
+        ->assertSee('Describe your favorite weekend activity.')
+        ->assertDontSee('She ___ a student.');
+
+    // Filter by mcq (matches both mcq and grammar)
+    $this->actingAs($admin)
+        ->get(route('admin.questions.index', ['skill' => 'mcq']))
+        ->assertSuccessful()
+        ->assertSee('They have lived here ___ 2010.')
+        ->assertDontSee('Describe your favorite weekend activity.');
+
+    // Filter by grammar (alias to mcq)
+    $this->actingAs($admin)
+        ->get(route('admin.questions.index', ['skill' => 'grammar']))
+        ->assertSuccessful()
+        ->assertSee('She ___ a student.')
+        ->assertSee('They have lived here ___ 2010.');
 
     $this->actingAs($admin)
         ->get(route('admin.questions.detail', 'Q-TEST-001'))

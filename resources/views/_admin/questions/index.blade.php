@@ -31,12 +31,12 @@
         <form action="{{ route('admin.questions.index') }}" method="GET" navigate-form class="flex flex-col sm:flex-row items-center gap-3">
             <input type="hidden" name="cefr" value="{{ $cefr }}">
             <div class="w-full sm:w-44">
-                <select name="skill" class="py-2 px-3 block w-full bg-white border border-slate-300 rounded-[10px] text-xs text-slate-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white">
+                <select name="skill" onchange="this.form.submit()" class="py-2 px-3 block w-full bg-white border border-slate-300 rounded-[10px] text-xs text-slate-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white cursor-pointer">
                     <option value="all" {{ $skill === 'all' ? 'selected' : '' }}>Semua Skill</option>
-                    <option value="grammar" {{ $skill === 'grammar' ? 'selected' : '' }}>Grammar</option>
-                    <option value="vocabulary" {{ $skill === 'vocabulary' ? 'selected' : '' }}>Vocabulary</option>
+                    <option value="mcq" {{ in_array($skill, ['mcq', 'grammar', 'vocabulary']) ? 'selected' : '' }}>MCQ (Grammar / Vocab)</option>
                     <option value="listening" {{ $skill === 'listening' ? 'selected' : '' }}>Listening</option>
-                    <option value="reading" {{ $skill === 'reading' ? 'selected' : '' }}>Reading</option>
+                    <option value="speaking" {{ $skill === 'speaking' ? 'selected' : '' }}>Speaking</option>
+                    <option value="writing" {{ $skill === 'writing' ? 'selected' : '' }}>Writing</option>
                 </select>
             </div>
             <div class="w-full sm:w-72">

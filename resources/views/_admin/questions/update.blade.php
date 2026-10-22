@@ -38,7 +38,7 @@
                         name="skill"
                         required
                         :value="old('skill', $item->skill)"
-                        :options="['grammar' => 'Grammar', 'vocabulary' => 'Vocabulary', 'reading' => 'Reading', 'listening' => 'Listening', 'speaking' => 'Speaking']"
+                        :options="['mcq' => 'MCQ (Grammar & Vocabulary)', 'listening' => 'Listening', 'speaking' => 'Speaking', 'writing' => 'Writing', 'grammar' => 'Grammar', 'vocabulary' => 'Vocabulary', 'reading' => 'Reading']"
                     />
 
                     <x-admin.select
@@ -46,7 +46,7 @@
                         name="type"
                         required
                         :value="old('type', $item->type)"
-                        :options="['MCQ' => 'Multiple Choice (MCQ)', 'open_ended' => 'Open Ended / Writing', 'speaking' => 'Speaking']"
+                        :options="['MCQ' => 'Multiple Choice (MCQ)', 'PROMPT' => 'Prompt (Writing / Speaking)', 'open_ended' => 'Open Ended / Writing', 'speaking' => 'Speaking']"
                     />
                 </div>
 

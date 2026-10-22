@@ -73,9 +73,9 @@ class QuestionBankController extends Controller
     public function doCreate(Request $request): RedirectResponse
     {
         $request->validate([
-            'skill' => 'required|string|in:grammar,vocabulary,reading,listening,speaking',
+            'skill' => 'required|string|in:mcq,listening,speaking,writing,grammar,vocabulary,reading',
             'cefr' => 'required|in:A1,A2,B1,B2,C1,C2',
-            'type' => 'required|string|in:MCQ,open_ended,speaking',
+            'type' => 'required|string|in:MCQ,PROMPT,open_ended,speaking',
             'question' => 'required|string',
             'answer' => 'required|string',
             'options' => 'nullable|array',
@@ -110,9 +110,9 @@ class QuestionBankController extends Controller
     public function doUpdate(string $id, Request $request): RedirectResponse
     {
         $request->validate([
-            'skill' => 'required|string|in:grammar,vocabulary,reading,listening,speaking',
+            'skill' => 'required|string|in:mcq,listening,speaking,writing,grammar,vocabulary,reading',
             'cefr' => 'required|in:A1,A2,B1,B2,C1,C2',
-            'type' => 'required|string|in:MCQ,open_ended,speaking',
+            'type' => 'required|string|in:MCQ,PROMPT,open_ended,speaking',
             'question' => 'required|string',
             'answer' => 'required|string',
             'options' => 'nullable|array',

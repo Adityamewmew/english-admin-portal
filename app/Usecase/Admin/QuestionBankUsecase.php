@@ -24,6 +24,9 @@ class QuestionBankUsecase extends Usecase
                 })
                 ->when($filterData['skill'] ?? false, function ($q, $skill) {
                     if ($skill !== 'all') {
+                        if (in_array(strtolower($skill), ['grammar', 'vocabulary'])) {
+                            return $q->whereIn('skill', [$skill, 'mcq']);
+                        }
                         return $q->where('skill', $skill);
                     }
                 })
