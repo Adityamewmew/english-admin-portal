@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CertificateController;
+use App\Http\Controllers\Admin\CourseClassController;
 use App\Http\Controllers\Admin\CurriculumModuleController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\GradebookController;
@@ -87,6 +88,19 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/update/{cefr}', [CertificateController::class, 'doUpdate'])->name('update');
         Route::post('/do-update/{cefr}', [CertificateController::class, 'doUpdate'])->name('doUpdate');
         Route::delete('/delete/{cefr}', [CertificateController::class, 'delete'])->name('delete');
+    });
+
+    // Course Classes (Paket & Tarif Kelas) Routes
+    Route::middleware('access_type:1')->prefix('classes')->name('classes.')->group(function () {
+        Route::get('/', [CourseClassController::class, 'index'])->name('index');
+        Route::get('/add', [CourseClassController::class, 'add'])->name('add');
+        Route::post('/create', [CourseClassController::class, 'doCreate'])->name('create');
+        Route::get('/edit/{cefr}', [CourseClassController::class, 'edit'])->name('edit');
+        Route::post('/update/{cefr}', [CourseClassController::class, 'doUpdate'])->name('update');
+        Route::post('/do-update/{cefr}', [CourseClassController::class, 'doUpdate'])->name('doUpdate');
+        Route::delete('/delete/{cefr}', [CourseClassController::class, 'delete'])->name('delete');
+        Route::post('/grant-access', [CourseClassController::class, 'doGrantAccess'])->name('grant_access');
+        Route::delete('/revoke-access/{id}', [CourseClassController::class, 'doRevokeAccess'])->name('revoke_access');
     });
 
     Route::middleware('access_type:1')->prefix('sidebar-menu')->name('sidebar_menu.')->group(function () {

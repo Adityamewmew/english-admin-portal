@@ -118,6 +118,18 @@ class AdminSidebarSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'id' => 7,
+                'parent_id' => null,
+                'label' => 'Manajemen Kelas',
+                'route_name' => 'admin.classes.index',
+                'icon' => '_admin._layout.icons.sidebar.data_master',
+                'group' => 'akademik',
+                'sort_order' => 4,
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         foreach ($menus as $m) {
