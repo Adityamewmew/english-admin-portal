@@ -120,9 +120,12 @@ class CourseClassUsecase extends Usecase
                 'updated_at' => now(),
             ];
 
-            if (isset($data['tier_plans'])) {
-                $insertData['tier_plans'] = $this->formatTierPlans($cefr, $data['tier_plans']);
-            }
+            $tierPlansInput = $data['tier_plans'] ?? [
+                'basic' => ['price' => (int) (($data['price'] ?? 149000) * 0.35)],
+                'pro' => ['price' => (int) ($data['price'] ?? 149000), 'original_price' => $data['original_price'] ?? null],
+                'ultra' => ['price' => (int) (($data['price'] ?? 149000) * 1.8)],
+            ];
+            $insertData['tier_plans'] = $this->formatTierPlans($cefr, $tierPlansInput);
 
             DB::table(DatabaseConst::COURSE_CLASSES())->insert($insertData);
 

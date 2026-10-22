@@ -117,17 +117,22 @@ class CourseClassController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:150',
-            'price' => 'required|numeric|min:0',
+            'price' => 'nullable|numeric|min:0',
             'original_price' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
             'features' => 'nullable|string',
             'is_active' => 'nullable|boolean',
         ]);
 
+        $price = (int) ($request->input('tier_plans.pro.price') ?? $request->input('price', 0));
+        $originalPrice = $request->filled('tier_plans.pro.original_price')
+            ? (int) $request->input('tier_plans.pro.original_price')
+            : ($request->filled('original_price') ? (int) $request->input('original_price') : null);
+
         $data = [
             'name' => $request->input('name'),
-            'price' => (int) $request->input('price', 0),
-            'original_price' => $request->filled('original_price') ? (int) $request->input('original_price') : null,
+            'price' => $price,
+            'original_price' => $originalPrice,
             'description' => $request->input('description'),
             'features' => $request->input('features'),
             'is_active' => $request->boolean('is_active', true),
