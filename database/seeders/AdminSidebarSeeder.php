@@ -106,6 +106,18 @@ class AdminSidebarSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'id' => 6,
+                'parent_id' => null,
+                'label' => 'Manajemen Sertifikat',
+                'route_name' => 'admin.certificates.index',
+                'icon' => '_admin._layout.icons.sidebar.data_master',
+                'group' => 'akademik',
+                'sort_order' => 3,
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         foreach ($menus as $m) {

@@ -66,6 +66,16 @@ class DatabaseConst
         return 'placement_results';
     }
 
+    public static function CERTIFICATE_TEMPLATES(): string
+    {
+        return 'certificate_templates';
+    }
+
+    public static function USER_CERTIFICATES(): string
+    {
+        return 'user_certificates';
+    }
+
     public static function DB_CORE(): string
     {
         return config('database.connections.pgsql.database', 'db-eddys');
