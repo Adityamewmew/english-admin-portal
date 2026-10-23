@@ -237,7 +237,7 @@
                                  style="left: {{ old('ref_no_x_percent', $template->ref_no_x_percent ?? 82) }}%; top: {{ old('ref_no_y_percent', $template->ref_no_y_percent ?? 80) }}%; transform: translate(-50%, -50%);">
                                 <span id="ref-overlay-text" class="font-mono font-bold text-slate-900 drop-shadow-2xs leading-none"
                                       style="font-size: {{ old('ref_no_font_size', $template->ref_no_font_size ?? 8) }}px;">
-                                    EE-RC-A-C1-X/26-001
+                                    EE-RC-A-{{ $cefr }}-X/{{ date('y') }}-001
                                 </span>
                             </div>
                         </div>

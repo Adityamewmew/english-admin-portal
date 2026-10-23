@@ -227,7 +227,7 @@
                                  style="left: {{ old('ref_no_x_percent', 82) }}%; top: {{ old('ref_no_y_percent', 80) }}%; transform: translate(-50%, -50%);">
                                 <span id="ref-overlay-text" class="font-mono font-bold text-slate-900 drop-shadow-2xs leading-none"
                                       style="font-size: {{ old('ref_no_font_size', 8) }}px;">
-                                    EE-RC-A-C1-X/26-001
+                                    EE-RC-A-{{ old('cefr', 'A1') }}-X/{{ date('y') }}-001
                                 </span>
                             </div>
                         </div>
@@ -357,14 +357,21 @@
                 'C2': { title: 'Certificate of CEFR C2 Mastery English Proficiency', description: 'Has attained bilingual-level precision and effortless fluency, understanding virtually everything heard or read, summarizing information from different spoken and written sources, and reconstructing arguments coherently in spontaneous presentation.' }
             };
 
+            const refOverlayText = document.getElementById('ref-overlay-text');
+
             cefrSelect.addEventListener('change', function () {
                 const val = this.value;
-                if (val && cefrTemplates[val]) {
-                    if (!certTitle.value || Object.values(cefrTemplates).some(t => t.title === certTitle.value)) {
-                        certTitle.value = cefrTemplates[val].title;
+                if (val) {
+                    if (refOverlayText) {
+                        refOverlayText.textContent = `EE-RC-A-${val}-X/{{ date('y') }}-001`;
                     }
-                    if (!certDescription.value || Object.values(cefrTemplates).some(t => t.description === certDescription.value)) {
-                        certDescription.value = cefrTemplates[val].description;
+                    if (cefrTemplates[val]) {
+                        if (!certTitle.value || Object.values(cefrTemplates).some(t => t.title === certTitle.value)) {
+                            certTitle.value = cefrTemplates[val].title;
+                        }
+                        if (!certDescription.value || Object.values(cefrTemplates).some(t => t.description === certDescription.value)) {
+                            certDescription.value = cefrTemplates[val].description;
+                        }
                     }
                 }
             });

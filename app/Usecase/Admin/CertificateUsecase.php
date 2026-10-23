@@ -20,7 +20,6 @@ class CertificateUsecase extends Usecase
         try {
             $templates = DB::table(DatabaseConst::CERTIFICATE_TEMPLATES())
                 ->select([
-                    'id',
                     'cefr',
                     'title',
                     'description',
