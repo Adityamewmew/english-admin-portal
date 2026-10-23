@@ -92,14 +92,19 @@ class CertificateUsecase extends Usecase
                 'instructor_name' => $data['instructor_name'] ?? 'KHOIRUL ANWAR, M.Pd',
                 'instructor_title' => $data['instructor_title'] ?? 'Director of Studies',
                 'theme_color' => $data['theme_color'] ?? '#0D3B66',
+                'name_x_percent' => (int) ($data['name_x_percent'] ?? 50),
                 'name_y_percent' => (int) ($data['name_y_percent'] ?? 34),
                 'name_font_size' => (int) ($data['name_font_size'] ?? 26),
+                'scores_x_percent' => (int) ($data['scores_x_percent'] ?? 50),
                 'scores_y_percent' => (int) ($data['scores_y_percent'] ?? 52),
                 'scores_font_size' => (int) ($data['scores_font_size'] ?? 10),
+                'date_x_percent' => (int) ($data['date_x_percent'] ?? 18),
                 'date_y_percent' => (int) ($data['date_y_percent'] ?? 80),
                 'date_font_size' => (int) ($data['date_font_size'] ?? 8),
+                'place_x_percent' => (int) ($data['place_x_percent'] ?? 50),
                 'place_y_percent' => (int) ($data['place_y_percent'] ?? 80),
                 'place_font_size' => (int) ($data['place_font_size'] ?? 8),
+                'ref_no_x_percent' => (int) ($data['ref_no_x_percent'] ?? 82),
                 'ref_no_y_percent' => (int) ($data['ref_no_y_percent'] ?? 80),
                 'ref_no_font_size' => (int) ($data['ref_no_font_size'] ?? 8),
                 'orientation' => $data['orientation'] ?? 'portrait',
@@ -152,11 +157,11 @@ class CertificateUsecase extends Usecase
             ];
 
             foreach ([
-                'name_y_percent', 'name_font_size',
-                'scores_y_percent', 'scores_font_size',
-                'date_y_percent', 'date_font_size',
-                'place_y_percent', 'place_font_size',
-                'ref_no_y_percent', 'ref_no_font_size',
+                'name_x_percent', 'name_y_percent', 'name_font_size',
+                'scores_x_percent', 'scores_y_percent', 'scores_font_size',
+                'date_x_percent', 'date_y_percent', 'date_font_size',
+                'place_x_percent', 'place_y_percent', 'place_font_size',
+                'ref_no_x_percent', 'ref_no_y_percent', 'ref_no_font_size',
             ] as $field) {
                 if (isset($data[$field])) {
                     $updateData[$field] = (int) $data[$field];
