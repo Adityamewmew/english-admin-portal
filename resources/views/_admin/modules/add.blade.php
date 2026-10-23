@@ -247,11 +247,24 @@
             const form = document.querySelector('form[action="{{ route('admin.modules.create') }}"]');
             if (form) {
                 form.addEventListener('submit', function() {
+                    if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+                        return;
+                    }
                     const docInput = document.getElementById('document');
                     const overlay = document.getElementById('scanLoadingOverlay');
                     if (docInput && docInput.files && docInput.files.length > 0 && overlay) {
                         overlay.classList.remove('hidden');
                         overlay.classList.add('flex');
+                    }
+                });
+            }
+
+            if (window.jQuery) {
+                $(document).ajaxError(function() {
+                    const overlay = document.getElementById('scanLoadingOverlay');
+                    if (overlay) {
+                        overlay.classList.add('hidden');
+                        overlay.classList.remove('flex');
                     }
                 });
             }

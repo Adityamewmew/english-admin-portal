@@ -323,6 +323,7 @@ class CurriculumModuleController extends Controller
         $options = [
             'sub_module_id' => $subModuleId,
             'custom_instructions' => $request->input('custom_instructions'),
+            'replace' => $request->boolean('replace'),
         ];
 
         // 1. If new document uploaded in request

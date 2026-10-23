@@ -81,12 +81,24 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
 
             $insertedCount = 0;
             $cleanId = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $moduleId));
+            $shouldReplace = !empty($options['replace']);
 
             if ($skillType !== 'all' && is_array($materials)) {
                 $sectionsList = isset($materials[0]) ? $materials : ($materials[$skillType] ?? []);
                 $targetSmId = $targetSubModule ? $targetSubModule->id : null;
+                if ($shouldReplace && $targetSmId) {
+                    DB::table(DatabaseConst::MODULE_SECTIONS())
+                        ->where('module_id', $moduleId)
+                        ->where('sub_module_id', $targetSmId)
+                        ->delete();
+                }
                 $insertedCount += $this->persistGeneratedSections($moduleId, $cleanId, $targetSmId, $sectionsList);
             } elseif (is_array($materials)) {
+                if ($shouldReplace) {
+                    DB::table(DatabaseConst::MODULE_SECTIONS())
+                        ->where('module_id', $moduleId)
+                        ->delete();
+                }
                 foreach ($materials as $skill => $sectionsList) {
                     if (!is_array($sectionsList)) continue;
                     $matchedSm = $subModules->first(function ($sm) use ($skill) {
