@@ -91,10 +91,33 @@
                     </div>
                 </div>
 
-                {{-- 3. BANNER MODUL --}}
+                {{-- 3. DOKUMEN BAHAN AJAR (OPSIONAL) --}}
+                <div class="pt-4 border-t border-slate-200 dark:border-neutral-700/80">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <h3 class="font-heading font-extrabold text-xs text-primary/80 uppercase tracking-wider">
+                            3. Dokumen Bahan Ajar / Referensi Kurikulum (Opsional)
+                        </h3>
+                        <span class="text-[11px] font-bold text-secondary bg-secondary/10 px-2 py-0.5 rounded-md">
+                            AI Scanner Support
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-neutral-400 mb-3 leading-relaxed">
+                        Unggah modul, silabus, atau buku materi dalam format <strong>PDF, Word (DOCX/DOC), atau Foto/Scan (JPG/PNG)</strong>. AI akan otomatis memindai isi dokumen ini dan menyusun materi kurikulum saat Anda memilih mode generate di halaman detail.
+                    </p>
+                    <div>
+                        <input type="file" id="document" name="document" accept=".pdf,.docx,.doc,.jpg,.jpeg,.png"
+                            class="py-2.5 px-3 block w-full border border-slate-300 rounded-[10px] text-sm file:me-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-primary file:text-white hover:file:bg-primary/90 dark:file:bg-neutral-800 dark:file:text-neutral-200 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-300 cursor-pointer shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+                        <p class="text-[11px] text-slate-400 mt-1.5">Maksimal ukuran file: 20MB. Dokumen hanya diproses di memori tanpa disimpan permanen ke database.</p>
+                        @error('document')
+                            <p class="text-xs text-rose-500 mt-1 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                {{-- 4. BANNER MODUL --}}
                 <div class="pt-4 border-t border-slate-200 dark:border-neutral-700/80">
                     <h3 class="font-heading font-extrabold text-xs text-primary/80 uppercase tracking-wider mb-3">
-                        3. Banner Gambar Modul
+                        4. Banner Gambar Modul
                     </h3>
                     <div>
                         <div class="flex items-center gap-4">
@@ -112,10 +135,10 @@
                     </div>
                 </div>
 
-                {{-- 4. PARAMETER KELULUSAN & EVALUASI --}}
+                {{-- 5. PARAMETER KELULUSAN & EVALUASI --}}
                 <div class="pt-4 border-t border-slate-200 dark:border-neutral-700/80">
                     <h3 class="font-heading font-extrabold text-xs text-primary/80 uppercase tracking-wider mb-3">
-                        4. Parameter Pembelajaran
+                        5. Parameter Pembelajaran
                     </h3>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <x-admin.select
@@ -165,74 +188,48 @@
                     </div>
                 </div>
 
-                {{-- 5. AI MATERIAL GENERATOR --}}
-                <div class="pt-4 border-t border-slate-200 dark:border-neutral-700/80">
-                    <div class="p-4 rounded-xl border border-secondary/30 bg-amber-500/5 dark:bg-amber-500/10 transition-all">
-                        <div class="flex items-start gap-3">
-                            <input type="checkbox" id="auto_generate_ai" name="auto_generate_ai" value="1" {{ old('auto_generate_ai') ? 'checked' : '' }}
-                                onchange="toggleAiInstructions(this)"
-                                class="mt-1 shrink-0 border-slate-300 rounded text-secondary focus:ring-secondary size-4 cursor-pointer">
-                            <div class="flex-1">
-                                <label for="auto_generate_ai" class="text-xs font-heading font-extrabold text-primary dark:text-neutral-100 cursor-pointer flex items-center gap-1.5">
-                                    <span>✨ Otomatis Buat Materi Lengkap dengan AI</span>
-                                    <span class="text-[10px] font-bold text-secondary bg-secondary/15 px-2 py-0.5 rounded-full">Rekomendasi</span>
-                                </label>
-                                <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
-                                    AI akan otomatis menyusun materi (Teori, Kosakata, Percakapan & Kuis) untuk ke-5 sub-modul (Reading, Listening, Writing, Speaking, Assessment) sesuai level CEFR.
-                                </p>
-
-                                <div id="ai-instructions-container" class="{{ old('auto_generate_ai') ? '' : 'hidden' }} mt-3 space-y-3">
-                                    <div>
-                                        <label for="ai_document" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300 mb-1">
-                                            Upload Dokumen / Foto Materi (PDF, Word, JPG, PNG - Maks 20MB) (Opsional)
-                                        </label>
-                                        <input type="file" id="ai_document" name="document" accept=".pdf,.doc,.docx,image/jpeg,image/png,image/jpg"
-                                            class="py-1.5 px-3 block w-full border border-slate-300 rounded-lg text-xs file:me-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[11px] file:font-bold file:bg-surface file:text-primary dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-300 cursor-pointer shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]">
-                                        <p class="text-[11px] text-slate-400 mt-1">
-                                            AI akan men-scan isi dokumen untuk menyusun materi kurikulum. File hanya diproses sementara dan tidak disimpan ke database.
-                                        </p>
-                                    </div>
-
-                                    <div>
-                                        <label for="custom_instructions" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300 mb-1">
-                                            Instruksi Tambahan / Topik Khusus (Opsional)
-                                        </label>
-                                        <textarea id="custom_instructions" name="custom_instructions" rows="2"
-                                            class="py-2 px-3 block w-full bg-white border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 text-xs focus:border-secondary focus:ring-1 focus:ring-secondary dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
-                                            placeholder="Contoh: Fokuskan pada percakapan perhotelan, atau gunakan kosakata kasual sehari-hari...">{{ old('custom_instructions') }}</textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 {{-- FOOTER ACTIONS --}}
                 <div class="pt-4 border-t border-slate-200 dark:border-neutral-700/80 flex items-center justify-end gap-x-3">
                     <x-admin.button href="{{ route('admin.modules.index') }}" variant="outline" as="a" size="sm">
                         Batal
                     </x-admin.button>
-                    <x-admin.button type="submit" variant="secondary" size="sm">
+                    <x-admin.button type="submit" id="btnSubmitModule" variant="secondary" size="sm">
                         <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                         </svg>
-                        Simpan & Mulai Susun Materi
+                        Simpan & Masuk ke Penyusunan Materi
                     </x-admin.button>
                 </div>
             </form>
         </x-admin.card>
     </div>
 
-    <script>
-        function toggleAiInstructions(checkbox) {
-            const container = document.getElementById('ai-instructions-container');
-            if (checkbox.checked) {
-                container.classList.remove('hidden');
-            } else {
-                container.classList.add('hidden');
-            }
-        }
+    {{-- SCANNING LOADING OVERLAY --}}
+    <div id="scanLoadingOverlay" class="fixed inset-0 z-50 hidden flex-col items-center justify-center bg-slate-950/80 backdrop-blur-md p-6 text-center text-white transition-all">
+        <div class="relative flex items-center justify-center size-24 mb-6">
+            <div class="absolute inset-0 rounded-full bg-amber-500/20 animate-ping"></div>
+            <div class="relative size-20 rounded-2xl bg-secondary border border-amber-300/40 flex items-center justify-center shadow-2xl">
+                <svg class="size-10 text-white animate-pulse" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                </svg>
+            </div>
+        </div>
+        <h3 class="text-xl font-heading font-extrabold tracking-tight mb-2 text-white">
+            Sedang Memindai Dokumen Bahan Ajar...
+        </h3>
+        <p class="text-sm text-slate-300 max-w-md leading-relaxed">
+            AI sedang mengekstrak teks & menganalisis materi kurikulum Anda. Setelah selesai, Anda akan diarahkan ke halaman detail untuk memilih mode generate.
+        </p>
+        <div class="mt-6 flex items-center gap-2.5 text-xs font-semibold text-amber-300 bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/15 shadow-sm">
+            <svg class="animate-spin size-4 text-amber-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span>Memproses teks & menyiapkan 5 sub-modul...</span>
+        </div>
+    </div>
 
+    <script>
         function previewBanner(input) {
             const previewWrap = document.getElementById('banner-preview-wrap');
             const preview = document.getElementById('banner-preview');
@@ -245,5 +242,19 @@
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form[action="{{ route('admin.modules.create') }}"]');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    const docInput = document.getElementById('document');
+                    const overlay = document.getElementById('scanLoadingOverlay');
+                    if (docInput && docInput.files && docInput.files.length > 0 && overlay) {
+                        overlay.classList.remove('hidden');
+                        overlay.classList.add('flex');
+                    }
+                });
+            }
+        });
     </script>
 @endsection

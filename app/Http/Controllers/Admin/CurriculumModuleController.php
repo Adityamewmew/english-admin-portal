@@ -63,10 +63,15 @@ class CurriculumModuleController extends Controller
                 ->with('error', ResponseConst::DEFAULT_ERROR_MESSAGE);
         }
 
+        $cachedDocName = \Illuminate\Support\Facades\Cache::get('module_doc_name_' . $id);
+        $hasCachedDoc = !empty(\Illuminate\Support\Facades\Cache::get('module_doc_text_' . $id)) || !empty(\Illuminate\Support\Facades\Cache::get('module_doc_base64_' . $id));
+
         return view('_admin.modules.detail', [
             'module' => (object) $data['data']['module'],
             'sections' => $data['data']['sections'],
             'subModules' => $data['data']['sub_modules'],
+            'hasCachedDoc' => $hasCachedDoc,
+            'cachedDocName' => $cachedDocName,
             'page' => $this->page,
         ]);
     }
@@ -123,23 +128,27 @@ class CurriculumModuleController extends Controller
         $id = $res['data']['id'];
         $firstSubModuleId = $res['data']['first_sub_module_id'] ?? null;
 
-        if ($request->boolean('auto_generate_ai')) {
-            $options = [
-                'custom_instructions' => $request->input('custom_instructions'),
-            ];
-            if ($request->hasFile('document')) {
-                $options = array_merge($options, $this->extractUploadedDocument($request->file('document')));
+        // Extract and cache document text / payload if uploaded
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            $extracted = $this->extractUploadedDocument($file);
+            if (!empty($extracted['document_text'])) {
+                \Illuminate\Support\Facades\Cache::put('module_doc_text_' . $id, $extracted['document_text'], now()->addHours(24));
             }
-
-            $aiRes = $this->usecase->generateMaterialsWithAI($id, $options);
-            $inserted = $aiRes['data']['inserted_count'] ?? 0;
-            $redirectUrl = route('admin.modules.detail', $id) . ($firstSubModuleId ? ('?sub_module=' . $firstSubModuleId) : '');
-            return redirect()->to($redirectUrl)->with('success', "Modul berhasil dibuat! AI telah menyusun {$inserted} bagian materi lengkap pada ke-5 sub-modul.");
+            if (!empty($extracted['document_base64'])) {
+                \Illuminate\Support\Facades\Cache::put('module_doc_base64_' . $id, $extracted['document_base64'], now()->addHours(24));
+                \Illuminate\Support\Facades\Cache::put('module_doc_mime_' . $id, $extracted['document_mime_type'] ?? 'application/pdf', now()->addHours(24));
+            }
+            \Illuminate\Support\Facades\Cache::put('module_doc_name_' . $id, $file->getClientOriginalName(), now()->addHours(24));
         }
 
-        $redirectUrl = route('admin.modules.detail', $id) . '?wizard=1&step=1' . ($firstSubModuleId ? ('&sub_module=' . $firstSubModuleId) : '');
+        $redirectUrl = route('admin.modules.detail', $id) . '?wizard=1&step=reading' . ($firstSubModuleId ? ('&sub_module=' . $firstSubModuleId) : '');
 
-        return redirect()->to($redirectUrl)->with('success', 'Modul berhasil dibuat! 5 Sub-Modul (Reading, Listening, Writing, Speaking, Assessment) telah disiapkan. Silakan susun materi.');
+        $successMsg = $request->hasFile('document')
+            ? 'Modul berhasil dibuat! Dokumen bahan ajar telah dipindai. Silakan pilih opsi generate materi di bawah.'
+            : 'Modul berhasil dibuat! 5 Sub-Modul telah disiapkan. Silakan pilih opsi generate materi di bawah.';
+
+        return redirect()->to($redirectUrl)->with('success', $successMsg);
     }
 
     public function doUpdateSubModule(string $id, string $subModuleId, Request $request): RedirectResponse
@@ -306,6 +315,7 @@ class CurriculumModuleController extends Controller
             'scope' => 'required|in:single,all',
             'custom_instructions' => 'nullable|string|max:1000',
             'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png,docx,doc|max:20480',
+            'is_progressive' => 'nullable|boolean',
         ]);
 
         $subModuleId = ($request->input('scope') === 'all') ? null : $request->input('sub_module_id');
@@ -314,8 +324,34 @@ class CurriculumModuleController extends Controller
             'sub_module_id' => $subModuleId,
             'custom_instructions' => $request->input('custom_instructions'),
         ];
+
+        // 1. If new document uploaded in request
         if ($request->hasFile('document')) {
-            $options = array_merge($options, $this->extractUploadedDocument($request->file('document')));
+            $file = $request->file('document');
+            $extracted = $this->extractUploadedDocument($file);
+            $options = array_merge($options, $extracted);
+
+            if (!empty($extracted['document_text'])) {
+                \Illuminate\Support\Facades\Cache::put('module_doc_text_' . $id, $extracted['document_text'], now()->addHours(24));
+            }
+            if (!empty($extracted['document_base64'])) {
+                \Illuminate\Support\Facades\Cache::put('module_doc_base64_' . $id, $extracted['document_base64'], now()->addHours(24));
+                \Illuminate\Support\Facades\Cache::put('module_doc_mime_' . $id, $extracted['document_mime_type'] ?? 'application/pdf', now()->addHours(24));
+            }
+            \Illuminate\Support\Facades\Cache::put('module_doc_name_' . $id, $file->getClientOriginalName(), now()->addHours(24));
+        } else {
+            // 2. Fall back to cached document from add page or previous scan
+            $cachedText = \Illuminate\Support\Facades\Cache::get('module_doc_text_' . $id);
+            $cachedBase64 = \Illuminate\Support\Facades\Cache::get('module_doc_base64_' . $id);
+            $cachedMime = \Illuminate\Support\Facades\Cache::get('module_doc_mime_' . $id);
+
+            if (!empty($cachedText)) {
+                $options['document_text'] = $cachedText;
+            }
+            if (!empty($cachedBase64)) {
+                $options['document_base64'] = $cachedBase64;
+                $options['document_mime_type'] = $cachedMime;
+            }
         }
 
         $res = $this->usecase->generateMaterialsWithAI($id, $options);
@@ -326,8 +362,14 @@ class CurriculumModuleController extends Controller
 
         $count = $res['data']['inserted_count'] ?? 0;
         $activeTab = $subModuleId ? ('?sub_module=' . $subModuleId) : '';
+        $wizardParam = ($request->boolean('is_progressive') || $request->has('wizard'))
+            ? ($activeTab ? '&wizard=1' : '?wizard=1')
+            : '';
 
-        return redirect()->to(route('admin.modules.detail', $id) . $activeTab)->with('success', "Berhasil! {$count} bagian materi berhasil disusun otomatis oleh AI.");
+        $skillLabel = $subModuleId ? 'sub-modul' : 'seluruh sub-modul';
+
+        return redirect()->to(route('admin.modules.detail', $id) . $activeTab . $wizardParam)
+            ->with('success', "Berhasil! {$count} bagian materi berhasil disusun otomatis oleh AI untuk {$skillLabel}.");
     }
 
     private function extractUploadedDocument(\Illuminate\Http\UploadedFile $file): array
