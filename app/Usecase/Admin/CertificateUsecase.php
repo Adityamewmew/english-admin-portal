@@ -89,11 +89,13 @@ class CertificateUsecase extends Usecase
                 'cefr' => $cefr,
                 'title' => $data['title'] ?? "Certificate of CEFR {$cefr} English Proficiency",
                 'description' => $data['description'] ?? null,
-                'instructor_name' => $data['instructor_name'] ?? 'Mr. Khoirul, M.Pd.',
-                'instructor_title' => $data['instructor_title'] ?? 'Head of English Academic Affairs',
+                'instructor_name' => $data['instructor_name'] ?? 'KHOIRUL ANWAR, M.Pd',
+                'instructor_title' => $data['instructor_title'] ?? 'Director of Studies',
                 'theme_color' => $data['theme_color'] ?? '#0D3B66',
                 'name_y_percent' => (int) ($data['name_y_percent'] ?? 48),
                 'name_font_size' => (int) ($data['name_font_size'] ?? 36),
+                'orientation' => $data['orientation'] ?? 'portrait',
+                'place_of_entry' => $data['place_of_entry'] ?? 'PBN Kelapa Gading, D.18 Jember East Java',
                 'background_url' => $data['background_url'] ?? null,
                 'signature_url' => $data['signature_url'] ?? null,
                 'created_at' => now(),
@@ -149,6 +151,14 @@ class CertificateUsecase extends Usecase
                 $updateData['name_font_size'] = (int) $data['name_font_size'];
             }
 
+            if (isset($data['orientation'])) {
+                $updateData['orientation'] = $data['orientation'];
+            }
+
+            if (isset($data['place_of_entry'])) {
+                $updateData['place_of_entry'] = $data['place_of_entry'];
+            }
+
             if (!empty($data['background_url'])) {
                 $updateData['background_url'] = $data['background_url'];
             }
@@ -185,6 +195,7 @@ class CertificateUsecase extends Usecase
                     'u.email as user_email',
                     'uc.cefr_level',
                     'uc.score',
+                    'uc.scores_breakdown',
                     'uc.completed_at',
                     'uc.issued_at',
                 ])

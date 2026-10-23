@@ -76,6 +76,27 @@
                     </div>
                 </div>
 
+                {{-- Place of Entry & Orientasi --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
+                            Tempat / Lokasi Ujian (Place of Entry)
+                        </label>
+                        <input type="text" name="place_of_entry" value="{{ old('place_of_entry', $template->place_of_entry ?? 'PBN Kelapa Gading, D.18 Jember East Java') }}"
+                               class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
+                            Orientasi Cetak Sertifikat
+                        </label>
+                        <select name="orientation"
+                                class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                            <option value="portrait" {{ old('orientation', $template->orientation ?? 'portrait') === 'portrait' ? 'selected' : '' }}>A4 Portrait (Resmi Eddy's Local Examination)</option>
+                            <option value="landscape" {{ old('orientation', $template->orientation ?? 'portrait') === 'landscape' ? 'selected' : '' }}>A4 Landscape (Mendatar)</option>
+                        </select>
+                    </div>
+                </div>
+
                 {{-- Warna Tema --}}
                 <div class="space-y-1.5">
                     <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
