@@ -94,6 +94,7 @@ class CurriculumModuleController extends Controller
             'passing_score' => 'nullable|integer|min:0|max:100',
             'order_index' => 'nullable|integer|min:1',
             'banner' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+            'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png,docx,doc|max:20480',
         ]);
 
         $data = $request->all();
@@ -123,9 +124,14 @@ class CurriculumModuleController extends Controller
         $firstSubModuleId = $res['data']['first_sub_module_id'] ?? null;
 
         if ($request->boolean('auto_generate_ai')) {
-            $aiRes = $this->usecase->generateMaterialsWithAI($id, [
+            $options = [
                 'custom_instructions' => $request->input('custom_instructions'),
-            ]);
+            ];
+            if ($request->hasFile('document')) {
+                $options = array_merge($options, $this->extractUploadedDocument($request->file('document')));
+            }
+
+            $aiRes = $this->usecase->generateMaterialsWithAI($id, $options);
             $inserted = $aiRes['data']['inserted_count'] ?? 0;
             $redirectUrl = route('admin.modules.detail', $id) . ($firstSubModuleId ? ('?sub_module=' . $firstSubModuleId) : '');
             return redirect()->to($redirectUrl)->with('success', "Modul berhasil dibuat! AI telah menyusun {$inserted} bagian materi lengkap pada ke-5 sub-modul.");
@@ -299,14 +305,20 @@ class CurriculumModuleController extends Controller
             'sub_module_id' => 'nullable|string',
             'scope' => 'required|in:single,all',
             'custom_instructions' => 'nullable|string|max:1000',
+            'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png,docx,doc|max:20480',
         ]);
 
         $subModuleId = ($request->input('scope') === 'all') ? null : $request->input('sub_module_id');
 
-        $res = $this->usecase->generateMaterialsWithAI($id, [
+        $options = [
             'sub_module_id' => $subModuleId,
             'custom_instructions' => $request->input('custom_instructions'),
-        ]);
+        ];
+        if ($request->hasFile('document')) {
+            $options = array_merge($options, $this->extractUploadedDocument($request->file('document')));
+        }
+
+        $res = $this->usecase->generateMaterialsWithAI($id, $options);
 
         if (empty($res['data'])) {
             return back()->with('error', $res['message'] ?? 'Gagal membuat materi dengan AI');
@@ -316,6 +328,55 @@ class CurriculumModuleController extends Controller
         $activeTab = $subModuleId ? ('?sub_module=' . $subModuleId) : '';
 
         return redirect()->to(route('admin.modules.detail', $id) . $activeTab)->with('success', "Berhasil! {$count} bagian materi berhasil disusun otomatis oleh AI.");
+    }
+
+    private function extractUploadedDocument(\Illuminate\Http\UploadedFile $file): array
+    {
+        $ext = strtolower($file->getClientOriginalExtension());
+        $mime = $file->getMimeType() ?: 'application/octet-stream';
+        $path = $file->getRealPath();
+
+        // 1. Word Document (.docx / .doc)
+        if (in_array($ext, ['docx', 'doc'])) {
+            $extractedText = '';
+            if ($ext === 'docx' && class_exists('ZipArchive')) {
+                $zip = new \ZipArchive();
+                if ($zip->open($path) === true) {
+                    $xml = $zip->getFromName('word/document.xml');
+                    if ($xml !== false) {
+                        $extractedText = trim(strip_tags(str_replace(['<w:p>', '</w:p>'], ["\n", "\n"], $xml)));
+                    }
+                    $zip->close();
+                }
+            }
+            if (empty($extractedText)) {
+                $raw = @file_get_contents($path);
+                if ($raw) {
+                    $extractedText = preg_replace('/[^\x20-\x7E\r\n\t]/', ' ', $raw);
+                    $extractedText = trim(preg_replace('/\s+/', ' ', $extractedText));
+                }
+            }
+            return ['document_text' => $extractedText];
+        }
+
+        // 2. Images & PDF (Multimodal Base64)
+        $contents = @file_get_contents($path);
+        if ($contents) {
+            $base64 = base64_encode($contents);
+            if ($ext === 'pdf') {
+                $mime = 'application/pdf';
+            } elseif (in_array($ext, ['jpg', 'jpeg'])) {
+                $mime = 'image/jpeg';
+            } elseif ($ext === 'png') {
+                $mime = 'image/png';
+            }
+            return [
+                'document_base64' => $base64,
+                'document_mime_type' => $mime,
+            ];
+        }
+
+        return [];
     }
 
     private function extractSectionContent(Request $request, string $type): array

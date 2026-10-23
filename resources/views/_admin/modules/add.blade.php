@@ -181,13 +181,26 @@
                                     AI akan otomatis menyusun materi (Teori, Kosakata, Percakapan & Kuis) untuk ke-5 sub-modul (Reading, Listening, Writing, Speaking, Assessment) sesuai level CEFR.
                                 </p>
 
-                                <div id="ai-instructions-container" class="{{ old('auto_generate_ai') ? '' : 'hidden' }} mt-3">
-                                    <label for="custom_instructions" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300 mb-1">
-                                        Instruksi Tambahan / Topik Khusus (Opsional)
-                                    </label>
-                                    <textarea id="custom_instructions" name="custom_instructions" rows="2"
-                                        class="py-2 px-3 block w-full bg-white border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 text-xs focus:border-secondary focus:ring-1 focus:ring-secondary dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
-                                        placeholder="Contoh: Fokuskan pada percakapan perhotelan, atau gunakan kosakata kasual sehari-hari...">{{ old('custom_instructions') }}</textarea>
+                                <div id="ai-instructions-container" class="{{ old('auto_generate_ai') ? '' : 'hidden' }} mt-3 space-y-3">
+                                    <div>
+                                        <label for="ai_document" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300 mb-1">
+                                            Upload Dokumen / Foto Materi (PDF, Word, JPG, PNG - Maks 20MB) (Opsional)
+                                        </label>
+                                        <input type="file" id="ai_document" name="document" accept=".pdf,.doc,.docx,image/jpeg,image/png,image/jpg"
+                                            class="py-1.5 px-3 block w-full border border-slate-300 rounded-lg text-xs file:me-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[11px] file:font-bold file:bg-surface file:text-primary dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-300 cursor-pointer shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]">
+                                        <p class="text-[11px] text-slate-400 mt-1">
+                                            AI akan men-scan isi dokumen untuk menyusun materi kurikulum. File hanya diproses sementara dan tidak disimpan ke database.
+                                        </p>
+                                    </div>
+
+                                    <div>
+                                        <label for="custom_instructions" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300 mb-1">
+                                            Instruksi Tambahan / Topik Khusus (Opsional)
+                                        </label>
+                                        <textarea id="custom_instructions" name="custom_instructions" rows="2"
+                                            class="py-2 px-3 block w-full bg-white border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 text-xs focus:border-secondary focus:ring-1 focus:ring-secondary dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+                                            placeholder="Contoh: Fokuskan pada percakapan perhotelan, atau gunakan kosakata kasual sehari-hari...">{{ old('custom_instructions') }}</textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>

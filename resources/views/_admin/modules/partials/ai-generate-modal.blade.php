@@ -1,7 +1,7 @@
 @props(['module', 'subModules'])
 
 <x-admin.modal id="aiGenerateModal" title="✨ AI Generate Materi Pembelajaran" size="sm:max-w-lg">
-    <form id="aiGenerateForm" method="POST" action="{{ route('admin.modules.ai_generate', $module->id) }}" onsubmit="handleAiGenerateSubmit(this)">
+    <form id="aiGenerateForm" method="POST" action="{{ route('admin.modules.ai_generate', $module->id) }}" enctype="multipart/form-data" onsubmit="handleAiGenerateSubmit(this)">
         @csrf
         <input type="hidden" name="sub_module_id" id="aiGenSubModuleId" value="">
 
@@ -36,6 +36,17 @@
                         </div>
                     </label>
                 </div>
+            </div>
+
+            <div>
+                <label for="aiModalDocument" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300 mb-1.5">
+                    Upload Dokumen / Foto Materi (PDF, Word, JPG, PNG - Maks 20MB) (Opsional)
+                </label>
+                <input type="file" id="aiModalDocument" name="document" accept=".pdf,.doc,.docx,image/jpeg,image/png,image/jpg"
+                    class="py-1.5 px-3 block w-full border border-slate-300 rounded-lg text-xs file:me-3 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-[11px] file:font-bold file:bg-surface file:text-primary dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-300 cursor-pointer shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]">
+                <p class="text-[11px] text-slate-400 mt-1">
+                    AI akan men-scan isi dokumen untuk menyusun materi pembelajaran. File langsung diproses dan tidak disimpan ke database.
+                </p>
             </div>
 
             <div>
