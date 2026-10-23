@@ -29,12 +29,17 @@ class CertificateController extends Controller
         $templatesData = $this->usecase->getTemplates();
         $templates = $templatesData['data']['templates'] ?? [];
 
-        $issuedData = $this->usecase->getIssuedCertificates([
-            'cefr' => $cefr,
-            'keywords' => $keywords,
-        ]);
-        $issuedList = $issuedData['data']['list'] ?? [];
-        $totalIssued = $issuedData['data']['total_issued'] ?? 0;
+        if ($activeTab === 'issued') {
+            $issuedData = $this->usecase->getIssuedCertificates([
+                'cefr' => $cefr,
+                'keywords' => $keywords,
+            ]);
+            $issuedList = $issuedData['data']['list'] ?? [];
+            $totalIssued = $issuedData['data']['total_issued'] ?? 0;
+        } else {
+            $issuedList = [];
+            $totalIssued = \Illuminate\Support\Facades\DB::table(\App\Constants\DatabaseConst::USER_CERTIFICATES())->count();
+        }
 
         return view('_admin.certificates.index', [
             'page' => $this->page,
@@ -325,6 +330,7 @@ class CertificateController extends Controller
                     'Content-Type' => $mime,
                     'Content-Disposition' => 'inline; filename="certificate-' . strtolower($cefr) . '.jpg"',
                     'Cache-Control' => 'public, max-age=86400',
+                    'Access-Control-Allow-Origin' => '*',
                 ]);
             }
         }

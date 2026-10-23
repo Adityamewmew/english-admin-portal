@@ -94,9 +94,9 @@
 
                             {{-- Background Thumbnail --}}
                             <x-admin.table.td>
-                                @if ($t->background_url)
+                                @if (!empty($t->has_background) || !empty($t->background_url))
                                     <a href="{{ route('admin.certificates.preview', ['cefr' => $t->cefr]) }}" class="inline-block group relative" title="Lihat Pratinjau Sertifikat">
-                                        <img src="{{ $t->background_url }}" alt="Background {{ $t->cefr }}" class="h-10 w-16 object-cover rounded-lg border border-slate-200 border-b-2 border-b-slate-300 shadow-2xs group-hover:scale-105 transition-transform">
+                                        <img src="{{ route('admin.certificates.image', ['cefr' => $t->cefr]) }}" alt="Background {{ $t->cefr }}" loading="lazy" class="h-10 w-16 object-cover rounded-lg border border-slate-200 border-b-2 border-b-slate-300 shadow-2xs group-hover:scale-105 transition-transform">
                                     </a>
                                 @else
                                     <x-admin.badge variant="neutral" size="sm">

@@ -19,6 +19,20 @@ class CertificateUsecase extends Usecase
     {
         try {
             $templates = DB::table(DatabaseConst::CERTIFICATE_TEMPLATES())
+                ->select([
+                    'id',
+                    'cefr',
+                    'title',
+                    'description',
+                    'instructor_name',
+                    'instructor_title',
+                    'place_of_entry',
+                    'orientation',
+                    'theme_color',
+                    DB::raw('(background_url IS NOT NULL AND length(background_url) > 0) as has_background'),
+                    'created_at',
+                    'updated_at',
+                ])
                 ->orderBy('cefr', 'asc')
                 ->get();
 
