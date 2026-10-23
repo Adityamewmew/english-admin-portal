@@ -159,16 +159,25 @@
                         Pilih sub-modul (skill) di bawah untuk mengelola materi secara terfokus
                     </p>
                 </div>
-                <x-admin.button type="button"
-                    variant="secondary"
-                    data-hs-overlay="#sectionModal"
-                    onclick="openAddSectionModal('{{ $subModules->first()->id ?? '' }}')"
-                    size="sm">
-                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <path d="M5 12h14"/><path d="M12 5v14"/>
-                    </svg>
-                    Tambah Bagian Materi
-                </x-admin.button>
+                <div class="flex items-center gap-2">
+                    <x-admin.button type="button"
+                        variant="outline"
+                        onclick="openAiGenerateModal('', '{{ addslashes($module->title) }}', 'all')"
+                        size="sm">
+                        <svg class="size-4 text-secondary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                        <span>✨ AI Generate Materi</span>
+                    </x-admin.button>
+                    <x-admin.button type="button"
+                        variant="secondary"
+                        data-hs-overlay="#sectionModal"
+                        onclick="openAddSectionModal('{{ $subModules->first()->id ?? '' }}')"
+                        size="sm">
+                        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M5 12h14"/><path d="M12 5v14"/>
+                        </svg>
+                        Tambah Bagian Manual
+                    </x-admin.button>
+                </div>
             </div>
 
             @php
@@ -234,14 +243,23 @@
                                     </span>
                                 </div>
                             </div>
-                            <x-admin.button type="button"
-                                size="sm"
-                                variant="secondary"
-                                data-hs-overlay="#sectionModal"
-                                onclick="openAddSectionModal('{{ $sm->id }}')">
-                                <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                                Tambah Materi di Sub-Modul Ini
-                            </x-admin.button>
+                            <div class="flex items-center gap-2">
+                                <x-admin.button type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    onclick="openAiGenerateModal('{{ $sm->id }}', '{{ addslashes($sm->title) }}', '{{ $sm->skill_type }}')">
+                                    <svg class="size-3.5 text-secondary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                                    <span>✨ AI Generate</span>
+                                </x-admin.button>
+                                <x-admin.button type="button"
+                                    size="sm"
+                                    variant="secondary"
+                                    data-hs-overlay="#sectionModal"
+                                    onclick="openAddSectionModal('{{ $sm->id }}')">
+                                    <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                    <span>Tambah Manual</span>
+                                </x-admin.button>
+                            </div>
                         </div>
 
                         <div class="space-y-4">
@@ -264,13 +282,22 @@
                                     <p class="text-xs text-slate-500 max-w-sm mx-auto">
                                         Mulai tambahkan teori, kosakata, percakapan, atau kuis pilihan ganda untuk sub-modul ini.
                                     </p>
-                                    <x-admin.button type="button"
-                                        variant="secondary"
-                                        data-hs-overlay="#sectionModal"
-                                        onclick="openAddSectionModal('{{ $sm->id }}')"
-                                        size="sm">
-                                        + Tambah Bagian Pertama
-                                    </x-admin.button>
+                                    <div class="flex items-center justify-center gap-2 pt-2">
+                                        <x-admin.button type="button"
+                                            variant="secondary"
+                                            onclick="openAiGenerateModal('{{ $sm->id }}', '{{ addslashes($sm->title) }}', '{{ $sm->skill_type }}')"
+                                            size="sm">
+                                            <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                                            <span>✨ Buat Materi Otomatis dengan AI</span>
+                                        </x-admin.button>
+                                        <x-admin.button type="button"
+                                            variant="outline"
+                                            data-hs-overlay="#sectionModal"
+                                            onclick="openAddSectionModal('{{ $sm->id }}')"
+                                            size="sm">
+                                            + Tambah Manual
+                                        </x-admin.button>
+                                    </div>
                                 </div>
                             @endforelse
                         </div>
@@ -317,6 +344,7 @@
     </div>
 
     {{-- Modals --}}
+    @include('_admin.modules.partials.ai-generate-modal', ['module' => $module, 'subModules' => $subModules])
     @include('_admin.modules.partials.section-modal', ['module' => $module, 'subModules' => $subModules])
     @include('_admin.modules.partials.submodule-modal', ['module' => $module])
     @include('_admin.modules.partials.delete-section-modal', ['module' => $module])

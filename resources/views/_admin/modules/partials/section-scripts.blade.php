@@ -362,6 +362,28 @@
         openModal('editSubModuleModal');
     }
 
+    function openAiGenerateModal(subModuleId, title, skillType) {
+        document.getElementById('aiGenSubModuleId').value = subModuleId || '';
+        const singleLabel = document.getElementById('aiSingleScopeLabel');
+        const singleDesc = document.getElementById('aiSingleScopeDesc');
+        if (title) {
+            singleLabel.innerText = 'Hanya untuk Sub-Modul: ' + title;
+            singleDesc.innerText = 'Generate 2-3 materi spesifik untuk skill ' + (skillType || '').toUpperCase();
+        } else {
+            singleLabel.innerText = 'Hanya untuk Sub-Modul Aktif';
+        }
+        document.getElementById('aiScopeSingle').checked = true;
+        openModal('aiGenerateModal');
+    }
+
+    function handleAiGenerateSubmit(form) {
+        const btn = document.getElementById('aiGenerateSubmitBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 size-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg> <span>Sedang Menyusun Materi...</span>`;
+        }
+    }
+
     // Auto-select tab from URL on page load
     document.addEventListener('DOMContentLoaded', function () {
         const urlParams = new URLSearchParams(window.location.search);

@@ -121,6 +121,16 @@ class CurriculumModuleController extends Controller
 
         $id = $res['data']['id'];
         $firstSubModuleId = $res['data']['first_sub_module_id'] ?? null;
+
+        if ($request->boolean('auto_generate_ai')) {
+            $aiRes = $this->usecase->generateMaterialsWithAI($id, [
+                'custom_instructions' => $request->input('custom_instructions'),
+            ]);
+            $inserted = $aiRes['data']['inserted_count'] ?? 0;
+            $redirectUrl = route('admin.modules.detail', $id) . ($firstSubModuleId ? ('?sub_module=' . $firstSubModuleId) : '');
+            return redirect()->to($redirectUrl)->with('success', "Modul berhasil dibuat! AI telah menyusun {$inserted} bagian materi lengkap pada ke-5 sub-modul.");
+        }
+
         $redirectUrl = route('admin.modules.detail', $id) . '?wizard=1&step=1' . ($firstSubModuleId ? ('&sub_module=' . $firstSubModuleId) : '');
 
         return redirect()->to($redirectUrl)->with('success', 'Modul berhasil dibuat! 5 Sub-Modul (Reading, Listening, Writing, Speaking, Assessment) telah disiapkan. Silakan susun materi.');
@@ -281,6 +291,31 @@ class CurriculumModuleController extends Controller
         $activeTab = $request->input('sub_module_id') ? ('?sub_module=' . $request->input('sub_module_id')) : '';
 
         return redirect()->to(route('admin.modules.detail', $id) . $activeTab)->with('success', 'Bagian materi berhasil dihapus');
+    }
+
+    public function doGenerateAiSection(string $id, Request $request): RedirectResponse
+    {
+        $request->validate([
+            'sub_module_id' => 'nullable|string',
+            'scope' => 'required|in:single,all',
+            'custom_instructions' => 'nullable|string|max:1000',
+        ]);
+
+        $subModuleId = ($request->input('scope') === 'all') ? null : $request->input('sub_module_id');
+
+        $res = $this->usecase->generateMaterialsWithAI($id, [
+            'sub_module_id' => $subModuleId,
+            'custom_instructions' => $request->input('custom_instructions'),
+        ]);
+
+        if (empty($res['data'])) {
+            return back()->with('error', $res['message'] ?? 'Gagal membuat materi dengan AI');
+        }
+
+        $count = $res['data']['inserted_count'] ?? 0;
+        $activeTab = $subModuleId ? ('?sub_module=' . $subModuleId) : '';
+
+        return redirect()->to(route('admin.modules.detail', $id) . $activeTab)->with('success', "Berhasil! {$count} bagian materi berhasil disusun otomatis oleh AI.");
     }
 
     private function extractSectionContent(Request $request, string $type): array

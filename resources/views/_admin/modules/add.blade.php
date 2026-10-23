@@ -165,6 +165,35 @@
                     </div>
                 </div>
 
+                {{-- 5. AI MATERIAL GENERATOR --}}
+                <div class="pt-4 border-t border-slate-200 dark:border-neutral-700/80">
+                    <div class="p-4 rounded-xl border border-secondary/30 bg-amber-500/5 dark:bg-amber-500/10 transition-all">
+                        <div class="flex items-start gap-3">
+                            <input type="checkbox" id="auto_generate_ai" name="auto_generate_ai" value="1" {{ old('auto_generate_ai') ? 'checked' : '' }}
+                                onchange="toggleAiInstructions(this)"
+                                class="mt-1 shrink-0 border-slate-300 rounded text-secondary focus:ring-secondary size-4 cursor-pointer">
+                            <div class="flex-1">
+                                <label for="auto_generate_ai" class="text-xs font-heading font-extrabold text-primary dark:text-neutral-100 cursor-pointer flex items-center gap-1.5">
+                                    <span>✨ Otomatis Buat Materi Lengkap dengan AI</span>
+                                    <span class="text-[10px] font-bold text-secondary bg-secondary/15 px-2 py-0.5 rounded-full">Rekomendasi</span>
+                                </label>
+                                <p class="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
+                                    AI akan otomatis menyusun materi (Teori, Kosakata, Percakapan & Kuis) untuk ke-5 sub-modul (Reading, Listening, Writing, Speaking, Assessment) sesuai level CEFR.
+                                </p>
+
+                                <div id="ai-instructions-container" class="{{ old('auto_generate_ai') ? '' : 'hidden' }} mt-3">
+                                    <label for="custom_instructions" class="block text-xs font-semibold text-slate-700 dark:text-neutral-300 mb-1">
+                                        Instruksi Tambahan / Topik Khusus (Opsional)
+                                    </label>
+                                    <textarea id="custom_instructions" name="custom_instructions" rows="2"
+                                        class="py-2 px-3 block w-full bg-white border border-slate-300 rounded-lg text-slate-800 placeholder-slate-400 text-xs focus:border-secondary focus:ring-1 focus:ring-secondary dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200"
+                                        placeholder="Contoh: Fokuskan pada percakapan perhotelan, atau gunakan kosakata kasual sehari-hari...">{{ old('custom_instructions') }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- FOOTER ACTIONS --}}
                 <div class="pt-4 border-t border-slate-200 dark:border-neutral-700/80 flex items-center justify-end gap-x-3">
                     <x-admin.button href="{{ route('admin.modules.index') }}" variant="outline" as="a" size="sm">
@@ -182,6 +211,15 @@
     </div>
 
     <script>
+        function toggleAiInstructions(checkbox) {
+            const container = document.getElementById('ai-instructions-container');
+            if (checkbox.checked) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
         function previewBanner(input) {
             const previewWrap = document.getElementById('banner-preview-wrap');
             const preview = document.getElementById('banner-preview');

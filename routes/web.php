@@ -59,6 +59,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::post('/detail/{id}/section/{sectionId}/update', [CurriculumModuleController::class, 'doUpdateSection'])->name('section.update');
         Route::delete('/detail/{id}/section/{sectionId}/delete', [CurriculumModuleController::class, 'doDeleteSection'])->name('section.delete');
         Route::post('/detail/{id}/submodule/{subModuleId}/update', [CurriculumModuleController::class, 'doUpdateSubModule'])->name('submodule.update');
+        Route::post('/detail/{id}/ai-generate', [CurriculumModuleController::class, 'doGenerateAiSection'])->name('ai_generate');
     });
 
     // Sub Modules Routes (Redirected to Modules)
