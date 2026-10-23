@@ -2,8 +2,12 @@
 
 @section('title', 'Edit Template Sertifikat CEFR ' . $cefr)
 
+@php
+    $currentOrientation = old('orientation', $template->orientation ?? 'portrait');
+@endphp
+
 @section('content')
-    <x-admin.page-header :title="'Edit Template Sertifikat CEFR ' . $cefr" subtitle="Sesuaikan judul, deskripsi pencapaian, dan unggah background kustom untuk kategori ini.">
+    <x-admin.page-header :title="'Edit Template Sertifikat CEFR ' . $cefr" subtitle="Sesuaikan judul, deskripsi pencapaian, format ukuran kertas, dan unggah background untuk kategori ini.">
         <x-admin.button href="{{ route('admin.certificates.index') }}" size="sm" color="outline-secondary">
             <svg class="size-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -55,45 +59,74 @@
                     </label>
                     <textarea name="description" rows="3"
                               class="w-full px-3.5 py-2 rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary">{{ old('description', $template->description) }}</textarea>
-                    <p class="text-[11px] text-gray-500 dark:text-neutral-400">Teks ini menjelaskan kompetensi yang berhasil dikuasai siswa pada sertifikat.</p>
                 </div>
 
-                {{-- Signatory Fields --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {{-- Pilihan Format & Ukuran Sertifikat (Filter Orientasi) --}}
+                <div class="space-y-2 pt-2 border-t border-gray-100 dark:border-neutral-800">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
+                            Pilih Format & Ukuran Kertas <span class="text-rose-500">*</span>
+                        </label>
+                        <span id="aspect-badge" class="text-[11px] font-semibold text-primary dark:text-primary-400 bg-primary/10 px-2.5 py-0.5 rounded-full">
+                            {{ $currentOrientation === 'portrait' ? "A4 Portrait (1 : 1.414) · Resmi Eddy's" : ($currentOrientation === 'landscape' ? "A4 Landscape (1.414 : 1) · Mendatar" : "Square (1 : 1) · Persegi") }}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3">
+                        {{-- Portrait Option --}}
+                        <label class="orientation-card relative flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all {{ $currentOrientation === 'portrait' ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-neutral-700 hover:border-gray-300 text-gray-700 dark:text-neutral-300' }}" data-orientation="portrait">
+                            <input type="radio" name="orientation" value="portrait" class="sr-only" {{ $currentOrientation === 'portrait' ? 'checked' : '' }}>
+                            <div class="w-6 h-8 border-2 border-current rounded-xs mb-1.5 flex items-center justify-center">
+                                <span class="text-[8px] font-bold">A4</span>
+                            </div>
+                            <span class="text-xs font-extrabold">Portrait</span>
+                            <span class="text-[10px] text-slate-500 dark:text-neutral-400">1 : 1.414 (Tegak Resmi)</span>
+                        </label>
+
+                        {{-- Landscape Option --}}
+                        <label class="orientation-card relative flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all {{ $currentOrientation === 'landscape' ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-neutral-700 hover:border-gray-300 text-gray-700 dark:text-neutral-300' }}" data-orientation="landscape">
+                            <input type="radio" name="orientation" value="landscape" class="sr-only" {{ $currentOrientation === 'landscape' ? 'checked' : '' }}>
+                            <div class="w-8 h-6 border-2 border-current rounded-xs mb-1.5 flex items-center justify-center">
+                                <span class="text-[8px] font-bold">A4</span>
+                            </div>
+                            <span class="text-xs font-extrabold">Landscape</span>
+                            <span class="text-[10px] text-slate-500 dark:text-neutral-400">1.414 : 1 (Mendatar)</span>
+                        </label>
+
+                        {{-- Square Option --}}
+                        <label class="orientation-card relative flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all {{ $currentOrientation === 'square' ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 dark:border-neutral-700 hover:border-gray-300 text-gray-700 dark:text-neutral-300' }}" data-orientation="square">
+                            <input type="radio" name="orientation" value="square" class="sr-only" {{ $currentOrientation === 'square' ? 'checked' : '' }}>
+                            <div class="w-7 h-7 border-2 border-current rounded-xs mb-1.5 flex items-center justify-center">
+                                <span class="text-[8px] font-bold">1:1</span>
+                            </div>
+                            <span class="text-xs font-extrabold">Square</span>
+                            <span class="text-[10px] text-slate-500 dark:text-neutral-400">1 : 1 (Persegi)</span>
+                        </label>
+                    </div>
+                </div>
+
+                {{-- Signatory Fields & Place of Entry --}}
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="space-y-1.5">
                         <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
                             Nama Penandatangan
                         </label>
-                        <input type="text" name="instructor_name" value="{{ old('instructor_name', $template->instructor_name) }}"
+                        <input type="text" name="instructor_name" value="{{ old('instructor_name', $template->instructor_name ?? 'KHOIRUL ANWAR, M.Pd') }}"
                                class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary">
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
                             Jabatan Penandatangan
                         </label>
-                        <input type="text" name="instructor_title" value="{{ old('instructor_title', $template->instructor_title) }}"
+                        <input type="text" name="instructor_title" value="{{ old('instructor_title', $template->instructor_title ?? 'Director of Studies') }}"
                                class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary">
                     </div>
-                </div>
-
-                {{-- Place of Entry & Orientasi --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="space-y-1.5">
                         <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
-                            Tempat / Lokasi Ujian (Place of Entry)
+                            Tempat Ujian (Place of Entry)
                         </label>
                         <input type="text" name="place_of_entry" value="{{ old('place_of_entry', $template->place_of_entry ?? 'PBN Kelapa Gading, D.18 Jember East Java') }}"
                                class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                    </div>
-                    <div class="space-y-1.5">
-                        <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
-                            Orientasi Cetak Sertifikat
-                        </label>
-                        <select name="orientation"
-                                class="w-full px-3.5 py-2.5 rounded-lg border border-gray-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/20 focus:border-primary">
-                            <option value="portrait" {{ old('orientation', $template->orientation ?? 'portrait') === 'portrait' ? 'selected' : '' }}>A4 Portrait (Resmi Eddy's Local Examination)</option>
-                            <option value="landscape" {{ old('orientation', $template->orientation ?? 'portrait') === 'landscape' ? 'selected' : '' }}>A4 Landscape (Mendatar)</option>
-                        </select>
                     </div>
                 </div>
 
@@ -109,28 +142,31 @@
                     </div>
                 </div>
 
-                {{-- Background / Latar Belakang Sertifikat --}}
+                {{-- Background / Latar Belakang Sertifikat with Live Interactive Preview --}}
                 <div class="space-y-2 pt-2 border-t border-gray-100 dark:border-neutral-800">
                     <div class="flex items-center justify-between">
                         <label class="block text-xs font-bold text-gray-700 dark:text-neutral-200">
-                            Unggah Gambar Desain Sertifikat Baru (JPG, PNG)
+                            Gambar Desain Sertifikat (JPG, PNG, WEBP)
                         </label>
-                        <span class="text-[11px] font-semibold text-primary dark:text-primary-400 bg-primary/10 px-2 py-0.5 rounded">
-                            Rasio A4 Landscape (1.414 : 1)
-                        </span>
                     </div>
                     <p class="text-xs text-gray-500 dark:text-neutral-400">
-                        Unggah gambar desain sertifikat baru (JPG, PNG, WEBP hingga 8MB). Kosongkan jika tidak ingin mengganti gambar yang sudah ada.
+                        Unggah gambar desain sertifikat baru jika ingin mengganti gambar saat ini. Kosongkan jika tetap menggunakan desain lama.
                     </p>
 
                     {{-- Image Preview Area with Interactive Controls --}}
-                    <div id="preview-container" class="{{ $template->background_url ? '' : 'hidden' }} max-w-xl mx-auto my-4">
-                        <div class="flex items-center justify-between mb-1.5">
-                            <p class="text-xs font-semibold text-gray-700 dark:text-neutral-300">Preview Desain Sertifikat & Penempatan Nama:</p>
-                            <span class="text-[11px] text-gray-500 dark:text-neutral-400">Geser slider di bawah untuk pas dengan garis</span>
+                    <div id="preview-container" class="{{ $template->background_url ? '' : 'hidden' }} mx-auto my-4 transition-all duration-300 {{ $currentOrientation === 'landscape' ? 'max-w-xl' : 'max-w-sm sm:max-w-md' }}">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-xs font-semibold text-gray-700 dark:text-neutral-300">Preview Live Penempatan Sertifikat:</p>
+                            <label class="flex items-center gap-1.5 text-[11px] font-medium text-primary cursor-pointer select-none">
+                                <input type="checkbox" id="toggle-credential-overlays" checked class="rounded border-gray-300 text-primary focus:ring-primary size-3.5">
+                                <span>Tampilkan Nilai & No Ref</span>
+                            </label>
                         </div>
-                        <div class="relative aspect-[1.414/1] rounded-xl overflow-hidden border-2 border-primary/50 shadow-md bg-white select-none">
-                            <img id="image-preview" src="{{ $template->background_url ?? '#' }}" alt="Preview Sertifikat" class="w-full h-full object-contain"
+
+                        {{-- Certificate Stage Container (Aspect ratio dynamically matches orientation) --}}
+                        <div id="preview-stage"
+                             class="relative rounded-xl overflow-hidden border-2 border-primary/50 shadow-md bg-white select-none transition-all duration-300 {{ $currentOrientation === 'portrait' ? 'aspect-[1/1.414]' : ($currentOrientation === 'landscape' ? 'aspect-[1.414/1]' : 'aspect-square') }}">
+                            <img id="image-preview" src="{{ $template->background_url ?? '#' }}" alt="Preview Sertifikat" class="w-full h-full object-contain pointer-events-none"
                                  onerror="this.style.opacity='0'; document.getElementById('no-image-notice')?.classList.remove('hidden');"
                                  onload="this.style.opacity='1'; document.getElementById('no-image-notice')?.classList.add('hidden');">
                             
@@ -141,40 +177,77 @@
                                 <p class="text-[11px] text-gray-500 dark:text-neutral-400">Pilih file gambar pada kotak upload di bawah untuk menampilkan desain sertifikat.</p>
                             </div>
 
-                            {{-- Dynamic Student Name Overlay --}}
-                            <div id="name-overlay-box" class="absolute left-0 right-0 flex items-center justify-center pointer-events-none px-6 transition-all duration-75"
-                                 style="top: {{ old('name_y_percent', $template->name_y_percent ?? 48) }}%; transform: translateY(-50%);">
+                            {{-- 1. Dynamic Student Name Overlay --}}
+                            <div id="name-overlay-box" class="absolute left-0 right-0 flex items-center justify-center pointer-events-none px-4 transition-all duration-75 z-20"
+                                 style="top: {{ old('name_y_percent', $template->name_y_percent ?? 34) }}%; transform: translateY(-50%);">
                                 <span id="name-overlay-text" class="font-serif font-black text-[#0D3B66] text-center drop-shadow-xs tracking-wide leading-none"
-                                      style="font-size: {{ (old('name_font_size', $template->name_font_size ?? 36) * 0.75) }}px;">
+                                      style="font-size: {{ (old('name_font_size', $template->name_font_size ?? 26) * 0.75) }}px;">
                                     Muhammad Aditya Pratama
                                 </span>
                             </div>
+
+                            {{-- 2. Credential & Scores Overlay (Breakdown 6 Nilai + Pass Standard) --}}
+                            <div id="credentials-overlay" class="absolute inset-0 pointer-events-none flex flex-col justify-between p-3 sm:p-4 text-center z-10 transition-opacity duration-200">
+                                <div class="h-10"></div>
+
+                                {{-- 6 Scores & Pass Standard Box --}}
+                                <div class="space-y-1.5 my-auto">
+                                    <div class="max-w-[220px] sm:max-w-[260px] mx-auto text-left font-mono font-bold text-[8px] sm:text-[9.5px] space-y-0.5 text-slate-900 bg-white/80 backdrop-blur-2xs p-2 rounded border border-slate-200 shadow-2xs">
+                                        <div class="flex justify-between"><span>STRUCTURE &amp; VOCABULARY</span><span>: 85</span></div>
+                                        <div class="flex justify-between"><span>READING COMPREHENSION</span><span>: 86</span></div>
+                                        <div class="flex justify-between"><span>LISTENING COMPREHENSION</span><span>: 87</span></div>
+                                        <div class="flex justify-between"><span>DICTATION</span><span>: 91</span></div>
+                                        <div class="flex justify-between"><span>CONVERSATION</span><span>: 90</span></div>
+                                        <div class="flex justify-between"><span>COMPOSITION</span><span>: 86</span></div>
+                                    </div>
+
+                                    <div class="inline-block border border-slate-700/60 rounded-xl px-2.5 py-1 bg-[#FCFBF7]/90 text-[7px] sm:text-[8px] shadow-2xs font-mono">
+                                        <p class="font-bold border-b border-slate-300 pb-0.5">89-100 = EXCELLENT · 76-88 = GOOD · 60-75 = FAIR</p>
+                                    </div>
+                                </div>
+
+                                {{-- Footer Info: Date, Place of Entry, Reference No, Director --}}
+                                <div class="grid grid-cols-3 gap-1 text-[7px] sm:text-[8px] text-left pt-1 border-t border-slate-300/60 bg-white/70 backdrop-blur-2xs px-1.5 py-0.5 rounded">
+                                    <div>
+                                        <p class="font-bold text-slate-800">Date of Examination</p>
+                                        <p class="text-slate-600 font-mono">24 Oktober 2026</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="font-bold text-slate-800">Place of Entry</p>
+                                        <p class="text-slate-600 leading-tight">PBN Kelapa Gading, D.18</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-bold text-slate-800">Reference No.</p>
+                                        <p class="font-bold text-slate-900 font-mono">EE-RC-A-C1-X/26-001</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        {{-- Interactive Position & Font Size Sliders --}}
-                        <div class="mt-3.5 p-3.5 rounded-xl bg-gray-50 dark:bg-neutral-800/60 border border-gray-200 dark:border-neutral-700 space-y-3 text-left">
+                        {{-- Sliders for Name Position & Font Size --}}
+                        <div class="mt-3 p-3 rounded-xl bg-gray-50 dark:bg-neutral-800/60 border border-gray-200 dark:border-neutral-700 space-y-3 text-left">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold text-gray-800 dark:text-white flex items-center gap-1.5">
                                     <svg class="size-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-                                    Kustomisasi Peletakan Nama Siswa
+                                    Kustomisasi Posisi Nama Siswa
                                 </span>
                                 <span class="text-[11px] text-primary font-medium">Live Interaktif</span>
                             </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {{-- Vertical Position Slider (Y%) --}}
                                 <div class="space-y-1">
                                     <div class="flex justify-between items-center text-xs">
                                         <label for="y-slider" class="font-semibold text-gray-700 dark:text-neutral-300">
                                             Posisi Vertikal (Y):
                                         </label>
-                                        <span id="y-value-label" class="font-mono font-bold text-primary">{{ old('name_y_percent', $template->name_y_percent ?? 48) }}%</span>
+                                        <span id="y-value-label" class="font-mono font-bold text-primary">{{ old('name_y_percent', $template->name_y_percent ?? 34) }}%</span>
                                     </div>
-                                    <input type="range" id="y-slider" name="name_y_percent" min="15" max="85" value="{{ old('name_y_percent', $template->name_y_percent ?? 48) }}"
+                                    <input type="range" id="y-slider" name="name_y_percent" min="15" max="85" value="{{ old('name_y_percent', $template->name_y_percent ?? 34) }}"
                                            class="w-full h-2 bg-gray-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-primary">
                                     <div class="flex justify-between text-[10px] text-gray-400">
                                         <span>Atas (15%)</span>
-                                        <span>Tengah (50%)</span>
+                                        <span>Standar (34%)</span>
                                         <span>Bawah (85%)</span>
                                     </div>
                                 </div>
@@ -185,14 +258,14 @@
                                         <label for="font-size-slider" class="font-semibold text-gray-700 dark:text-neutral-300">
                                             Ukuran Font:
                                         </label>
-                                        <span id="font-size-label" class="font-mono font-bold text-primary">{{ old('name_font_size', $template->name_font_size ?? 36) }} px</span>
+                                        <span id="font-size-label" class="font-mono font-bold text-primary">{{ old('name_font_size', $template->name_font_size ?? 26) }} px</span>
                                     </div>
-                                    <input type="range" id="font-size-slider" name="name_font_size" min="16" max="64" value="{{ old('name_font_size', $template->name_font_size ?? 36) }}"
+                                    <input type="range" id="font-size-slider" name="name_font_size" min="14" max="54" value="{{ old('name_font_size', $template->name_font_size ?? 26) }}"
                                            class="w-full h-2 bg-gray-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-primary">
                                     <div class="flex justify-between text-[10px] text-gray-400">
-                                        <span>Kecil (16px)</span>
-                                        <span>Sedang (36px)</span>
-                                        <span>Besar (64px)</span>
+                                        <span>Kecil (14px)</span>
+                                        <span>Sedang (26px)</span>
+                                        <span>Besar (54px)</span>
                                     </div>
                                 </div>
                             </div>
@@ -200,7 +273,7 @@
                     </div>
 
                     {{-- Upload Dropzone Box --}}
-                    <div class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-neutral-700 border-dashed rounded-xl hover:border-primary transition-colors bg-gray-50/50 dark:bg-neutral-800/30">
+                    <div class="mt-2 flex justify-center px-4 sm:px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-neutral-700 border-dashed rounded-xl hover:border-primary transition-colors bg-gray-50/50 dark:bg-neutral-800/30">
                         <div class="space-y-2 text-center w-full">
                             <div class="flex flex-col items-center">
                                 <svg class="size-10 text-gray-400 dark:text-neutral-500 mb-2" stroke="currentColor" fill="none" viewBox="0 0 48 48">
@@ -239,7 +312,57 @@
         document.addEventListener('DOMContentLoaded', function () {
             const fileInput = document.getElementById('file-upload-edit');
             const previewContainer = document.getElementById('preview-container');
+            const previewStage = document.getElementById('preview-stage');
             const imagePreview = document.getElementById('image-preview');
+            const aspectBadge = document.getElementById('aspect-badge');
+            const toggleOverlays = document.getElementById('toggle-credential-overlays');
+            const credentialsOverlay = document.getElementById('credentials-overlay');
+
+            // Dynamic Aspect Ratio Switcher
+            const orientationCards = document.querySelectorAll('.orientation-card');
+            orientationCards.forEach(card => {
+                card.addEventListener('click', function () {
+                    orientationCards.forEach(c => {
+                        c.classList.remove('border-primary', 'bg-primary/5', 'text-primary');
+                        c.classList.add('border-gray-200', 'text-gray-700');
+                        c.querySelector('input').checked = false;
+                    });
+                    this.classList.add('border-primary', 'bg-primary/5', 'text-primary');
+                    this.classList.remove('border-gray-200', 'text-gray-700');
+                    const radio = this.querySelector('input');
+                    radio.checked = true;
+
+                    const aspect = this.dataset.orientation;
+                    applyOrientation(aspect);
+                });
+            });
+
+            function applyOrientation(aspect) {
+                previewStage.className = 'relative rounded-xl overflow-hidden border-2 border-primary/50 shadow-md bg-white select-none transition-all duration-300';
+                previewContainer.className = 'mx-auto my-4 transition-all duration-300';
+
+                if (aspect === 'portrait') {
+                    previewStage.classList.add('aspect-[1/1.414]');
+                    previewContainer.classList.add('max-w-sm', 'sm:max-w-md');
+                    aspectBadge.textContent = "A4 Portrait (1 : 1.414) · Resmi Eddy's";
+                } else if (aspect === 'landscape') {
+                    previewStage.classList.add('aspect-[1.414/1]');
+                    previewContainer.classList.add('max-w-xl');
+                    aspectBadge.textContent = "A4 Landscape (1.414 : 1) · Mendatar";
+                } else if (aspect === 'square') {
+                    previewStage.classList.add('aspect-square');
+                    previewContainer.classList.add('max-w-md');
+                    aspectBadge.textContent = "Square (1 : 1) · Persegi";
+                }
+            }
+
+            // Toggle Credentials Overlay Visibility
+            if (toggleOverlays && credentialsOverlay) {
+                toggleOverlays.addEventListener('change', function () {
+                    credentialsOverlay.style.opacity = this.checked ? '1' : '0';
+                    credentialsOverlay.style.pointerEvents = 'none';
+                });
+            }
 
             if (fileInput) {
                 fileInput.addEventListener('change', function () {

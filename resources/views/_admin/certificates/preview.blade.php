@@ -3,7 +3,9 @@
 @section('title', 'Pratinjau Sertifikat CEFR ' . $cefr)
 
 @php
-    $isPortrait = ($template->orientation ?? 'portrait') === 'portrait';
+    $orientation = strtolower($template->orientation ?? 'portrait');
+    $isSquare = $orientation === 'square';
+    $isPortrait = !$isSquare && $orientation !== 'landscape';
     $tier = ($cefr === 'C1' || $cefr === 'C2') ? 'Advanced' : (($cefr === 'B1' || $cefr === 'B2') ? 'Intermediate' : 'Elementary');
     $qualification = $score >= 89 ? 'EXCELLENT' : ($score >= 76 ? 'GOOD' : 'FAIR');
 @endphp
@@ -63,12 +65,12 @@
     {{-- Certificate Visual Preview Stage --}}
     <div class="flex justify-center items-center py-4 sm:py-8 bg-gray-100/60 dark:bg-neutral-900/60 rounded-3xl border border-gray-200/80 dark:border-neutral-800 p-4 sm:p-8">
         <div id="printable-certificate"
-             class="relative w-full {{ $isPortrait ? 'max-w-[620px] aspect-[1/1.414]' : 'max-w-[850px] aspect-[1.414/1]' }} bg-[#FCFBF7] text-[#0D3B66] rounded-xl shadow-2xl border-4 sm:border-8 border-double border-[#0D3B66]/20 overflow-hidden select-none flex flex-col justify-between"
+             class="relative w-full {{ $isSquare ? 'max-w-[620px] aspect-square' : ($isPortrait ? 'max-w-[620px] aspect-[1/1.414]' : 'max-w-[850px] aspect-[1.414/1]') }} bg-[#FCFBF7] text-[#0D3B66] rounded-xl shadow-2xl border-4 sm:border-8 border-double border-[#0D3B66]/20 overflow-hidden select-none flex flex-col justify-between"
              style="-webkit-print-color-adjust: exact; print-color-adjust: exact;">
 
             {{-- Background Image if present --}}
             @if ($template->background_url)
-                <img src="{{ $template->background_url }}" alt="Background Sertifikat" class="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none select-none z-0">
+                <img src="{{ $template->background_url }}" alt="Background Sertifikat" class="absolute inset-0 w-full h-full object-contain pointer-events-none select-none z-0">
             @endif
 
             {{-- Top Accent Bar --}}
@@ -301,7 +303,7 @@
                 display: none !important;
             }
             @page {
-                size: {{ $isPortrait ? 'A4 portrait' : 'A4 landscape' }};
+                size: {{ $isSquare ? '210mm 210mm' : ($isPortrait ? 'A4 portrait' : 'A4 landscape') }};
                 margin: 0;
             }
         }
