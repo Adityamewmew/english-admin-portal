@@ -96,7 +96,8 @@ class CertificateUsecase extends Usecase
                 ->exists();
 
             if ($exists) {
-                return Response::buildErrorConflict("Template sertifikat untuk CEFR {$cefr} sudah ada.");
+                // If template already exists for this CEFR level, update it seamlessly (Upsert)
+                return $this->updateTemplate($cefr, $data);
             }
 
             $insertData = [

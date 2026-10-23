@@ -59,6 +59,32 @@ class Response
     }
 
     /**
+     * Build an error response for validation failures
+     */
+    public static function buildErrorValidation(mixed $data = null, string $message = ResponseConst::ERROR_MESSAGE_VALIDATION): array
+    {
+        return [
+            'success' => false,
+            'code' => ResponseConst::HTTP_BAD_REQUEST,
+            'message' => $message,
+            'data' => $data,
+        ];
+    }
+
+    /**
+     * Build an error response for conflict / already exists
+     */
+    public static function buildErrorConflict(string $message = 'Data sudah ada'): array
+    {
+        return [
+            'success' => false,
+            'code' => 409,
+            'message' => $message,
+            'data' => null,
+        ];
+    }
+
+    /**
      * Build a custom error response
      */
     public static function buildError(int $code, string $message, mixed $data = null): array
