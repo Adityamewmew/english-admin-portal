@@ -3,7 +3,6 @@
 namespace App\Usecase\Admin;
 
 use App\Constants\DatabaseConst;
-use App\Constants\ResponseConst;
 use App\Http\Presenter\Response;
 use App\Usecase\Usecase;
 use Exception;
@@ -21,7 +20,7 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                 ->whereNull('deleted_at')
                 ->first();
 
-            if (!$module) {
+            if (! $module) {
                 return Response::buildErrorNotFound('Modul kurikulum tidak ditemukan');
             }
 
@@ -34,7 +33,7 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             $skillType = 'all';
             $targetSubModule = null;
 
-            if (!empty($subModuleId)) {
+            if (! empty($subModuleId)) {
                 $targetSubModule = $subModules->firstWhere('id', $subModuleId);
                 if ($targetSubModule) {
                     $skillType = strtolower($targetSubModule->skill_type);
@@ -49,6 +48,7 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             // 1. Call Elysia backend endpoint
             $elysiaUrl = rtrim(env('ELYSIA_API_URL', 'http://localhost:3003'), '/');
             $payload = [
+                'moduleId' => $moduleId,
                 'moduleTitle' => $module->title,
                 'cefr' => $module->cefr,
                 'objective' => $module->objective,
@@ -67,24 +67,24 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                     $materials = $json['data']['materials'] ?? null;
                 }
             } catch (Exception $e) {
-                Log::warning('Elysia AI generator unreachable: ' . $e->getMessage() . '. Falling back to direct OmniRoute.');
+                Log::warning('Elysia AI generator unreachable: '.$e->getMessage().'. Falling back to direct OmniRoute.');
             }
 
             // Fallback: If Elysia call failed or offline, call OmniRoute API directly
-            if (!$materials) {
+            if (! $materials) {
                 $materials = $this->callOmniRouteDirectly($module, $skillType, $customInstructions, $documentBase64, $documentMimeType, $documentText);
             }
 
-            if (!$materials) {
+            if (! $materials) {
                 return Response::buildErrorService('Gagal menghasilkan materi dari AI. Silakan coba kembali.');
             }
 
             $insertedCount = 0;
             $cleanId = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $moduleId));
-            $shouldReplace = !empty($options['replace']);
+            $shouldReplace = ! empty($options['replace']);
 
             if ($skillType !== 'all' && is_array($materials)) {
-                $sectionsList = isset($materials[0]) ? $materials : ($materials[$skillType] ?? []);
+                $sectionsList = isset($materials[0]) ? $materials : ($materials['sections'] ?? ($materials[$skillType] ?? []));
                 $targetSmId = $targetSubModule ? $targetSubModule->id : null;
                 if ($shouldReplace && $targetSmId) {
                     DB::table(DatabaseConst::MODULE_SECTIONS())
@@ -100,7 +100,9 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                         ->delete();
                 }
                 foreach ($materials as $skill => $sectionsList) {
-                    if (!is_array($sectionsList)) continue;
+                    if (! is_array($sectionsList)) {
+                        continue;
+                    }
                     $matchedSm = $subModules->first(function ($sm) use ($skill) {
                         return strtolower($sm->skill_type) === strtolower($skill);
                     });
@@ -115,6 +117,7 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             ]);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
+
             return Response::buildErrorService($e->getMessage());
         }
     }
@@ -123,45 +126,56 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
     {
         $maxOrder = DB::table(DatabaseConst::MODULE_SECTIONS())
             ->where('module_id', $moduleId)
-            ->when($subModuleId, fn($q) => $q->where('sub_module_id', $subModuleId))
+            ->when($subModuleId, fn ($q) => $q->where('sub_module_id', $subModuleId))
             ->max('order_index') ?? 0;
 
         $count = 0;
         foreach ($sectionsList as $item) {
-            if (empty($item['title']) || empty($item['section_type'])) continue;
+            $secType = $item['sectionType'] ?? $item['section_type'] ?? null;
+            if (empty($item['title']) || empty($secType)) {
+                continue;
+            }
 
             $maxOrder++;
-            $secId = 'sec-' . $cleanId . '-' . substr(uniqid(), -5) . '-' . mt_rand(10, 99);
+            $secId = $item['id'] ?? ('sec-'.$cleanId.'-'.substr(uniqid(), -5).'-'.mt_rand(10, 99));
             $content = $item['content'] ?? [];
 
-            if ($item['section_type'] === 'vocab' && is_array($content)) {
-                if (isset($content['items']) && !isset($content['words'])) {
+            if ($secType === 'vocab' && is_array($content)) {
+                if (isset($content['items']) && ! isset($content['words'])) {
                     $content['words'] = $content['items'];
-                } elseif (isset($content['words']) && !isset($content['items'])) {
+                } elseif (isset($content['words']) && ! isset($content['items'])) {
                     $content['items'] = $content['words'];
                 }
             }
+
+            $orderIdx = $item['orderIndex'] ?? $item['order_index'] ?? $maxOrder;
 
             DB::table(DatabaseConst::MODULE_SECTIONS())->insert([
                 'id' => $secId,
                 'module_id' => $moduleId,
                 'sub_module_id' => $subModuleId,
-                'section_type' => $item['section_type'],
+                'section_type' => $secType,
                 'title' => $item['title'],
                 'content' => is_string($content) ? $content : json_encode($content),
-                'order_index' => $maxOrder,
+                'order_index' => $orderIdx,
                 'created_at' => now(),
             ]);
             $count++;
         }
+
         return $count;
     }
 
     private function callOmniRouteDirectly($module, string $skillType, string $customInstructions, ?string $documentBase64, ?string $documentMimeType, ?string $documentText): ?array
     {
         try {
-            $apiKey = env('AI_TTS_API_KEY', 'sk-8a1c8c009c8af9a0-15746f-4c9a4a96');
-            $baseUrl = rtrim(env('AI_TTS_BASE_URL', 'https://omni.drimland.my.id/v1'), '/');
+            $apiKey = env('OMNIROUTE_API_KEY') ?: env('AI_TTS_API_KEY');
+            if (empty($apiKey)) {
+                Log::error('OMNIROUTE_API_KEY atau AI_TTS_API_KEY belum dikonfigurasi di file .env');
+
+                return null;
+            }
+            $baseUrl = rtrim(env('OMNIROUTE_BASE_URL', env('AI_TTS_BASE_URL', 'https://omni.drimland.my.id/v1')), '/');
             $cefr = strtoupper($module->cefr ?? 'A1');
 
             $systemPrompt = "You are an expert Cambridge & CEFR English curriculum designer for EDDY'S English School. Generate complete learning materials for Indonesian students learning English at CEFR level {$cefr}. Output ONLY raw valid JSON (no markdown fences, no extra text).";
@@ -173,12 +187,12 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             }
 
             if ($documentText) {
-                $userPrompt .= "\n\n[DOCUMENT REFERENCE TEXT / TRANSCRIPT]:\n\"\"\"\n" . substr($documentText, 0, 45000) . "\n\"\"\"\nInstructions: Distill and extract teaching materials based directly on the attached reference text for CEFR {$cefr}.";
+                $userPrompt .= "\n\n[DOCUMENT REFERENCE TEXT / TRANSCRIPT]:\n\"\"\"\n".substr($documentText, 0, 45000)."\n\"\"\"\nInstructions: Distill and extract teaching materials based directly on the attached reference text for CEFR {$cefr}.";
             }
 
             $userContent = $userPrompt;
             if ($documentBase64 && $documentMimeType) {
-                $docPrompt = $userPrompt . "\n\nInstructions: Distill and extract teaching materials based directly on the attached document for CEFR {$cefr}.";
+                $docPrompt = $userPrompt."\n\nInstructions: Distill and extract teaching materials based directly on the attached document for CEFR {$cefr}.";
                 $userContent = [
                     ['type' => 'text', 'text' => $docPrompt],
                     ['type' => 'image_url', 'image_url' => ['url' => "data:{$documentMimeType};base64,{$documentBase64}"]],
@@ -197,7 +211,9 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                 ],
             ]);
 
-            if (!$res->successful()) return null;
+            if (! $res->successful()) {
+                return null;
+            }
 
             $text = $res->json('choices.0.message.content') ?? '';
             $text = trim(preg_replace('/^```(?:json)?/i', '', trim($text)));
@@ -208,8 +224,9 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                 return $json['materials'] ?? $json;
             }
         } catch (Exception $e) {
-            Log::error('Direct OmniRoute error: ' . $e->getMessage());
+            Log::error('Direct OmniRoute error: '.$e->getMessage());
         }
+
         return null;
     }
 }

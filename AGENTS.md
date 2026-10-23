@@ -392,6 +392,20 @@ Saat membuat fitur CRUD baru, ikuti urutan ini:
 5. Usecase: implement `getAll`, `getByID`, `create`, `update`, `delete`
 6. Controller: property `$page`, `$baseRedirect`, inject Usecase via constructor
 
+---
+
+## Codebase Memory Protocol (Strict Memory-First)
+
+AI **WAJIB** menggunakan MCP `codebase-memory` sebagai gerbang utama sebelum menganalisis/membaca file manual:
+1. **Dilarang** membaca folder/file satu per satu atau brute-force grep untuk memahami arsitektur, flow, atau relasi kode.
+2. **Workflow Memory-First**:
+   - **Arsitektur & Overview**: `get_architecture` (project: `smartlogy-laravel-starter-kit`)
+   - **Pencarian Simbol / Controller / Usecase**: `search_graph`
+   - **Relasi & Alur Panggilan**: `trace_path`
+   - **Multi-Hop Graph Query**: `query_graph`
+   - **Ambil Snippet Kode**: `get_code_snippet`
+3. **Fallback**: Gunakan `grep_search` atau `view_file` hanya jika simbol tidak terindeks atau saat hendak melakukan pengeditan baris kode secara presisi.
+
 === foundation rules ===
 
 # Laravel Boost Guidelines
