@@ -51,8 +51,8 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                 'moduleId' => $moduleId,
                 'moduleTitle' => $module->title,
                 'cefr' => $module->cefr,
-                'objective' => $module->objective,
-                'customInstructions' => $customInstructions,
+                'objective' => $module->objective ?: "Master {$module->title} at {$module->cefr} level",
+                'customInstructions' => $customInstructions ?: '',
                 'skillType' => $skillType,
                 'documentBase64' => $documentBase64,
                 'documentMimeType' => $documentMimeType,
@@ -61,10 +61,12 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
 
             $materials = null;
             try {
-                $httpResponse = Http::timeout(120)->post("{$elysiaUrl}/api/curriculum/modules/ai-generate", $payload);
+                $httpResponse = Http::timeout(180)->post("{$elysiaUrl}/api/curriculum/modules/ai-generate", $payload);
                 if ($httpResponse->successful()) {
                     $json = $httpResponse->json();
                     $materials = $json['data']['materials'] ?? null;
+                } else {
+                    Log::error('Elysia AI generator failed: HTTP '.$httpResponse->status().' - '.$httpResponse->body());
                 }
             } catch (Exception $e) {
                 Log::warning('Elysia AI generator unreachable: '.$e->getMessage().'. Falling back to direct OmniRoute.');
@@ -177,13 +179,14 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             }
             $baseUrl = rtrim(env('OMNIROUTE_BASE_URL', env('AI_TTS_BASE_URL', 'https://omni.drimland.my.id/v1')), '/');
             $cefr = strtoupper($module->cefr ?? 'A1');
+            $objective = $module->objective ?: "Master {$module->title} at {$cefr} level";
 
             $systemPrompt = "You are an expert Cambridge & CEFR English curriculum designer for EDDY'S English School. Generate complete learning materials for Indonesian students learning English at CEFR level {$cefr}. Output ONLY raw valid JSON (no markdown fences, no extra text).";
 
             if ($skillType !== 'all') {
-                $userPrompt = "Generate 2 to 3 practical sections for sub-module skill '{$skillType}' in module '{$module->title}' (CEFR {$cefr}). Objective: {$module->objective}. {$customInstructions}. Output a JSON array of sections: [{\"title\": \"...\", \"section_type\": \"theory|vocab|dialogue|quiz\", \"content\": {...}}]";
+                $userPrompt = "Generate 2 to 3 practical sections for sub-module skill '{$skillType}' in module '{$module->title}' (CEFR {$cefr}). Objective: {$objective}. {$customInstructions}. Output a JSON array of sections: [{\"title\": \"...\", \"section_type\": \"theory|vocab|dialogue|quiz\", \"content\": {...}}]";
             } else {
-                $userPrompt = "Generate 5-skill curriculum package for module '{$module->title}' (CEFR {$cefr}). Objective: {$module->objective}. {$customInstructions}. Output a JSON object with keys 'reading', 'listening', 'writing', 'speaking', 'assessment', each containing an array of sections with keys 'title', 'section_type' (theory/vocab/dialogue/quiz), and 'content'.";
+                $userPrompt = "Generate 5-skill curriculum package for module '{$module->title}' (CEFR {$cefr}). Objective: {$objective}. {$customInstructions}. Output a JSON object with keys 'reading', 'listening', 'writing', 'speaking', 'assessment', each containing an array of sections with keys 'title', 'section_type' (theory/vocab/dialogue/quiz), and 'content'.";
             }
 
             if ($documentText) {
@@ -191,7 +194,7 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             }
 
             $userContent = $userPrompt;
-            if ($documentBase64 && $documentMimeType) {
+            if ($documentBase64 && $documentMimeType && str_starts_with($documentMimeType, 'image/')) {
                 $docPrompt = $userPrompt."\n\nInstructions: Distill and extract teaching materials based directly on the attached document for CEFR {$cefr}.";
                 $userContent = [
                     ['type' => 'text', 'text' => $docPrompt],

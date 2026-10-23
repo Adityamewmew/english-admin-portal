@@ -9,6 +9,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 
 class CurriculumModuleController extends Controller
 {
@@ -63,8 +65,8 @@ class CurriculumModuleController extends Controller
                 ->with('error', ResponseConst::DEFAULT_ERROR_MESSAGE);
         }
 
-        $cachedDocName = \Illuminate\Support\Facades\Cache::get('module_doc_name_' . $id);
-        $hasCachedDoc = !empty(\Illuminate\Support\Facades\Cache::get('module_doc_text_' . $id)) || !empty(\Illuminate\Support\Facades\Cache::get('module_doc_base64_' . $id));
+        $cachedDocName = Cache::get('module_doc_name_'.$id);
+        $hasCachedDoc = ! empty(Cache::get('module_doc_text_'.$id)) || ! empty(Cache::get('module_doc_base64_'.$id));
 
         return view('_admin.modules.detail', [
             'module' => (object) $data['data']['module'],
@@ -107,16 +109,16 @@ class CurriculumModuleController extends Controller
         if ($request->hasFile('banner')) {
             $file = $request->file('banner');
             $ext = strtolower($file->guessExtension() ?: 'jpg');
-            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+            if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
                 $ext = 'jpg';
             }
-            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $ext;
+            $filename = 'banner_'.time().'_'.uniqid().'.'.$ext;
             $destinationPath = public_path('uploads/modules');
-            if (!file_exists($destinationPath)) {
+            if (! file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
             $file->move($destinationPath, $filename);
-            $data['banner_url'] = '/uploads/modules/' . $filename;
+            $data['banner_url'] = '/uploads/modules/'.$filename;
         }
 
         $res = $this->usecase->create($data);
@@ -132,17 +134,17 @@ class CurriculumModuleController extends Controller
         if ($request->hasFile('document')) {
             $file = $request->file('document');
             $extracted = $this->extractUploadedDocument($file);
-            if (!empty($extracted['document_text'])) {
-                \Illuminate\Support\Facades\Cache::put('module_doc_text_' . $id, $extracted['document_text'], now()->addHours(24));
+            if (! empty($extracted['document_text'])) {
+                Cache::put('module_doc_text_'.$id, $extracted['document_text'], now()->addHours(24));
             }
-            if (!empty($extracted['document_base64'])) {
-                \Illuminate\Support\Facades\Cache::put('module_doc_base64_' . $id, $extracted['document_base64'], now()->addHours(24));
-                \Illuminate\Support\Facades\Cache::put('module_doc_mime_' . $id, $extracted['document_mime_type'] ?? 'application/pdf', now()->addHours(24));
+            if (! empty($extracted['document_base64'])) {
+                Cache::put('module_doc_base64_'.$id, $extracted['document_base64'], now()->addHours(24));
+                Cache::put('module_doc_mime_'.$id, $extracted['document_mime_type'] ?? 'application/pdf', now()->addHours(24));
             }
-            \Illuminate\Support\Facades\Cache::put('module_doc_name_' . $id, $file->getClientOriginalName(), now()->addHours(24));
+            Cache::put('module_doc_name_'.$id, $file->getClientOriginalName(), now()->addHours(24));
         }
 
-        $redirectUrl = route('admin.modules.detail', $id) . '?wizard=1&step=reading' . ($firstSubModuleId ? ('&sub_module=' . $firstSubModuleId) : '');
+        $redirectUrl = route('admin.modules.detail', $id).'?wizard=1&step=reading'.($firstSubModuleId ? ('&sub_module='.$firstSubModuleId) : '');
 
         $successMsg = $request->hasFile('document')
             ? 'Modul berhasil dibuat! Dokumen bahan ajar telah dipindai. Silakan pilih opsi generate materi di bawah.'
@@ -165,9 +167,9 @@ class CurriculumModuleController extends Controller
             return back()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
         }
 
-        $query = '?sub_module=' . $subModuleId . ($request->has('wizard') ? '&wizard=' . $request->input('wizard') : '') . ($request->has('step') ? '&step=' . $request->input('step') : '');
+        $query = '?sub_module='.$subModuleId.($request->has('wizard') ? '&wizard='.$request->input('wizard') : '').($request->has('step') ? '&step='.$request->input('step') : '');
 
-        return redirect()->to(route('admin.modules.detail', $id) . $query)->with('success', 'Nama sub-modul berhasil diperbarui');
+        return redirect()->to(route('admin.modules.detail', $id).$query)->with('success', 'Nama sub-modul berhasil diperbarui');
     }
 
     public function update(string $id): View|RedirectResponse
@@ -207,16 +209,16 @@ class CurriculumModuleController extends Controller
         if ($request->hasFile('banner')) {
             $file = $request->file('banner');
             $ext = strtolower($file->guessExtension() ?: 'jpg');
-            if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
+            if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp'])) {
                 $ext = 'jpg';
             }
-            $filename = 'banner_' . time() . '_' . uniqid() . '.' . $ext;
+            $filename = 'banner_'.time().'_'.uniqid().'.'.$ext;
             $destinationPath = public_path('uploads/modules');
-            if (!file_exists($destinationPath)) {
+            if (! file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
             $file->move($destinationPath, $filename);
-            $data['banner_url'] = '/uploads/modules/' . $filename;
+            $data['banner_url'] = '/uploads/modules/'.$filename;
         }
 
         $res = $this->usecase->update($id, $data);
@@ -262,9 +264,9 @@ class CurriculumModuleController extends Controller
             return back()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
         }
 
-        $activeTab = $request->input('sub_module_id') ? ('?sub_module=' . $request->input('sub_module_id')) : '';
+        $activeTab = $request->input('sub_module_id') ? ('?sub_module='.$request->input('sub_module_id')) : '';
 
-        return redirect()->to(route('admin.modules.detail', $id) . $activeTab)->with('success', 'Bagian materi berhasil ditambahkan');
+        return redirect()->to(route('admin.modules.detail', $id).$activeTab)->with('success', 'Bagian materi berhasil ditambahkan');
     }
 
     public function doUpdateSection(string $id, string $sectionId, Request $request): RedirectResponse
@@ -290,9 +292,9 @@ class CurriculumModuleController extends Controller
             return back()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
         }
 
-        $activeTab = $request->input('sub_module_id') ? ('?sub_module=' . $request->input('sub_module_id')) : '';
+        $activeTab = $request->input('sub_module_id') ? ('?sub_module='.$request->input('sub_module_id')) : '';
 
-        return redirect()->to(route('admin.modules.detail', $id) . $activeTab)->with('success', 'Bagian materi berhasil diperbarui');
+        return redirect()->to(route('admin.modules.detail', $id).$activeTab)->with('success', 'Bagian materi berhasil diperbarui');
     }
 
     public function doDeleteSection(string $id, string $sectionId, Request $request): RedirectResponse
@@ -303,9 +305,9 @@ class CurriculumModuleController extends Controller
             return back()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
         }
 
-        $activeTab = $request->input('sub_module_id') ? ('?sub_module=' . $request->input('sub_module_id')) : '';
+        $activeTab = $request->input('sub_module_id') ? ('?sub_module='.$request->input('sub_module_id')) : '';
 
-        return redirect()->to(route('admin.modules.detail', $id) . $activeTab)->with('success', 'Bagian materi berhasil dihapus');
+        return redirect()->to(route('admin.modules.detail', $id).$activeTab)->with('success', 'Bagian materi berhasil dihapus');
     }
 
     public function doGenerateAiSection(string $id, Request $request): RedirectResponse
@@ -332,24 +334,24 @@ class CurriculumModuleController extends Controller
             $extracted = $this->extractUploadedDocument($file);
             $options = array_merge($options, $extracted);
 
-            if (!empty($extracted['document_text'])) {
-                \Illuminate\Support\Facades\Cache::put('module_doc_text_' . $id, $extracted['document_text'], now()->addHours(24));
+            if (! empty($extracted['document_text'])) {
+                Cache::put('module_doc_text_'.$id, $extracted['document_text'], now()->addHours(24));
             }
-            if (!empty($extracted['document_base64'])) {
-                \Illuminate\Support\Facades\Cache::put('module_doc_base64_' . $id, $extracted['document_base64'], now()->addHours(24));
-                \Illuminate\Support\Facades\Cache::put('module_doc_mime_' . $id, $extracted['document_mime_type'] ?? 'application/pdf', now()->addHours(24));
+            if (! empty($extracted['document_base64'])) {
+                Cache::put('module_doc_base64_'.$id, $extracted['document_base64'], now()->addHours(24));
+                Cache::put('module_doc_mime_'.$id, $extracted['document_mime_type'] ?? 'application/pdf', now()->addHours(24));
             }
-            \Illuminate\Support\Facades\Cache::put('module_doc_name_' . $id, $file->getClientOriginalName(), now()->addHours(24));
+            Cache::put('module_doc_name_'.$id, $file->getClientOriginalName(), now()->addHours(24));
         } else {
             // 2. Fall back to cached document from add page or previous scan
-            $cachedText = \Illuminate\Support\Facades\Cache::get('module_doc_text_' . $id);
-            $cachedBase64 = \Illuminate\Support\Facades\Cache::get('module_doc_base64_' . $id);
-            $cachedMime = \Illuminate\Support\Facades\Cache::get('module_doc_mime_' . $id);
+            $cachedText = Cache::get('module_doc_text_'.$id);
+            $cachedBase64 = Cache::get('module_doc_base64_'.$id);
+            $cachedMime = Cache::get('module_doc_mime_'.$id);
 
-            if (!empty($cachedText)) {
+            if (! empty($cachedText)) {
                 $options['document_text'] = $cachedText;
             }
-            if (!empty($cachedBase64)) {
+            if (! empty($cachedBase64)) {
                 $options['document_base64'] = $cachedBase64;
                 $options['document_mime_type'] = $cachedMime;
             }
@@ -362,18 +364,18 @@ class CurriculumModuleController extends Controller
         }
 
         $count = $res['data']['inserted_count'] ?? 0;
-        $activeTab = $subModuleId ? ('?sub_module=' . $subModuleId) : '';
+        $activeTab = $subModuleId ? ('?sub_module='.$subModuleId) : '';
         $wizardParam = ($request->boolean('is_progressive') || $request->has('wizard'))
             ? ($activeTab ? '&wizard=1' : '?wizard=1')
             : '';
 
         $skillLabel = $subModuleId ? 'sub-modul' : 'seluruh sub-modul';
 
-        return redirect()->to(route('admin.modules.detail', $id) . $activeTab . $wizardParam)
+        return redirect()->to(route('admin.modules.detail', $id).$activeTab.$wizardParam)
             ->with('success', "Berhasil! {$count} bagian materi berhasil disusun otomatis oleh AI untuk {$skillLabel}.");
     }
 
-    private function extractUploadedDocument(\Illuminate\Http\UploadedFile $file): array
+    private function extractUploadedDocument(UploadedFile $file): array
     {
         $ext = strtolower($file->getClientOriginalExtension());
         $mime = $file->getMimeType() ?: 'application/octet-stream';
@@ -383,7 +385,7 @@ class CurriculumModuleController extends Controller
         if (in_array($ext, ['docx', 'doc'])) {
             $extractedText = '';
             if ($ext === 'docx' && class_exists('ZipArchive')) {
-                $zip = new \ZipArchive();
+                $zip = new \ZipArchive;
                 if ($zip->open($path) === true) {
                     $xml = $zip->getFromName('word/document.xml');
                     if ($xml !== false) {
@@ -399,24 +401,42 @@ class CurriculumModuleController extends Controller
                     $extractedText = trim(preg_replace('/\s+/', ' ', $extractedText));
                 }
             }
+
             return ['document_text' => $extractedText];
         }
 
-        // 2. Images & PDF (Multimodal Base64)
+        // 2. Images & PDF (Multimodal Base64 & Text Extraction)
         $contents = @file_get_contents($path);
         if ($contents) {
             $base64 = base64_encode($contents);
+            $extractedText = '';
             if ($ext === 'pdf') {
                 $mime = 'application/pdf';
+                // Extract plain text streams from PDF
+                preg_match_all('/\((.*?)\)\s*Tj/s', $contents, $matches);
+                if (! empty($matches[1])) {
+                    $extractedText = implode(' ', $matches[1]);
+                }
+                if (empty($extractedText)) {
+                    preg_match_all('/[a-zA-Z0-9.,;:!?\'"\-\s]{4,}/', $contents, $words);
+                    if (! empty($words[0])) {
+                        $extractedText = implode(' ', array_slice($words[0], 0, 3000));
+                    }
+                }
             } elseif (in_array($ext, ['jpg', 'jpeg'])) {
                 $mime = 'image/jpeg';
             } elseif ($ext === 'png') {
                 $mime = 'image/png';
             }
-            return [
+            $result = [
                 'document_base64' => $base64,
                 'document_mime_type' => $mime,
             ];
+            if (! empty($extractedText)) {
+                $result['document_text'] = trim($extractedText);
+            }
+
+            return $result;
         }
 
         return [];
@@ -439,12 +459,13 @@ class CurriculumModuleController extends Controller
                         'explanation' => $request->input('theory_trap_explanation', ''),
                     ];
                 }
+
                 return $content;
 
             case 'vocab':
                 $items = [];
                 foreach ($request->input('vocab_words', []) as $w) {
-                    if (!empty($w['word'])) {
+                    if (! empty($w['word'])) {
                         $items[] = [
                             'word' => trim($w['word']),
                             'phonetic' => trim($w['phonetic'] ?? ''),
@@ -454,12 +475,13 @@ class CurriculumModuleController extends Controller
                         ];
                     }
                 }
+
                 return ['items' => $items, 'words' => $items];
 
             case 'dialogue':
                 $lines = [];
                 foreach ($request->input('dialogue_lines', []) as $l) {
-                    if (!empty($l['text'])) {
+                    if (! empty($l['text'])) {
                         $lines[] = [
                             'speaker' => trim($l['speaker'] ?? 'Speaker'),
                             'text' => trim($l['text']),
@@ -467,6 +489,7 @@ class CurriculumModuleController extends Controller
                         ];
                     }
                 }
+
                 return [
                     'context' => $request->input('dialogue_context', ''),
                     'lines' => $lines,
@@ -475,7 +498,7 @@ class CurriculumModuleController extends Controller
             case 'quiz':
                 $questions = [];
                 foreach ($request->input('quiz_questions', []) as $q) {
-                    if (!empty($q['question'])) {
+                    if (! empty($q['question'])) {
                         $options = array_values(array_filter($q['options'] ?? []));
                         $questions[] = [
                             'question' => trim($q['question']),
@@ -485,6 +508,7 @@ class CurriculumModuleController extends Controller
                         ];
                     }
                 }
+
                 return [
                     'passingScore' => (int) $request->input('quiz_passing_score', 70),
                     'questions' => $questions,
@@ -495,4 +519,3 @@ class CurriculumModuleController extends Controller
         }
     }
 }
-
