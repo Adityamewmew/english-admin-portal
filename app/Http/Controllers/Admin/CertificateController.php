@@ -65,8 +65,16 @@ class CertificateController extends Controller
             'place_of_entry' => 'nullable|string|max:255',
             'orientation' => 'nullable|string|in:portrait,landscape,square',
             'theme_color' => 'nullable|string|max:50',
-            'name_y_percent' => 'nullable|integer|between:10,90',
-            'name_font_size' => 'nullable|integer|between:14,72',
+            'name_y_percent' => 'nullable|integer|between:5,95',
+            'name_font_size' => 'nullable|integer|between:10,72',
+            'scores_y_percent' => 'nullable|integer|between:5,95',
+            'scores_font_size' => 'nullable|integer|between:6,36',
+            'date_y_percent' => 'nullable|integer|between:5,95',
+            'date_font_size' => 'nullable|integer|between:6,36',
+            'place_y_percent' => 'nullable|integer|between:5,95',
+            'place_font_size' => 'nullable|integer|between:6,36',
+            'ref_no_y_percent' => 'nullable|integer|between:5,95',
+            'ref_no_font_size' => 'nullable|integer|between:6,36',
             'background_file' => 'required|image|mimes:jpeg,png,jpg,webp|max:8192',
         ], [
             'background_file.required' => 'File gambar desain sertifikat (JPG, PNG, WEBP) wajib diunggah.',
@@ -83,8 +91,16 @@ class CertificateController extends Controller
             'place_of_entry' => $request->input('place_of_entry') ?: 'PBN Kelapa Gading, D.18 Jember East Java',
             'orientation' => $request->input('orientation') ?: 'portrait',
             'theme_color' => $request->input('theme_color') ?: '#0D3B66',
-            'name_y_percent' => (int) ($request->input('name_y_percent') ?: 48),
-            'name_font_size' => (int) ($request->input('name_font_size') ?: 36),
+            'name_y_percent' => (int) ($request->input('name_y_percent') ?: 34),
+            'name_font_size' => (int) ($request->input('name_font_size') ?: 26),
+            'scores_y_percent' => (int) ($request->input('scores_y_percent') ?: 52),
+            'scores_font_size' => (int) ($request->input('scores_font_size') ?: 10),
+            'date_y_percent' => (int) ($request->input('date_y_percent') ?: 80),
+            'date_font_size' => (int) ($request->input('date_font_size') ?: 8),
+            'place_y_percent' => (int) ($request->input('place_y_percent') ?: 80),
+            'place_font_size' => (int) ($request->input('place_font_size') ?: 8),
+            'ref_no_y_percent' => (int) ($request->input('ref_no_y_percent') ?: 80),
+            'ref_no_font_size' => (int) ($request->input('ref_no_font_size') ?: 8),
         ];
 
         if ($request->hasFile('background_file')) {
@@ -130,8 +146,16 @@ class CertificateController extends Controller
             'place_of_entry' => 'nullable|string|max:255',
             'orientation' => 'nullable|string|in:portrait,landscape,square',
             'theme_color' => 'nullable|string|max:50',
-            'name_y_percent' => 'nullable|integer|between:10,90',
-            'name_font_size' => 'nullable|integer|between:14,72',
+            'name_y_percent' => 'nullable|integer|between:5,95',
+            'name_font_size' => 'nullable|integer|between:10,72',
+            'scores_y_percent' => 'nullable|integer|between:5,95',
+            'scores_font_size' => 'nullable|integer|between:6,36',
+            'date_y_percent' => 'nullable|integer|between:5,95',
+            'date_font_size' => 'nullable|integer|between:6,36',
+            'place_y_percent' => 'nullable|integer|between:5,95',
+            'place_font_size' => 'nullable|integer|between:6,36',
+            'ref_no_y_percent' => 'nullable|integer|between:5,95',
+            'ref_no_font_size' => 'nullable|integer|between:6,36',
             'background_file' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:8192',
         ]);
 
@@ -145,13 +169,26 @@ class CertificateController extends Controller
             'theme_color',
             'name_y_percent',
             'name_font_size',
+            'scores_y_percent',
+            'scores_font_size',
+            'date_y_percent',
+            'date_font_size',
+            'place_y_percent',
+            'place_font_size',
+            'ref_no_y_percent',
+            'ref_no_font_size',
         ]);
 
-        if ($request->has('name_y_percent')) {
-            $data['name_y_percent'] = (int) $request->input('name_y_percent');
-        }
-        if ($request->has('name_font_size')) {
-            $data['name_font_size'] = (int) $request->input('name_font_size');
+        foreach ([
+            'name_y_percent', 'name_font_size',
+            'scores_y_percent', 'scores_font_size',
+            'date_y_percent', 'date_font_size',
+            'place_y_percent', 'place_font_size',
+            'ref_no_y_percent', 'ref_no_font_size',
+        ] as $key) {
+            if ($request->has($key) && $request->input($key) !== null) {
+                $data[$key] = (int) $request->input($key);
+            }
         }
 
         if ($request->hasFile('background_file')) {
