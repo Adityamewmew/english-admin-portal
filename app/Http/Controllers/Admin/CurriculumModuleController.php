@@ -302,14 +302,8 @@ class CurriculumModuleController extends Controller
             'order_index' => 'nullable|integer|min:1',
         ]);
 
-        $existingSec = DB::table(DatabaseConst::MODULE_SECTIONS())
-            ->where('id', $sectionId)
-            ->where('module_id', $id)
-            ->first();
-        $existingContent = [];
-        if ($existingSec && ! empty($existingSec->content)) {
-            $existingContent = is_array($existingSec->content) ? $existingSec->content : (json_decode($existingSec->content, true) ?: []);
-        }
+        $existingSec = DB::table(DatabaseConst::MODULE_SECTIONS())->where('id', $sectionId)->where('module_id', $id)->first();
+        $existingContent = ! empty($existingSec?->content) ? (is_array($existingSec->content) ? $existingSec->content : (json_decode($existingSec->content, true) ?: [])) : [];
 
         $content = $this->extractSectionContent($request, $request->input('section_type'), $existingContent);
 
@@ -480,10 +474,10 @@ class CurriculumModuleController extends Controller
 
     private function extractSectionContent(Request $request, string $type, array $existingContent = []): array
     {
-        // 1. JSON Mode: If user submitted raw structured JSON, decode and use directly
-        if ($request->input('content_mode') === 'json' && $request->filled('content_json')) {
+        // 1. Structured JSON: Decoded directly from JSON mode or serialized visual form
+        if ($request->filled('content_json')) {
             $decoded = json_decode($request->input('content_json'), true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && ! empty($decoded)) {
                 return $decoded;
             }
         }
@@ -529,11 +523,7 @@ class CurriculumModuleController extends Controller
                 $lines = [];
                 foreach ($request->input('dialogue_lines', []) as $l) {
                     if (! empty($l['text'])) {
-                        $lines[] = [
-                            'speaker' => trim($l['speaker'] ?? 'Speaker'),
-                            'text' => trim($l['text']),
-                            'translation' => trim($l['translation'] ?? ''),
-                        ];
+                        $lines[] = ['speaker' => trim($l['speaker'] ?? 'Speaker'), 'text' => trim($l['text']), 'translation' => trim($l['translation'] ?? '')];
                     }
                 }
                 $content = $existingContent;
@@ -545,9 +535,37 @@ class CurriculumModuleController extends Controller
                 return $content;
 
             case 'practice':
+                if ($request->has('cable_pairs')) {
+                    $pairs = [];
+                    foreach ($request->input('cable_pairs', []) as $p) {
+                        if (! empty($p['left']) && ! empty($p['right'])) {
+                            $pairs[] = ['left' => trim($p['left']), 'right' => trim($p['right'])];
+                        }
+                    }
+                    $content = $existingContent;
+                    $content['drills'] = [[
+                        'id' => 'drill-cable-1',
+                        'title' => 'Interactive Cable Connection (Vocab Match)',
+                        'instruction' => $request->input('practice_instruction', 'Connect each vocabulary term on the left with its accurate meaning on the right.'),
+                        'pairs' => $pairs,
+                    ]];
+
+                    return $content;
+                }
+
                 return $existingContent;
 
             case 'quiz':
+                $content = $existingContent;
+                if ($request->filled('quiz_passing_score')) {
+                    $content['passingScore'] = (int) $request->input('quiz_passing_score');
+                }
+                if ($request->has('practicum_questions')) {
+                    $content['practicumQuestions'] = array_values($request->input('practicum_questions', []));
+                    unset($content['questions']);
+
+                    return $content;
+                }
                 $questions = [];
                 foreach ($request->input('quiz_questions', []) as $q) {
                     if (! empty($q['question'])) {
@@ -560,13 +578,9 @@ class CurriculumModuleController extends Controller
                         ];
                     }
                 }
-
-                $content = $existingContent;
-                if ($request->filled('quiz_passing_score')) {
-                    $content['passingScore'] = (int) $request->input('quiz_passing_score');
-                }
                 if (! empty($questions)) {
                     $content['questions'] = $questions;
+                    unset($content['practicumQuestions']);
                 }
 
                 return $content;

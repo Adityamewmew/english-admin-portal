@@ -581,9 +581,10 @@
     @include('_admin.modules.partials.section-modal', ['module' => $module, 'subModules' => $subModules])
     @include('_admin.modules.partials.submodule-modal', ['module' => $module])
     @include('_admin.modules.partials.delete-section-modal', ['module' => $module])
-
 @endsection
 
 @push('scripts')
+    @include('_admin.modules.partials.page-scripts', ['module' => $module, 'activeSubModuleId' => $activeSubModuleId, 'subModules' => $subModules])
+    @include('_admin.modules.partials.practicum-scripts')
     @include('_admin.modules.partials.section-scripts', ['module' => $module, 'activeSubModuleId' => $activeSubModuleId, 'subModules' => $subModules])
 @endpush

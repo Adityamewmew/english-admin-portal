@@ -223,26 +223,57 @@
                     </div>
                 </div>
 
-                {{-- 4. SUBFORM: PRACTICE LAB --}}
-                <div id="subformPractice" class="section-subform space-y-3 hidden">
-                    <div class="p-4 rounded-xl bg-amber-50/60 border border-amber-200 dark:bg-amber-950/20 dark:border-amber-800 space-y-2">
-                        <div class="flex items-center gap-2">
-                            <span class="size-2 rounded-full bg-amber-600"></span>
-                            <span class="text-xs font-heading font-extrabold text-amber-900 dark:text-amber-300">Bagian Latihan Interaktif (Practice Lab)</span>
+                {{-- 4. SUBFORM: PRACTICE LAB (Cable Match Drill) --}}
+                <div id="subformPractice" class="section-subform space-y-3.5 hidden">
+                    <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-2">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="size-2 rounded-full bg-amber-600"></span>
+                                <span class="text-xs font-heading font-extrabold text-amber-900 dark:text-amber-200">
+                                    Kabel Sambung Kosakata (Cable Match Drill)
+                                </span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="pullFromVocabSection()"
+                                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white flex items-center gap-1 shadow-xs cursor-pointer"
+                                    title="Tarik otomatis pasangan kata dari daftar kosakata modul">
+                                    ⚡ Tarik dari Kosakata Modul
+                                </button>
+                                <button type="button" onclick="addCablePairRow()"
+                                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-amber-600/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 flex items-center gap-1 cursor-pointer">
+                                    + Tambah Pasangan
+                                </button>
+                            </div>
                         </div>
-                        <p class="text-xs text-amber-800/90 dark:text-amber-300/80 leading-relaxed">
-                            Bagian ini memuat format latihan khusus seperti <strong>Kabel Sambung Kosakata</strong> (Reading), <strong>Sentence Builder & Mechanics Challenges</strong> (Writing), atau <strong>Syllable Stress & Roleplay Drill</strong> (Speaking).
-                        </p>
-                        <div class="pt-1">
-                            <button type="button" onclick="switchEditMode('json')" class="btn-tactile btn-tactile-secondary !py-1.5 !px-3 !rounded-xl !text-xs !font-bold flex items-center gap-1.5 cursor-pointer">
-                                ⚡ Buka di Mode JSON Terstruktur untuk Edit Latihan
-                            </button>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-700 dark:text-neutral-300 mb-1">
+                                Instruksi Latihan Praktik
+                            </label>
+                            <input type="text" name="practice_instruction" id="practiceInstruction"
+                                class="w-full text-xs rounded-[10px] border-slate-300 bg-white py-1.5 px-3 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] dark:bg-neutral-800 dark:border-neutral-700 dark:text-white"
+                                value="Connect each vocabulary term on the left with its accurate meaning on the right.">
                         </div>
+                    </div>
+
+                    {{-- Cable Pairs Table / List --}}
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-neutral-400 px-1">
+                            <span>Pasangan Kata Bahasa Inggris (Kiri)</span>
+                            <span>Arti Bahasa Indonesia (Kanan)</span>
+                        </div>
+                        <div id="cablePairsContainer" class="space-y-2 max-h-80 overflow-y-auto pr-1">
+                            {{-- Dynamic Rows injected by addCablePairRow() --}}
+                        </div>
+                    </div>
+
+                    <div class="p-2.5 rounded-lg bg-slate-100 dark:bg-neutral-800/60 border border-slate-200 dark:border-neutral-700 text-[11px] text-slate-500 dark:text-neutral-400 flex items-center gap-2">
+                        <span>💡</span>
+                        <span>Format kabel sambung ini otomatis terhubung dengan sistem Drag & Drop kabel interaktif di aplikasi mobile/web siswa.</span>
                     </div>
                 </div>
 
-                {{-- 5. SUBFORM: QUIZ --}}
-                <div id="subformQuiz" class="section-subform space-y-3 hidden">
+                {{-- 5. SUBFORM: QUIZ & EVALUATION --}}
+                <div id="subformQuiz" class="section-subform space-y-3.5 hidden">
                     <div class="flex items-center justify-between p-3 rounded-xl bg-surface dark:bg-neutral-900/50 border border-slate-200 dark:border-neutral-700">
                         <div>
                             <span class="text-xs font-heading font-extrabold text-primary dark:text-neutral-300 block">Passing Score (%)</span>
@@ -252,30 +283,69 @@
                             class="w-20 text-xs rounded-[8px] border-slate-300 bg-white py-1 px-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)] dark:bg-neutral-800 dark:border-neutral-700 dark:text-white text-center font-bold">
                     </div>
 
-                    {{-- Notice for Practicum & 55-Item Assessment --}}
+                    {{-- Format Switcher: Pilihan Ganda (MCQ) vs Practicum Interaktif --}}
+                    <div class="p-1 rounded-xl bg-slate-100 dark:bg-neutral-800/80 flex items-center gap-1 border border-slate-200 dark:border-neutral-700">
+                        <button type="button" onclick="switchQuizFormat('mcq')" id="btnQuizFormatMcq"
+                            class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all bg-white text-primary shadow-xs dark:bg-neutral-700 dark:text-white cursor-pointer text-center">
+                            🔘 Pilihan Ganda Standar (A–D)
+                        </button>
+                        <button type="button" onclick="switchQuizFormat('practicum')" id="btnQuizFormatPracticum"
+                            class="flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all text-slate-600 hover:text-primary dark:text-neutral-400 dark:hover:text-white cursor-pointer text-center">
+                            🎧 Practicum Interaktif (Dictation, Susun Kata, Speaking)
+                        </button>
+                    </div>
+
+                    {{-- Notice for 55-Item Assessment --}}
                     <div id="quizComplexNotice" class="p-3 rounded-xl bg-blue-50/70 border border-blue-200 dark:bg-blue-950/20 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-300 flex items-center justify-between gap-2 hidden">
                         <div>
-                            <span class="font-bold block">✨ Format Soal Khusus Terdeteksi</span>
-                            <span id="quizComplexDesc" class="text-[11px] text-blue-700 dark:text-blue-400">Bagian ini memuat soal audio dictation, arrange, atau 55 butir evaluasi.</span>
+                            <span class="font-bold block">Ujian Komprehensif Terdeteksi</span>
+                            <span id="quizComplexDesc" class="text-[11px] text-blue-700 dark:text-blue-400">Bagian ini memuat evaluasi komprehensif lintas skill.</span>
                         </div>
                         <button type="button" onclick="switchEditMode('json')" class="shrink-0 px-2.5 py-1 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-700 cursor-pointer">
                             Edit di Mode JSON
                         </button>
                     </div>
 
-                    <div class="flex items-center justify-between pt-1">
-                        <div>
-                            <span class="text-xs font-heading font-extrabold text-primary dark:text-white block">Daftar Pertanyaan Pilihan Ganda</span>
-                            <span class="text-[11px] text-slate-500">Soal multiple choice standar (A-D)</span>
+                    {{-- A. MCQ Section --}}
+                    <div id="quizMcqSection" class="space-y-3">
+                        <div class="flex items-center justify-between pt-1">
+                            <div>
+                                <span class="text-xs font-heading font-extrabold text-primary dark:text-white block">Daftar Pertanyaan Pilihan Ganda</span>
+                                <span class="text-[11px] text-slate-500">Soal multiple choice standar (A-D)</span>
+                            </div>
+                            <button type="button" onclick="addQuizQuestionRow()"
+                                class="btn-tactile btn-tactile-outline !py-1.5 !px-3 !rounded-xl !text-xs !font-bold flex items-center gap-1 cursor-pointer">
+                                <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                + Tambah Soal
+                            </button>
                         </div>
-                        <button type="button" onclick="addQuizQuestionRow()"
-                            class="btn-tactile btn-tactile-outline !py-1.5 !px-3 !rounded-xl !text-xs !font-bold flex items-center gap-1 cursor-pointer">
-                            <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                            + Tambah Soal
-                        </button>
+                        <div id="quizQuestionsContainer" class="space-y-3.5 max-h-96 overflow-y-auto pr-1">
+                            {{-- Injected dynamically --}}
+                        </div>
                     </div>
-                    <div id="quizQuestionsContainer" class="space-y-4 max-h-96 overflow-y-auto pr-1">
-                        {{-- Injected dynamically --}}
+
+                    {{-- B. Practicum Accordion Section --}}
+                    <div id="quizPracticumSection" class="space-y-3 hidden">
+                        <div class="flex items-center justify-between pt-1">
+                            <div>
+                                <span class="text-xs font-heading font-extrabold text-primary dark:text-white block">Daftar Soal Practicum Interaktif</span>
+                                <span class="text-[11px] text-slate-500">Audio Dictation, Arrange, Writing Transformation, atau Speaking Drills</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="toggleAllPracticumAccordions()" id="btnToggleAllAccordions"
+                                    class="text-[11px] text-slate-500 hover:text-primary font-bold cursor-pointer">
+                                    Buka/Tutup Semua
+                                </button>
+                                <button type="button" onclick="addPracticumQuestionRow()"
+                                    class="btn-tactile btn-tactile-outline !py-1.5 !px-3 !rounded-xl !text-xs !font-bold flex items-center gap-1 cursor-pointer">
+                                    <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                    + Tambah Soal Practicum
+                                </button>
+                            </div>
+                        </div>
+                        <div id="practicumQuestionsContainer" class="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+                            {{-- Collapsible accordion cards injected dynamically --}}
+                        </div>
                     </div>
                 </div>
             </div>
