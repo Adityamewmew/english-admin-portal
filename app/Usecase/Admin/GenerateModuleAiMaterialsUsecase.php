@@ -4,6 +4,8 @@ namespace App\Usecase\Admin;
 
 use App\Constants\DatabaseConst;
 use App\Http\Presenter\Response;
+use App\Usecase\Admin\Curriculum\AssessmentSynthesizer;
+use App\Usecase\Admin\Curriculum\SkillPromptBuilder;
 use App\Usecase\Usecase;
 use Exception;
 use Illuminate\Support\Collection;
@@ -13,6 +15,11 @@ use Illuminate\Support\Facades\Log;
 
 class GenerateModuleAiMaterialsUsecase extends Usecase
 {
+    public function __construct(
+        protected SkillPromptBuilder $promptBuilder = new SkillPromptBuilder,
+        protected AssessmentSynthesizer $assessmentSynthesizer = new AssessmentSynthesizer
+    ) {}
+
     public function execute(string $moduleId, array $options = []): array
     {
         @ini_set('max_execution_time', '300');
@@ -46,67 +53,26 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             $documentBase64 = $options['document_base64'] ?? null;
             $documentMimeType = $options['document_mime_type'] ?? null;
             $documentText = $options['document_text'] ?? null;
-
-            // 2. Call Elysia backend endpoint (Production by default, overridable via ELYSIA_API_URL)
-            $elysiaUrl = rtrim(config('services.elysia.url', env('ELYSIA_API_URL', 'https://eddys.drimland.my.id')), '/');
-            $payload = [
-                'moduleId' => $moduleId,
-                'moduleTitle' => $module->title,
-                'cefr' => $module->cefr,
-                'objective' => $module->objective ?: "Master {$module->title} at {$module->cefr} level",
-                'customInstructions' => $customInstructions ?: '',
-                'skillType' => $skillType,
-                'documentBase64' => $documentBase64,
-                'documentMimeType' => $documentMimeType,
-                'documentText' => $documentText,
-            ];
-
-            $skillsMap = null;
-            $materials = null;
-            try {
-                $httpResponse = Http::timeout(40)
-                    ->post("{$elysiaUrl}/api/curriculum/modules/ai-generate", $payload);
-
-                if ($httpResponse->successful()) {
-                    $json = $httpResponse->json();
-                    $skillsMap = $json['data']['skills'] ?? null;
-                    $materials = $json['data']['materials'] ?? null;
-                } else {
-                    Log::warning('Elysia AI generator failed: HTTP '.$httpResponse->status().' - '.$httpResponse->body().'. Falling back to direct OmniRoute.');
-                }
-            } catch (Exception $e) {
-                Log::warning('Elysia AI generator unreachable/timeout: '.$e->getMessage().'. Falling back to direct OmniRoute.');
-            }
-
-            // Fallback: If Elysia call failed or offline, call OmniRoute API directly
-            if (! $skillsMap && ! $materials) {
-                $fallbackRes = $this->callOmniRouteDirectly($module, $skillType, $customInstructions, $documentBase64, $documentMimeType, $documentText);
-                if (is_array($fallbackRes)) {
-                    if (isset($fallbackRes['reading']) || isset($fallbackRes['assessment'])) {
-                        $skillsMap = $fallbackRes;
-                    } else {
-                        $materials = $fallbackRes;
-                    }
-                }
-            }
-
-            if (! $skillsMap && ! $materials) {
-                return Response::buildErrorService('Gagal menghasilkan materi dari AI. Silakan coba kembali.');
-            }
+            $shouldReplace = ! empty($options['replace']);
+            $cleanId = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $moduleId));
 
             $insertedCount = 0;
-            $cleanId = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $moduleId));
-            $shouldReplace = ! empty($options['replace']);
 
-            // 3. Process persistence based on skillType and data shape
+            // 2. SINGLE SKILL MODE
             if ($skillType !== 'all') {
                 $targetSmId = $targetSubModule ? $targetSubModule->id : null;
-                $sectionsList = [];
 
-                if ($skillsMap && isset($skillsMap[$skillType])) {
-                    $sectionsList = $skillsMap[$skillType];
-                } elseif (is_array($materials)) {
-                    $sectionsList = isset($materials[0]) ? $materials : ($materials['sections'] ?? ($materials[$skillType] ?? []));
+                if ($skillType === 'assessment') {
+                    $sectionsList = $this->assessmentSynthesizer->synthesize($module, $targetSmId);
+                } else {
+                    $sectionsList = $this->generateSkillWithAi(
+                        $skillType,
+                        $module,
+                        $customInstructions,
+                        $documentText,
+                        $documentBase64,
+                        $documentMimeType
+                    );
                 }
 
                 if ($shouldReplace && $targetSmId) {
@@ -118,46 +84,34 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
 
                 $insertedCount += $this->persistGeneratedSections($moduleId, $cleanId, $targetSmId, $sectionsList);
             } else {
-                // ALL SKILLS MODE
+                // 3. ALL SKILLS MODE (Reading -> Listening -> Writing -> Speaking -> Assessment)
                 if ($shouldReplace) {
                     DB::table(DatabaseConst::MODULE_SECTIONS())
                         ->where('module_id', $moduleId)
                         ->delete();
                 }
 
-                if ($skillsMap && is_array($skillsMap)) {
-                    foreach ($skillsMap as $skill => $sectionsList) {
-                        if (! is_array($sectionsList)) {
-                            continue;
-                        }
-                        $matchedSm = $subModules->first(function ($sm) use ($skill) {
-                            return strtolower($sm->skill_type) === strtolower($skill);
-                        });
-                        $smId = $matchedSm ? $matchedSm->id : null;
-                        $insertedCount += $this->persistGeneratedSections($moduleId, $cleanId, $smId, $sectionsList);
-                    }
-                } elseif (is_array($materials)) {
-                    // Group sections if flat array
-                    foreach ($materials as $item) {
-                        if (! is_array($item)) {
-                            continue;
-                        }
-                        $itemSubId = $item['subModuleId'] ?? $item['sub_module_id'] ?? null;
-                        $itemSkill = $item['skillType'] ?? $item['skill_type'] ?? null;
+                $skills = ['reading', 'listening', 'writing', 'speaking', 'assessment'];
+                foreach ($skills as $skill) {
+                    $matchedSm = $subModules->first(function ($sm) use ($skill) {
+                        return strtolower($sm->skill_type) === $skill;
+                    });
+                    $smId = $matchedSm ? $matchedSm->id : null;
 
-                        $matchedSm = null;
-                        if ($itemSubId) {
-                            $matchedSm = $subModules->firstWhere('id', $itemSubId);
-                        }
-                        if (! $matchedSm && $itemSkill) {
-                            $matchedSm = $subModules->first(function ($sm) use ($itemSkill) {
-                                return strtolower($sm->skill_type) === strtolower($itemSkill);
-                            });
-                        }
-
-                        $smId = $matchedSm ? $matchedSm->id : null;
-                        $insertedCount += $this->persistGeneratedSections($moduleId, $cleanId, $smId, [$item]);
+                    if ($skill === 'assessment') {
+                        $sectionsList = $this->assessmentSynthesizer->synthesize($module, $smId);
+                    } else {
+                        $sectionsList = $this->generateSkillWithAi(
+                            $skill,
+                            $module,
+                            $customInstructions,
+                            $documentText,
+                            $documentBase64,
+                            $documentMimeType
+                        );
                     }
+
+                    $insertedCount += $this->persistGeneratedSections($moduleId, $cleanId, $smId, $sectionsList);
                 }
             }
 
@@ -166,15 +120,64 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                 'inserted_count' => $insertedCount,
             ]);
         } catch (Exception $e) {
-            Log::error($e->getMessage(), ['method' => __METHOD__]);
+            Log::error('GenerateModuleAiMaterialsUsecase error: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
             return Response::buildErrorService($e->getMessage());
         }
     }
 
-    /**
-     * Ensures all 5 standard submodules exist for a module.
-     */
+    private function generateSkillWithAi(
+        string $skill,
+        object $module,
+        string $customInstructions,
+        ?string $documentText,
+        ?string $documentBase64,
+        ?string $documentMimeType
+    ): array {
+        $apiKey = config('services.omniroute.key', env('OMNIROUTE_API_KEY')) ?: env('AI_TTS_API_KEY');
+        if (empty($apiKey)) {
+            throw new Exception('OMNIROUTE_API_KEY belum dikonfigurasi di file .env');
+        }
+
+        $baseUrl = rtrim(config('services.omniroute.url', env('OMNIROUTE_BASE_URL', 'https://omni.drimland.my.id/v1')), '/');
+        $prompts = $this->promptBuilder->build($skill, $module, $customInstructions, $documentText);
+
+        $userContent = $prompts['user'];
+        if ($documentBase64 && $documentMimeType && str_starts_with($documentMimeType, 'image/')) {
+            $userContent = [
+                ['type' => 'text', 'text' => $prompts['user']."\n\nDistill visual teaching materials from attached image."],
+                ['type' => 'image_url', 'image_url' => ['url' => "data:{$documentMimeType};base64,{$documentBase64}"]],
+            ];
+        }
+
+        $res = Http::timeout(120)->withHeaders([
+            'Authorization' => "Bearer {$apiKey}",
+            'Content-Type' => 'application/json',
+        ])->post("{$baseUrl}/chat/completions", [
+            'model' => 'antigravity/gemini-3.8-flash-tiered',
+            'temperature' => 0.3,
+            'messages' => [
+                ['role' => 'system', 'content' => $prompts['system']],
+                ['role' => 'user', 'content' => $userContent],
+            ],
+        ]);
+
+        if (! $res->successful()) {
+            throw new Exception("OmniRoute failed for {$skill}: HTTP {$res->status()} - {$res->body()}");
+        }
+
+        $text = $res->json('choices.0.message.content') ?? '';
+        $text = trim(preg_replace('/^```(?:json)?/i', '', trim($text)));
+        $text = trim(preg_replace('/```$/', '', $text));
+
+        $json = json_decode($text, true);
+        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($json)) {
+            throw new Exception("Invalid JSON returned for {$skill}: ".substr($text, 0, 200));
+        }
+
+        return $json['sections'] ?? ($json['skills'][$skill] ?? $json);
+    }
+
     private function ensureFiveSubModules(object $module): Collection
     {
         $existing = DB::table(DatabaseConst::SUB_MODULES())
@@ -252,7 +255,6 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             if ($secType === 'practice' && is_array($content)) {
                 $hasDrills = ! empty($content['drills']) && is_array($content['drills']) && ! empty($content['drills'][0]['pairs']);
                 if (! $hasDrills) {
-                    // 1. Try to extract vocab from current batch
                     $vocabItems = [];
                     foreach ($sectionsList as $secCandidate) {
                         $cType = $secCandidate['sectionType'] ?? $secCandidate['section_type'] ?? null;
@@ -265,7 +267,6 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                         }
                     }
 
-                    // 2. Fallback: query database for existing vocab in this sub-module
                     if (empty($vocabItems) && $subModuleId) {
                         $dbVocab = DB::table(DatabaseConst::MODULE_SECTIONS())
                             ->where('module_id', $moduleId)
@@ -320,71 +321,5 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
         }
 
         return $count;
-    }
-
-    private function callOmniRouteDirectly($module, string $skillType, string $customInstructions, ?string $documentBase64, ?string $documentMimeType, ?string $documentText): ?array
-    {
-        try {
-            $apiKey = config('services.omniroute.key', env('OMNIROUTE_API_KEY')) ?: env('AI_TTS_API_KEY');
-            if (empty($apiKey)) {
-                Log::error('OMNIROUTE_API_KEY belum dikonfigurasi di file .env');
-
-                return null;
-            }
-            $baseUrl = rtrim(config('services.omniroute.url', env('OMNIROUTE_BASE_URL', 'https://omni.drimland.my.id/v1')), '/');
-            $cefr = strtoupper($module->cefr ?? 'A1');
-            $objective = $module->objective ?: "Master {$module->title} at {$cefr} level";
-
-            $systemPrompt = "You are an expert Cambridge & CEFR English curriculum designer for EDDY'S English School. Generate complete learning materials for Indonesian students learning English at CEFR level {$cefr}. Output ONLY raw valid JSON (no markdown fences, no extra text).";
-
-            if ($skillType !== 'all') {
-                $drillHint = ($skillType === 'reading') ? ' For practice section, content MUST include "drills": [{"id": "drill-cable-1", "title": "Interactive Cable Connection (Vocab Match)", "instruction": "Connect each vocabulary term on the left with its accurate meaning on the right.", "pairs": [{"left": "word", "right": "arti"}]}].' : '';
-                $userPrompt = "Generate calibrated sections for sub-module skill '{$skillType}' in module '{$module->title}' (CEFR {$cefr}). Objective: {$objective}. {$customInstructions}.{$drillHint} Output a JSON array of sections: [{\"title\": \"...\", \"section_type\": \"theory|vocab|dialogue|practice|quiz\", \"content\": {...}}]";
-            } else {
-                $userPrompt = "Generate 5-skill curriculum package for module '{$module->title}' (CEFR {$cefr}). Objective: {$objective}. {$customInstructions}. Output a JSON object with keys 'reading', 'listening', 'writing', 'speaking', 'assessment', each containing an array of sections with keys 'title', 'section_type' (theory/vocab/dialogue/practice/quiz), and 'content'.";
-            }
-
-            if ($documentText) {
-                $userPrompt .= "\n\n[DOCUMENT REFERENCE TEXT / TRANSCRIPT]:\n\"\"\"\n".substr($documentText, 0, 45000)."\n\"\"\"\nInstructions: Distill and extract teaching materials based directly on the attached reference text for CEFR {$cefr}.";
-            }
-
-            $userContent = $userPrompt;
-            if ($documentBase64 && $documentMimeType && str_starts_with($documentMimeType, 'image/')) {
-                $docPrompt = $userPrompt."\n\nInstructions: Distill and extract teaching materials based directly on the attached document for CEFR {$cefr}.";
-                $userContent = [
-                    ['type' => 'text', 'text' => $docPrompt],
-                    ['type' => 'image_url', 'image_url' => ['url' => "data:{$documentMimeType};base64,{$documentBase64}"]],
-                ];
-            }
-
-            $res = Http::timeout(120)->withHeaders([
-                'Authorization' => "Bearer {$apiKey}",
-                'Content-Type' => 'application/json',
-            ])->post("{$baseUrl}/chat/completions", [
-                'model' => 'antigravity/gemini-3.8-flash-tiered',
-                'temperature' => 0.4,
-                'messages' => [
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user', 'content' => $userContent],
-                ],
-            ]);
-
-            if (! $res->successful()) {
-                return null;
-            }
-
-            $text = $res->json('choices.0.message.content') ?? '';
-            $text = trim(preg_replace('/^```(?:json)?/i', '', trim($text)));
-            $text = trim(preg_replace('/```$/', '', $text));
-
-            $json = json_decode($text, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($json)) {
-                return $json['skills'] ?? ($json['materials'] ?? $json);
-            }
-        } catch (Exception $e) {
-            Log::error('Direct OmniRoute error: '.$e->getMessage());
-        }
-
-        return null;
     }
 }

@@ -174,6 +174,7 @@
             @php 
                 $questions = $content['questions'] ?? []; 
                 $practicum = $content['practicumQuestions'] ?? $content['detailQuestions'] ?? [];
+                $hasParts = !empty($content['parts']) && is_array($content['parts']);
             @endphp
 
             @if (!empty($content['passingScore']))
@@ -183,7 +184,113 @@
                 </div>
             @endif
 
-            @if (!empty($questions))
+            @if ($hasParts)
+                <div class="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-blue-900 dark:text-blue-200 uppercase tracking-wider">Komposisi 4 Kompetensi Evaluasi (55 Soal)</span>
+                        <span class="text-xs font-mono font-bold text-indigo-700 dark:text-indigo-300">Passing Score: {{ $content['passingScore'] ?? 70 }}%</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        <div class="p-2 rounded-lg bg-white dark:bg-neutral-800 border border-blue-100 dark:border-blue-900/50">
+                            <span class="text-[10px] text-gray-400 block font-bold">PART 1: READING</span>
+                            <span class="font-bold text-blue-700 dark:text-blue-300">15 Soal</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-white dark:bg-neutral-800 border border-blue-100 dark:border-blue-900/50">
+                            <span class="text-[10px] text-gray-400 block font-bold">PART 2: LISTENING</span>
+                            <span class="font-bold text-indigo-700 dark:text-indigo-300">15 Soal</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-white dark:bg-neutral-800 border border-blue-100 dark:border-blue-900/50">
+                            <span class="text-[10px] text-gray-400 block font-bold">PART 3: WRITING</span>
+                            <span class="font-bold text-purple-700 dark:text-purple-300">10 Soal</span>
+                        </div>
+                        <div class="p-2 rounded-lg bg-white dark:bg-neutral-800 border border-blue-100 dark:border-blue-900/50">
+                            <span class="text-[10px] text-gray-400 block font-bold">PART 4: SPEAKING</span>
+                            <span class="font-bold text-amber-700 dark:text-amber-300">15 Soal</span>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if (!empty($practicum))
+                <div class="space-y-2.5">
+                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center justify-between">
+                        <span>Tugas Interaktif & Praktikum ({{ count($practicum) }} Tugas)</span>
+                    </div>
+                    @foreach ($practicum as $pIdx => $p)
+                        <div class="p-3.5 rounded-xl bg-gray-50/70 dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-700 text-xs space-y-1.5">
+                            <div class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                    #{{ $pIdx + 1 }}
+                                </span>
+                                @if (!empty($p['type']) && $p['type'] === 'dictation')
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">Dikte Audio (Missing Word)</span>
+                                @elseif (!empty($p['type']) && $p['type'] === 'arrange')
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">Susun Kata Audio</span>
+                                @elseif (!empty($p['part']))
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 uppercase">Part: {{ $p['part'] }}</span>
+                                @else
+                                    <span class="text-primary dark:text-amber-400 font-bold">{{ $p['typeLabel'] ?? ($p['category'] ?? 'Tugas Otentik') }}</span>
+                                @endif
+                            </div>
+
+                            <div class="text-gray-700 dark:text-neutral-300 font-medium">{{ $p['instruction'] ?? ($p['question'] ?? '') }}</div>
+
+                            @if (!empty($p['promptSentence']))
+                                <div class="p-2 rounded bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 font-mono text-[11px] text-gray-800 dark:text-gray-200">
+                                    Kalimat: {!! str_replace('_____', '<span class="underline font-bold text-blue-600">_____</span>', e($p['promptSentence'])) !!}
+                                    @if (!empty($p['targetWord']))
+                                        <span class="ml-2 font-bold text-emerald-600">[Kunci: {{ $p['targetWord'] }}]</span>
+                                    @endif
+                                </div>
+                            @elseif (!empty($p['promptText']))
+                                <div class="p-2 rounded bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 font-mono text-[11px] text-gray-800 dark:text-gray-200">
+                                    Soal: {{ $p['promptText'] }}
+                                </div>
+                            @endif
+
+                            @if (!empty($p['words']) && is_array($p['words']))
+                                <div class="flex flex-wrap gap-1.5 py-1">
+                                    @foreach ($p['words'] as $w)
+                                        <span class="px-2 py-0.5 rounded bg-slate-200 dark:bg-neutral-700 font-mono text-[11px] text-slate-700 dark:text-neutral-300">{{ $w }}</span>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            @if (!empty($p['targetSentence']))
+                                <div class="p-2 rounded bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800 font-mono text-[11px] text-emerald-700 dark:text-emerald-300">
+                                    Target Kalimat: {{ $p['targetSentence'] }}
+                                </div>
+                            @endif
+
+                            @if (!empty($p['targetAnswers']) && is_array($p['targetAnswers']))
+                                <div class="p-2 rounded bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-800 text-[11px] text-emerald-700 dark:text-emerald-300">
+                                    <span class="font-bold">Target Jawaban:</span> {{ implode(' ATAU ', $p['targetAnswers']) }}
+                                </div>
+                            @endif
+
+                            @if (!empty($p['options']) && is_array($p['options']))
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-2 pt-1">
+                                    @foreach ($p['options'] as $opt)
+                                        @php $isCorrect = ($opt === ($p['answer'] ?? '')); @endphp
+                                        <div class="px-3 py-1.5 rounded-lg text-xs flex items-center justify-between {{ $isCorrect ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700' : 'bg-white dark:bg-neutral-800 text-gray-700 dark:text-neutral-300 border border-gray-100 dark:border-neutral-700' }}">
+                                            <span>{{ $opt }}</span>
+                                            @if ($isCorrect)
+                                                <svg class="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            @if (!empty($p['explanation']))
+                                <div class="text-[11px] text-gray-500 dark:text-neutral-400 italic">
+                                    Pembahasan: {{ $p['explanation'] }}
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @elseif (!empty($questions))
                 <div class="space-y-3">
                     <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                         Daftar Soal Kuis ({{ count($questions) }} Soal)
@@ -214,30 +321,6 @@
                             @if (!empty($q['explanation']))
                                 <div class="pl-7 text-[11px] text-gray-500 dark:text-neutral-400 italic">
                                     Pembahasan: {{ $q['explanation'] }}
-                                </div>
-                            @endif
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-
-            @if (!empty($practicum))
-                <div class="space-y-2.5">
-                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                        Tugas Interaktif & Praktikum ({{ count($practicum) }} Tugas)
-                    </div>
-                    @foreach ($practicum as $pIdx => $p)
-                        <div class="p-3.5 rounded-xl bg-gray-50/70 dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-700 text-xs space-y-1.5">
-                            <div class="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-                                    Tugas #{{ $pIdx + 1 }}
-                                </span>
-                                <span>{{ $p['typeLabel'] ?? ($p['category'] ?? 'Tugas') }}</span>
-                            </div>
-                            <div class="text-gray-700 dark:text-neutral-300">{{ $p['instruction'] ?? ($p['question'] ?? '') }}</div>
-                            @if (!empty($p['targetSentence']))
-                                <div class="p-2 rounded bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 font-mono text-[11px] text-blue-600 dark:text-blue-400">
-                                    Target: {{ $p['targetSentence'] }}
                                 </div>
                             @endif
                         </div>
