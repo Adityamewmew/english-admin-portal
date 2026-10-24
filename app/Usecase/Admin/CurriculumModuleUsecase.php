@@ -147,7 +147,7 @@ class CurriculumModuleUsecase extends Usecase
     public function create(array $data): array
     {
         try {
-            $id = !empty($data['id']) ? trim($data['id']) : 'MOD-' . ($data['cefr'] ?? 'A1') . '-' . strtoupper(substr(uniqid(), -5));
+            $id = ! empty($data['id']) ? trim($data['id']) : 'MOD-'.($data['cefr'] ?? 'A1').'-'.strtoupper(substr(uniqid(), -5));
 
             $existing = DB::table(DatabaseConst::CURRICULUM_MODULES())
                 ->where('id', $id)
@@ -157,18 +157,25 @@ class CurriculumModuleUsecase extends Usecase
                 return Response::buildErrorValidation(['id' => 'Module ID already exists']);
             }
 
+            $levelId = $data['level_id'] ?? (($data['cefr'] ?? 'A1').'.1');
+            $maxOrder = DB::table(DatabaseConst::CURRICULUM_MODULES())
+                ->where('level_id', $levelId)
+                ->whereNull('deleted_at')
+                ->max('order_index') ?? 0;
+            $orderIndex = ! empty($data['order_index']) ? (int) $data['order_index'] : ((int) $maxOrder + 1);
+
             $insertData = [
                 'id' => $id,
-                'level_id' => $data['level_id'] ?? ($data['cefr'] . '.1'),
+                'level_id' => $levelId,
                 'title' => $data['title'],
                 'cefr' => $data['cefr'],
                 'group' => $data['group'] ?? 'General English',
                 'objective' => $data['objective'] ?? '',
                 'complexity' => $data['complexity'] ?? 'medium',
                 'estimated_minutes' => (int) ($data['estimated_minutes'] ?? 15),
-                'is_exam' => !empty($data['is_exam']),
+                'is_exam' => ! empty($data['is_exam']),
                 'passing_score' => (int) ($data['passing_score'] ?? 70),
-                'order_index' => (int) ($data['order_index'] ?? 1),
+                'order_index' => $orderIndex,
                 'banner_url' => $data['banner_url'] ?? null,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -189,8 +196,8 @@ class CurriculumModuleUsecase extends Usecase
             $subModuleRows = [];
             $firstSubModuleId = null;
             foreach ($skills as $s) {
-                $smId = 'sub-' . $cleanId . '-' . $s['skill'];
-                if (!$firstSubModuleId) {
+                $smId = 'sub-'.$cleanId.'-'.$s['skill'];
+                if (! $firstSubModuleId) {
                     $firstSubModuleId = $smId;
                 }
                 $subModuleRows[] = [
@@ -212,6 +219,7 @@ class CurriculumModuleUsecase extends Usecase
             ], ResponseConst::HTTP_CREATED);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
+
             return Response::buildErrorService($e->getMessage());
         }
     }
@@ -226,13 +234,14 @@ class CurriculumModuleUsecase extends Usecase
                     'title' => $data['title'],
                 ]);
 
-            if (!$updated) {
+            if (! $updated) {
                 return Response::buildErrorNotFound('Sub-modul tidak ditemukan');
             }
 
             return Response::buildSuccess(['id' => $subModuleId]);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
+
             return Response::buildErrorService($e->getMessage());
         }
     }
@@ -245,7 +254,7 @@ class CurriculumModuleUsecase extends Usecase
                 ->whereNull('deleted_at')
                 ->first();
 
-            if (!$existing) {
+            if (! $existing) {
                 return Response::buildErrorNotFound('Modul kurikulum tidak ditemukan');
             }
 
@@ -274,6 +283,7 @@ class CurriculumModuleUsecase extends Usecase
             return Response::buildSuccess(['id' => $id]);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
+
             return Response::buildErrorService($e->getMessage());
         }
     }
@@ -286,7 +296,7 @@ class CurriculumModuleUsecase extends Usecase
                 ->whereNull('deleted_at')
                 ->first();
 
-            if (!$existing) {
+            if (! $existing) {
                 return Response::buildErrorNotFound('Modul kurikulum tidak ditemukan');
             }
 
@@ -297,6 +307,7 @@ class CurriculumModuleUsecase extends Usecase
             return Response::buildSuccess(['id' => $id]);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
+
             return Response::buildErrorService($e->getMessage());
         }
     }
@@ -311,6 +322,7 @@ class CurriculumModuleUsecase extends Usecase
             return Response::buildSuccess(['levels' => $levels]);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
+
             return Response::buildErrorService($e->getMessage());
         }
     }
@@ -322,12 +334,12 @@ class CurriculumModuleUsecase extends Usecase
                 ->where('module_id', $moduleId)
                 ->max('order_index') ?? 0;
 
-            $id = 'sec-' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $moduleId)) . '-' . substr(uniqid(), -6);
+            $id = 'sec-'.strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $moduleId)).'-'.substr(uniqid(), -6);
 
             $insertData = [
                 'id' => $id,
                 'module_id' => $moduleId,
-                'sub_module_id' => !empty($data['sub_module_id']) ? $data['sub_module_id'] : null,
+                'sub_module_id' => ! empty($data['sub_module_id']) ? $data['sub_module_id'] : null,
                 'section_type' => $data['section_type'],
                 'title' => $data['title'],
                 'content' => is_array($data['content']) ? json_encode($data['content']) : $data['content'],
@@ -340,6 +352,7 @@ class CurriculumModuleUsecase extends Usecase
             return Response::buildSuccess(['id' => $id], ResponseConst::HTTP_CREATED);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
+
             return Response::buildErrorService($e->getMessage());
         }
     }
@@ -352,7 +365,7 @@ class CurriculumModuleUsecase extends Usecase
                 ->where('module_id', $moduleId)
                 ->first();
 
-            if (!$existing) {
+            if (! $existing) {
                 return Response::buildErrorNotFound('Bagian materi tidak ditemukan');
             }
 
@@ -363,7 +376,7 @@ class CurriculumModuleUsecase extends Usecase
             ];
 
             if (array_key_exists('sub_module_id', $data)) {
-                $updateData['sub_module_id'] = !empty($data['sub_module_id']) ? $data['sub_module_id'] : null;
+                $updateData['sub_module_id'] = ! empty($data['sub_module_id']) ? $data['sub_module_id'] : null;
             }
 
             if (isset($data['content'])) {
@@ -377,6 +390,7 @@ class CurriculumModuleUsecase extends Usecase
             return Response::buildSuccess(['id' => $sectionId]);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
+
             return Response::buildErrorService($e->getMessage());
         }
     }
@@ -389,13 +403,14 @@ class CurriculumModuleUsecase extends Usecase
                 ->where('module_id', $moduleId)
                 ->delete();
 
-            if (!$deleted) {
+            if (! $deleted) {
                 return Response::buildErrorNotFound('Bagian materi tidak ditemukan');
             }
 
             return Response::buildSuccess(['id' => $sectionId]);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
+
             return Response::buildErrorService($e->getMessage());
         }
     }
@@ -405,6 +420,3 @@ class CurriculumModuleUsecase extends Usecase
         return app(GenerateModuleAiMaterialsUsecase::class)->execute($moduleId, $options);
     }
 }
-
-
-
