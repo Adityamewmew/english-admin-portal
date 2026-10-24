@@ -29,12 +29,26 @@
         <x-admin.card variant="white" padding="p-5">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Modul Pembelajaran</p>
-                    <p class="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{{ $stats['learning_count'] ?? 0 }}</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Modul Aktif</p>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">{{ $stats['active_count'] ?? 0 }}</p>
                 </div>
                 <div class="size-11 rounded-2xl bg-emerald-50 border border-emerald-200 border-b-2 border-b-emerald-300 text-emerald-600 flex items-center justify-center">
                     <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+        </x-admin.card>
+
+        <x-admin.card variant="white" padding="p-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Modul Nonaktif</p>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-slate-600 dark:text-slate-400 mt-1">{{ $stats['inactive_count'] ?? 0 }}</p>
+                </div>
+                <div class="size-11 rounded-2xl bg-slate-100 border border-slate-200 border-b-2 border-b-slate-300 text-slate-500 flex items-center justify-center">
+                    <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                     </svg>
                 </div>
             </div>
@@ -60,18 +74,39 @@
     <x-admin.card variant="white" padding="p-4 sm:p-5" class="mb-6">
         <form action="{{ route('admin.modules.index') }}" method="GET" navigate-form class="flex flex-wrap items-center justify-between gap-4">
             <input type="hidden" name="cefr" value="{{ $cefr }}">
-            <div class="flex flex-wrap items-center gap-1.5">
-                <span class="text-xs font-bold text-slate-500 mr-1">Level CEFR:</span>
-                <a href="{{ route('admin.modules.index', ['cefr' => 'all', 'keywords' => $keywords]) }}"
-                   class="px-2.5 py-1 text-xs rounded-xl font-bold transition-all {{ $cefr === 'all' ? 'bg-primary text-white border-b-2 border-primary-dark shadow-xs' : 'bg-surface text-slate-700 hover:bg-slate-200 border border-slate-200' }}">
-                    Semua Level
-                </a>
-                @foreach (['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as $lvl)
-                    <a href="{{ route('admin.modules.index', ['cefr' => $lvl, 'keywords' => $keywords]) }}"
-                       class="px-2.5 py-1 text-xs rounded-xl font-bold transition-all {{ $cefr === $lvl ? 'bg-primary text-white border-b-2 border-primary-dark shadow-xs' : 'bg-surface text-slate-700 hover:bg-slate-200 border border-slate-200' }}">
-                        {{ $lvl }}
+            <input type="hidden" name="status" value="{{ $status ?? 'all' }}">
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-xs font-bold text-slate-500 mr-1">Level:</span>
+                    <a href="{{ route('admin.modules.index', ['cefr' => 'all', 'status' => $status, 'keywords' => $keywords]) }}"
+                       class="px-2.5 py-1 text-xs rounded-xl font-bold transition-all {{ $cefr === 'all' ? 'bg-primary text-white border-b-2 border-primary-dark shadow-xs' : 'bg-surface text-slate-700 hover:bg-slate-200 border border-slate-200' }}">
+                        Semua
                     </a>
-                @endforeach
+                    @foreach (['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as $lvl)
+                        <a href="{{ route('admin.modules.index', ['cefr' => $lvl, 'status' => $status, 'keywords' => $keywords]) }}"
+                           class="px-2.5 py-1 text-xs rounded-xl font-bold transition-all {{ $cefr === $lvl ? 'bg-primary text-white border-b-2 border-primary-dark shadow-xs' : 'bg-surface text-slate-700 hover:bg-slate-200 border border-slate-200' }}">
+                            {{ $lvl }}
+                        </a>
+                    @endforeach
+                </div>
+
+                <div class="h-4 w-px bg-slate-200 hidden sm:block"></div>
+
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-xs font-bold text-slate-500 mr-1">Status:</span>
+                    <a href="{{ route('admin.modules.index', ['cefr' => $cefr, 'status' => 'all', 'keywords' => $keywords]) }}"
+                       class="px-2.5 py-1 text-xs rounded-xl font-bold transition-all {{ ($status ?? 'all') === 'all' ? 'bg-primary text-white border-b-2 border-primary-dark shadow-xs' : 'bg-surface text-slate-700 hover:bg-slate-200 border border-slate-200' }}">
+                        Semua
+                    </a>
+                    <a href="{{ route('admin.modules.index', ['cefr' => $cefr, 'status' => 'active', 'keywords' => $keywords]) }}"
+                       class="px-2.5 py-1 text-xs rounded-xl font-bold transition-all {{ ($status ?? '') === 'active' ? 'bg-emerald-600 text-white border-b-2 border-emerald-800 shadow-xs' : 'bg-surface text-slate-700 hover:bg-slate-200 border border-slate-200' }}">
+                        Aktif
+                    </a>
+                    <a href="{{ route('admin.modules.index', ['cefr' => $cefr, 'status' => 'inactive', 'keywords' => $keywords]) }}"
+                       class="px-2.5 py-1 text-xs rounded-xl font-bold transition-all {{ ($status ?? '') === 'inactive' ? 'bg-slate-700 text-white border-b-2 border-slate-900 shadow-xs' : 'bg-surface text-slate-700 hover:bg-slate-200 border border-slate-200' }}">
+                        Nonaktif
+                    </a>
+                </div>
             </div>
 
             <div class="flex items-center gap-2">
@@ -80,7 +115,7 @@
                     @include('_admin._layout.icons.search')
                     Cari
                 </x-admin.button>
-                @if (!empty($keywords) || $cefr !== 'all')
+                @if (!empty($keywords) || $cefr !== 'all' || ($status ?? 'all') !== 'all')
                     <x-admin.button href="{{ route('admin.modules.index') }}" size="sm" color="outline-secondary">
                         @include('_admin._layout.icons.reset')
                         Reset
@@ -109,7 +144,7 @@
                     <div class="space-y-3 flex-1 flex flex-col justify-between">
                         {{-- Top Thumbnail Frame --}}
                         <div class="w-full h-32 rounded-xl flex items-center justify-center relative overflow-hidden border border-slate-200 bg-surface p-2">
-                            {{-- Top-Left Badges: CEFR & ID --}}
+                            {{-- Top-Left Badges: CEFR, ID & Status --}}
                             <div class="absolute top-2.5 start-2.5 z-10 flex items-center gap-1.5">
                                 <x-admin.badge :cefr="$m->cefr" size="sm">
                                     {{ $m->cefr }}
@@ -117,6 +152,17 @@
                                 <x-admin.badge variant="neutral" size="sm" class="bg-white/90">
                                     {{ $m->id }}
                                 </x-admin.badge>
+                                @if(!empty($m->is_active))
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500 text-white shadow-2xs">
+                                        <span class="size-1.5 rounded-full bg-white"></span>
+                                        Aktif
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-600 text-white shadow-2xs">
+                                        <span class="size-1.5 rounded-full bg-slate-300"></span>
+                                        Nonaktif
+                                    </span>
+                                @endif
                             </div>
 
                             {{-- Top-Right Badge: Exam vs Estimated Duration --}}
@@ -185,6 +231,24 @@
                                     title="Edit Modul">
                                     @include('_admin._layout.icons.pencil')
                                 </x-admin.button>
+
+                                <form action="{{ route('admin.modules.toggleStatus', $m->id) }}" method="POST">
+                                    @csrf
+                                    <x-admin.button type="submit"
+                                        size="sm"
+                                        :color="!empty($m->is_active) ? 'outline-secondary' : 'outline-success'"
+                                        :title="!empty($m->is_active) ? 'Nonaktifkan Modul' : 'Aktifkan Modul'">
+                                        @if(!empty($m->is_active))
+                                            <svg class="size-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                            </svg>
+                                        @else
+                                            <svg class="size-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                        @endif
+                                    </x-admin.button>
+                                </form>
 
                                 <form action="{{ route('admin.modules.delete', $m->id) }}" method="POST"
                                     onsubmit="return confirm('Apakah Anda yakin ingin menghapus modul {{ $m->title }}?')">

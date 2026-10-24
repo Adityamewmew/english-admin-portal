@@ -43,6 +43,17 @@
                             @if (!empty($module->is_exam))
                                 <x-admin.badge type="status" value="review">Ujian Kelulusan</x-admin.badge>
                             @endif
+                            @if(!empty($module->is_active))
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-500 text-white shadow-2xs">
+                                    <span class="size-1.5 rounded-full bg-white"></span>
+                                    Aktif
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-600 text-white shadow-2xs">
+                                    <span class="size-1.5 rounded-full bg-slate-300"></span>
+                                    Nonaktif
+                                </span>
+                            @endif
                         </div>
                         <h1 class="font-heading font-extrabold text-xl text-primary dark:text-white mt-1.5 tracking-tight">
                             {{ $module->title }}
@@ -51,6 +62,25 @@
                 </div>
 
                 <div class="flex items-center gap-2">
+                    <form action="{{ route('admin.modules.toggleStatus', $module->id) }}" method="POST">
+                        @csrf
+                        <x-admin.button type="submit"
+                            size="sm"
+                            :color="!empty($module->is_active) ? 'outline-secondary' : 'primary'">
+                            @if(!empty($module->is_active))
+                                <svg class="size-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                </svg>
+                                <span>Nonaktifkan</span>
+                            @else
+                                <svg class="size-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Aktifkan Modul</span>
+                            @endif
+                        </x-admin.button>
+                    </form>
+
                     <x-admin.button href="{{ route('admin.modules.update', $module->id) }}" variant="secondary" size="sm" as="a">
                         <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path d="M12 20h9"/>

@@ -32,10 +32,12 @@ class CurriculumModuleController extends Controller
     public function index(Request $request): View|Response
     {
         $cefr = $request->get('cefr', 'all');
+        $status = $request->get('status', 'all');
         $keywords = $request->get('keywords');
 
         $data = $this->usecase->getAll([
             'cefr' => $cefr,
+            'status' => $status,
             'keywords' => $keywords,
         ]);
         $data = $data['data']['list'] ?? [];
@@ -45,6 +47,8 @@ class CurriculumModuleController extends Controller
             'total' => 0,
             'learning_count' => 0,
             'exam_count' => 0,
+            'active_count' => 0,
+            'inactive_count' => 0,
         ];
 
         return view('_admin.modules.index', [
@@ -53,6 +57,7 @@ class CurriculumModuleController extends Controller
             'stats' => $stats,
             'page' => $this->page,
             'cefr' => $cefr,
+            'status' => $status,
             'keywords' => $keywords,
         ]);
     }
@@ -102,11 +107,13 @@ class CurriculumModuleController extends Controller
             'estimated_minutes' => 'nullable|integer|min:1',
             'passing_score' => 'nullable|integer|min:0|max:100',
             'order_index' => 'nullable|integer|min:1',
+            'is_active' => 'nullable|boolean',
             'banner' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
             'document' => 'nullable|file|mimes:pdf,jpg,jpeg,png,docx,doc|max:20480',
         ]);
 
         $data = $request->all();
+        $data['is_active'] = $request->boolean('is_active', true);
 
         if ($request->hasFile('banner')) {
             $file = $request->file('banner');
@@ -203,10 +210,12 @@ class CurriculumModuleController extends Controller
             'estimated_minutes' => 'nullable|integer|min:1',
             'passing_score' => 'nullable|integer|min:0|max:100',
             'order_index' => 'nullable|integer|min:1',
+            'is_active' => 'nullable|boolean',
             'banner' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
         ]);
 
         $data = $request->all();
+        $data['is_active'] = $request->boolean('is_active', false);
 
         if ($request->hasFile('banner')) {
             $file = $request->file('banner');
@@ -241,6 +250,19 @@ class CurriculumModuleController extends Controller
         }
 
         return redirect()->route('admin.modules.index')->with('success', 'Modul kurikulum berhasil dihapus');
+    }
+
+    public function toggleStatus(string $id): RedirectResponse
+    {
+        $res = $this->usecase->toggleStatus($id);
+
+        if (empty($res['data'])) {
+            return back()->with('error', $res['message'] ?? ResponseConst::DEFAULT_ERROR_MESSAGE);
+        }
+
+        $statusText = $res['data']['is_active'] ? 'diaktifkan' : 'dinonaktifkan';
+
+        return back()->with('success', "Modul {$id} berhasil {$statusText}.");
     }
 
     public function doCreateSection(string $id, Request $request): RedirectResponse

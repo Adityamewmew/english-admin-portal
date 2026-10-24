@@ -28,6 +28,7 @@ class CurriculumModuleUsecase extends Usecase
                     'cm.complexity',
                     'cm.estimated_minutes',
                     'cm.is_exam',
+                    'cm.is_active',
                     'cm.passing_score',
                     'cm.order_index',
                     'cm.banner_url',
@@ -38,6 +39,11 @@ class CurriculumModuleUsecase extends Usecase
                     if ($cefr !== 'all') {
                         return $q->where('cm.cefr', $cefr);
                     }
+                })
+                ->when(isset($filterData['status']) && $filterData['status'] !== 'all', function ($q) use ($filterData) {
+                    $isActive = in_array($filterData['status'], ['active', '1', 1, true], true);
+
+                    return $q->where('cm.is_active', $isActive);
                 })
                 ->when($filterData['keywords'] ?? false, function ($q, $keywords) {
                     return $q->where(function ($sub) use ($keywords) {
@@ -81,12 +87,19 @@ class CurriculumModuleUsecase extends Usecase
                 ->where('is_exam', true)
                 ->count();
 
+            $activeCount = DB::table(DatabaseConst::CURRICULUM_MODULES())
+                ->whereNull('deleted_at')
+                ->where('is_active', true)
+                ->count();
+
             $learningCount = $total - $examCount;
 
             return Response::buildSuccess([
                 'total' => $total,
                 'learning_count' => $learningCount,
                 'exam_count' => $examCount,
+                'active_count' => $activeCount,
+                'inactive_count' => $total - $activeCount,
             ]);
         } catch (Exception $e) {
             Log::error(message: $e->getMessage(), context: ['method' => __METHOD__]);
@@ -95,6 +108,8 @@ class CurriculumModuleUsecase extends Usecase
                 'total' => 0,
                 'learning_count' => 0,
                 'exam_count' => 0,
+                'active_count' => 0,
+                'inactive_count' => 0,
             ]);
         }
     }
@@ -174,6 +189,7 @@ class CurriculumModuleUsecase extends Usecase
                 'complexity' => $data['complexity'] ?? 'medium',
                 'estimated_minutes' => (int) ($data['estimated_minutes'] ?? 15),
                 'is_exam' => ! empty($data['is_exam']),
+                'is_active' => isset($data['is_active']) ? (bool) $data['is_active'] : true,
                 'passing_score' => (int) ($data['passing_score'] ?? 70),
                 'order_index' => $orderIndex,
                 'banner_url' => $data['banner_url'] ?? null,
@@ -276,6 +292,10 @@ class CurriculumModuleUsecase extends Usecase
                 $updateData['banner_url'] = $data['banner_url'];
             }
 
+            if (array_key_exists('is_active', $data)) {
+                $updateData['is_active'] = (bool) $data['is_active'];
+            }
+
             DB::table(DatabaseConst::CURRICULUM_MODULES())
                 ->where('id', $id)
                 ->update($updateData);
@@ -305,6 +325,38 @@ class CurriculumModuleUsecase extends Usecase
                 ->update(['deleted_at' => now()]);
 
             return Response::buildSuccess(['id' => $id]);
+        } catch (Exception $e) {
+            Log::error($e->getMessage(), ['method' => __METHOD__]);
+
+            return Response::buildErrorService($e->getMessage());
+        }
+    }
+
+    public function toggleStatus(string $id): array
+    {
+        try {
+            $existing = DB::table(DatabaseConst::CURRICULUM_MODULES())
+                ->where('id', $id)
+                ->whereNull('deleted_at')
+                ->first();
+
+            if (! $existing) {
+                return Response::buildErrorNotFound('Modul kurikulum tidak ditemukan');
+            }
+
+            $newStatus = ! ((bool) ($existing->is_active ?? true));
+
+            DB::table(DatabaseConst::CURRICULUM_MODULES())
+                ->where('id', $id)
+                ->update([
+                    'is_active' => $newStatus,
+                    'updated_at' => now(),
+                ]);
+
+            return Response::buildSuccess([
+                'id' => $id,
+                'is_active' => $newStatus,
+            ], ResponseConst::HTTP_SUCCESS);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
 

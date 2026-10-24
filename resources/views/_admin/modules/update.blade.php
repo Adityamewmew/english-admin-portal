@@ -151,12 +151,22 @@
                             min="1"
                         />
 
-                        <div class="flex items-center gap-x-3 sm:pt-6">
-                            <input type="checkbox" id="is_exam" name="is_exam" value="1" {{ old('is_exam', $module->is_exam) ? 'checked' : '' }}
-                                class="shrink-0 border-slate-300 rounded text-secondary focus:ring-secondary size-4 cursor-pointer">
-                            <label for="is_exam" class="text-xs font-semibold text-slate-700 dark:text-neutral-200 cursor-pointer">
-                                Tetapkan sebagai Modul Ujian Akhir (Checkpoint)
-                            </label>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:pt-6">
+                            <div class="flex items-center gap-x-2.5">
+                                <input type="checkbox" id="is_active" name="is_active" value="1" {{ old('is_active', $module->is_active ?? true) ? 'checked' : '' }}
+                                    class="shrink-0 border-slate-300 rounded text-emerald-600 focus:ring-emerald-500 size-4 cursor-pointer">
+                                <label for="is_active" class="text-xs font-semibold text-slate-700 dark:text-neutral-200 cursor-pointer">
+                                    Modul Aktif (Dapat Diakses Siswa)
+                                </label>
+                            </div>
+
+                            <div class="flex items-center gap-x-2.5">
+                                <input type="checkbox" id="is_exam" name="is_exam" value="1" {{ old('is_exam', $module->is_exam) ? 'checked' : '' }}
+                                    class="shrink-0 border-slate-300 rounded text-secondary focus:ring-secondary size-4 cursor-pointer">
+                                <label for="is_exam" class="text-xs font-semibold text-slate-700 dark:text-neutral-200 cursor-pointer">
+                                    Ujian Akhir (Checkpoint)
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>

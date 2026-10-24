@@ -102,6 +102,7 @@ export const curriculumModules = pgTable('curriculum_modules', {
   complexity: varchar('complexity', { length: 20 }).notNull().default('medium'),
   estimatedMinutes: integer('estimated_minutes').notNull().default(15),
   isExam: boolean('is_exam').notNull().default(false),
+  isActive: boolean('is_active').notNull().default(true),
   passingScore: integer('passing_score').notNull().default(70),
   orderIndex: integer('order_index').notNull().default(1),
   createdAt: timestamp('created_at').defaultNow().notNull(),
