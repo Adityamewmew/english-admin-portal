@@ -246,6 +246,55 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                 }
             }
 
+            if ($secType === 'practice' && is_array($content)) {
+                $hasDrills = ! empty($content['drills']) && is_array($content['drills']) && ! empty($content['drills'][0]['pairs']);
+                if (! $hasDrills) {
+                    // 1. Try to extract vocab from current batch
+                    $vocabItems = [];
+                    foreach ($sectionsList as $secCandidate) {
+                        $cType = $secCandidate['sectionType'] ?? $secCandidate['section_type'] ?? null;
+                        if ($cType === 'vocab') {
+                            $cContent = $secCandidate['content'] ?? [];
+                            $vocabItems = $cContent['items'] ?? ($cContent['words'] ?? []);
+                            if (! empty($vocabItems)) {
+                                break;
+                            }
+                        }
+                    }
+
+                    // 2. Fallback: query database for existing vocab in this sub-module
+                    if (empty($vocabItems) && $subModuleId) {
+                        $dbVocab = DB::table(DatabaseConst::MODULE_SECTIONS())
+                            ->where('module_id', $moduleId)
+                            ->where('sub_module_id', $subModuleId)
+                            ->where('section_type', 'vocab')
+                            ->first();
+                        if ($dbVocab && ! empty($dbVocab->content)) {
+                            $decodedVocab = json_decode($dbVocab->content, true);
+                            $vocabItems = $decodedVocab['items'] ?? ($decodedVocab['words'] ?? []);
+                        }
+                    }
+
+                    if (! empty($vocabItems) && is_array($vocabItems)) {
+                        $pairs = [];
+                        foreach (array_slice($vocabItems, 0, 5) as $vItem) {
+                            $pairs[] = [
+                                'left' => $vItem['word'] ?? ($vItem['item'] ?? ''),
+                                'right' => $vItem['meaning'] ?? ($vItem['meaningId'] ?? ($vItem['definition'] ?? '')),
+                            ];
+                        }
+                        $content['drills'] = [
+                            [
+                                'id' => 'drill-cable-1',
+                                'title' => 'Interactive Cable Connection (Vocab Match)',
+                                'instruction' => 'Connect each vocabulary term on the left with its accurate meaning on the right.',
+                                'pairs' => $pairs,
+                            ],
+                        ];
+                    }
+                }
+            }
+
             $orderIdx = $item['orderIndex'] ?? $item['order_index'] ?? $maxOrder;
 
             DB::table(DatabaseConst::MODULE_SECTIONS())->insert([
