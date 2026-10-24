@@ -244,11 +244,9 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             $content = $item['content'] ?? [];
 
             if ($secType === 'vocab' && is_array($content)) {
-                if (isset($content['items']) && ! isset($content['words'])) {
-                    $content['words'] = $content['items'];
-                } elseif (isset($content['words']) && ! isset($content['items'])) {
-                    $content['items'] = $content['words'];
-                }
+                $rawList = $content['items'] ?? ($content['words'] ?? ($content['vocabulary_list'] ?? []));
+                $content['items'] = $rawList;
+                $content['words'] = $rawList;
             }
 
             if ($secType === 'practice' && is_array($content)) {
@@ -260,7 +258,7 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                         $cType = $secCandidate['sectionType'] ?? $secCandidate['section_type'] ?? null;
                         if ($cType === 'vocab') {
                             $cContent = $secCandidate['content'] ?? [];
-                            $vocabItems = $cContent['items'] ?? ($cContent['words'] ?? []);
+                            $vocabItems = $cContent['items'] ?? ($cContent['words'] ?? ($cContent['vocabulary_list'] ?? []));
                             if (! empty($vocabItems)) {
                                 break;
                             }
@@ -276,26 +274,32 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                             ->first();
                         if ($dbVocab && ! empty($dbVocab->content)) {
                             $decodedVocab = json_decode($dbVocab->content, true);
-                            $vocabItems = $decodedVocab['items'] ?? ($decodedVocab['words'] ?? []);
+                            $vocabItems = $decodedVocab['items'] ?? ($decodedVocab['words'] ?? ($decodedVocab['vocabulary_list'] ?? []));
                         }
                     }
 
                     if (! empty($vocabItems) && is_array($vocabItems)) {
                         $pairs = [];
                         foreach (array_slice($vocabItems, 0, 5) as $vItem) {
-                            $pairs[] = [
-                                'left' => $vItem['word'] ?? ($vItem['item'] ?? ''),
-                                'right' => $vItem['meaning'] ?? ($vItem['meaningId'] ?? ($vItem['definition'] ?? '')),
+                            $left = $vItem['word'] ?? ($vItem['item'] ?? ($vItem['term'] ?? ''));
+                            $right = $vItem['meaning'] ?? ($vItem['meaning_id'] ?? ($vItem['meaningId'] ?? ($vItem['definition'] ?? ($vItem['translation'] ?? ''))));
+                            if (! empty($left)) {
+                                $pairs[] = [
+                                    'left' => $left,
+                                    'right' => $right,
+                                ];
+                            }
+                        }
+                        if (! empty($pairs)) {
+                            $content['drills'] = [
+                                [
+                                    'id' => 'drill-cable-1',
+                                    'title' => 'Interactive Cable Connection (Vocab Match)',
+                                    'instruction' => 'Connect each vocabulary term on the left with its accurate meaning on the right.',
+                                    'pairs' => $pairs,
+                                ],
                             ];
                         }
-                        $content['drills'] = [
-                            [
-                                'id' => 'drill-cable-1',
-                                'title' => 'Interactive Cable Connection (Vocab Match)',
-                                'instruction' => 'Connect each vocabulary term on the left with its accurate meaning on the right.',
-                                'pairs' => $pairs,
-                            ],
-                        ];
                     }
                 }
             }
@@ -334,7 +338,8 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             $systemPrompt = "You are an expert Cambridge & CEFR English curriculum designer for EDDY'S English School. Generate complete learning materials for Indonesian students learning English at CEFR level {$cefr}. Output ONLY raw valid JSON (no markdown fences, no extra text).";
 
             if ($skillType !== 'all') {
-                $userPrompt = "Generate calibrated sections for sub-module skill '{$skillType}' in module '{$module->title}' (CEFR {$cefr}). Objective: {$objective}. {$customInstructions}. Output a JSON array of sections: [{\"title\": \"...\", \"section_type\": \"theory|vocab|dialogue|practice|quiz\", \"content\": {...}}]";
+                $drillHint = ($skillType === 'reading') ? ' For practice section, content MUST include "drills": [{"id": "drill-cable-1", "title": "Interactive Cable Connection (Vocab Match)", "instruction": "Connect each vocabulary term on the left with its accurate meaning on the right.", "pairs": [{"left": "word", "right": "arti"}]}].' : '';
+                $userPrompt = "Generate calibrated sections for sub-module skill '{$skillType}' in module '{$module->title}' (CEFR {$cefr}). Objective: {$objective}. {$customInstructions}.{$drillHint} Output a JSON array of sections: [{\"title\": \"...\", \"section_type\": \"theory|vocab|dialogue|practice|quiz\", \"content\": {...}}]";
             } else {
                 $userPrompt = "Generate 5-skill curriculum package for module '{$module->title}' (CEFR {$cefr}). Objective: {$objective}. {$customInstructions}. Output a JSON object with keys 'reading', 'listening', 'writing', 'speaking', 'assessment', each containing an array of sections with keys 'title', 'section_type' (theory/vocab/dialogue/practice/quiz), and 'content'.";
             }
