@@ -39,4 +39,9 @@ return [
         'url' => env('ELYSIA_API_URL', 'https://eddys.drimland.my.id'),
     ],
 
+    'omniroute' => [
+        'url' => env('OMNIROUTE_BASE_URL', 'https://omni.drimland.my.id/v1'),
+        'key' => env('OMNIROUTE_API_KEY'),
+    ],
+
 ];

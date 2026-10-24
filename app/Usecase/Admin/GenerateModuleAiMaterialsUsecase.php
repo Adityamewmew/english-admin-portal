@@ -61,7 +61,12 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             $skillsMap = null;
             $materials = null;
             try {
-                $httpResponse = Http::timeout(180)->post("{$elysiaUrl}/api/curriculum/modules/ai-generate", $payload);
+                $httpResponse = Http::timeout(180)
+                    ->retry(2, 1000, function ($exception, $request) {
+                        return true;
+                    }, throw: false)
+                    ->post("{$elysiaUrl}/api/curriculum/modules/ai-generate", $payload);
+
                 if ($httpResponse->successful()) {
                     $json = $httpResponse->json();
                     $skillsMap = $json['data']['skills'] ?? null;
@@ -316,13 +321,13 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
     private function callOmniRouteDirectly($module, string $skillType, string $customInstructions, ?string $documentBase64, ?string $documentMimeType, ?string $documentText): ?array
     {
         try {
-            $apiKey = env('OMNIROUTE_API_KEY') ?: env('AI_TTS_API_KEY');
+            $apiKey = config('services.omniroute.key', env('OMNIROUTE_API_KEY')) ?: env('AI_TTS_API_KEY');
             if (empty($apiKey)) {
                 Log::error('OMNIROUTE_API_KEY belum dikonfigurasi di file .env');
 
                 return null;
             }
-            $baseUrl = rtrim(env('OMNIROUTE_BASE_URL', env('AI_TTS_BASE_URL', 'https://omni.drimland.my.id/v1')), '/');
+            $baseUrl = rtrim(config('services.omniroute.url', env('OMNIROUTE_BASE_URL', 'https://omni.drimland.my.id/v1')), '/');
             $cefr = strtoupper($module->cefr ?? 'A1');
             $objective = $module->objective ?: "Master {$module->title} at {$cefr} level";
 
