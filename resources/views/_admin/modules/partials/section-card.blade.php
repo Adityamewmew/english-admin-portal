@@ -149,6 +149,26 @@
                 </div>
             @endif
 
+            @if (!empty($content['paragraphs']))
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider font-heading">
+                            {{ $content['passageTitle'] ?? 'Teks Bacaan (Guided Passage)' }}
+                        </span>
+                        @if (!empty($content['durationSeconds']))
+                            <span class="text-[11px] font-mono text-gray-400">Durasi: {{ $content['durationSeconds'] }}s</span>
+                        @endif
+                    </div>
+                    <div class="space-y-2">
+                        @foreach ($content['paragraphs'] as $para)
+                            <div class="p-3.5 rounded-xl bg-gray-50/70 dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-700 text-xs text-gray-800 dark:text-neutral-200 leading-relaxed">
+                                {{ $para }}
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
         {{-- 3. QUIZ & PRACTICE SECTION --}}
         @elseif ($sec->section_type === 'quiz' || $sec->section_type === 'practice')
             @php 
@@ -251,6 +271,48 @@
                             <div class="p-2.5 rounded-lg bg-gray-50 dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-700 text-xs space-y-0.5">
                                 <div class="text-rose-600 dark:text-rose-400 line-through">{{ $m['faultySentence'] ?? '' }}</div>
                                 <div class="text-emerald-700 dark:text-emerald-400 font-bold">{{ $m['targetSentence'] ?? '' }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @if (!empty($content['drills']))
+                <div class="space-y-2">
+                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Drills & Latihan Pasangan Kata
+                    </div>
+                    @foreach ($content['drills'] as $drill)
+                        <div class="p-3.5 rounded-xl bg-gray-50/70 dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-700 text-xs space-y-2">
+                            <div class="font-bold text-gray-800 dark:text-neutral-200">{{ $drill['title'] ?? 'Latihan Pasangan' }}</div>
+                            @if (!empty($drill['pairs']))
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    @foreach ($drill['pairs'] as $pair)
+                                        <div class="p-2 rounded-lg bg-white dark:bg-neutral-800 border border-gray-100 dark:border-neutral-700 flex items-center justify-between">
+                                            <span class="font-bold text-primary dark:text-white">{{ $pair['left'] ?? $pair['english'] ?? '' }}</span>
+                                            <span class="text-gray-400">&harr;</span>
+                                            <span class="text-emerald-600 dark:text-emerald-400 font-medium">{{ $pair['right'] ?? $pair['indonesian'] ?? '' }}</span>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+            @if (!empty($content['sentenceBuilderTargets']))
+                <div class="space-y-2">
+                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Sentence Builder Targets ({{ count($content['sentenceBuilderTargets']) }} Kalimat)
+                    </div>
+                    <div class="space-y-1.5">
+                        @foreach ($content['sentenceBuilderTargets'] as $sb)
+                            <div class="p-2.5 rounded-lg bg-gray-50 dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-700 text-xs flex items-center justify-between">
+                                <span class="font-medium text-gray-900 dark:text-white">{{ $sb['target'] ?? ($sb['sentence'] ?? '') }}</span>
+                                @if (!empty($sb['pattern']))
+                                    <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 font-semibold">{{ $sb['pattern'] }}</span>
+                                @endif
                             </div>
                         @endforeach
                     </div>
