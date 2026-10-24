@@ -129,7 +129,8 @@
                         @endphp
                         <button type="button"
                             onclick="switchSubModuleTab('{{ $smStep->id }}')"
-                            class="p-2.5 rounded-xl border text-left transition-all cursor-pointer {{ $isCurrent ? 'btn-tactile-primary !shadow-md' : 'btn-tactile-outline' }}">
+                            data-step-id="{{ $smStep->id }}"
+                            class="submodule-wizard-step p-2.5 rounded-xl border text-left transition-all cursor-pointer {{ $isCurrent ? 'btn-tactile-primary !shadow-md' : 'btn-tactile-outline' }}">
                             <div class="text-[11px] font-heading font-extrabold flex items-center justify-between">
                                 <div class="flex items-center gap-1.5 truncate">
                                     <span class="opacity-90">{!! $stepIcon !!}</span>
@@ -141,7 +142,7 @@
                                     </span>
                                 @endif
                             </div>
-                            <div class="text-[10px] mt-1 {{ $isCurrent ? 'text-accent' : 'text-slate-400' }}">
+                            <div class="step-count text-[10px] mt-1 {{ $isCurrent ? 'text-accent' : 'text-slate-400' }}">
                                 {{ $stepSecCount }} Bagian Materi
                             </div>
                         </button>
@@ -236,7 +237,7 @@
                 </form>
 
                 {{-- 3. Manual --}}
-                <button type="button" data-hs-overlay="#sectionModal" onclick="openAddSectionModal('{{ $activeSubModuleId }}')" class="w-full h-full text-left p-4 rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 hover:border-slate-400 transition-all cursor-pointer group shadow-2xs">
+                <button type="button" data-hs-overlay="#sectionModal" onclick="openAddSectionModal(window.currentActiveSubModuleId || '{{ $activeSubModuleId }}')" class="w-full h-full text-left p-4 rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 hover:border-slate-400 transition-all cursor-pointer group shadow-2xs">
                     <div class="flex items-center justify-between mb-2">
                         <span class="size-9 rounded-xl bg-slate-200 dark:bg-neutral-700 text-slate-700 dark:text-white flex items-center justify-center font-bold shadow-xs">
                             ✏️
@@ -268,7 +269,7 @@
                     <x-admin.button type="button"
                         variant="secondary"
                         data-hs-overlay="#sectionModal"
-                        onclick="openAddSectionModal('{{ $subModules->first()->id ?? '' }}')"
+                        onclick="openAddSectionModal(window.currentActiveSubModuleId || '{{ $subModules->first()->id ?? '' }}')"
                         size="sm">
                         <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path d="M5 12h14"/><path d="M12 5v14"/>
@@ -295,9 +296,9 @@
                         onclick="switchSubModuleTab('{{ $sm->id }}')"
                         data-tab="{{ $sm->id }}"
                         class="submodule-tab-btn shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-heading font-extrabold border transition-all cursor-pointer {{ $isActive ? 'btn-tactile-primary' : 'btn-tactile-outline' }}">
-                        <span class="{{ $isActive ? 'text-accent' : 'text-slate-400' }}">{!! $tabIcon !!}</span>
+                        <span class="tab-icon {{ $isActive ? 'text-accent' : 'text-slate-400' }}">{!! $tabIcon !!}</span>
                         <span>{{ $sm->title }}</span>
-                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold {{ $isActive ? 'bg-white/20 text-accent' : 'bg-slate-200 text-slate-700 dark:bg-neutral-700 dark:text-neutral-300' }}">
+                        <span class="tab-count px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold {{ $isActive ? 'bg-white/20 text-accent' : 'bg-slate-200 text-slate-700 dark:bg-neutral-700 dark:text-neutral-300' }}">
                             {{ $subSecCount }}
                         </span>
                     </button>
@@ -344,7 +345,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
-                                <form action="{{ route('admin.modules.ai_generate', $module->id) }}" method="POST" onsubmit="showAiOverlay('Menyusun Sub-Modul {{ $sm->title }}...', 'AI sedang menyusun materi untuk sub-modul ini...')">
+                                <form action="{{ route('admin.modules.ai_generate', $module->id) }}" method="POST" onsubmit="showAiOverlay('Menyusun Sub-Modul {{ addslashes($sm->title) }}...', 'AI sedang menyusun materi untuk sub-modul ini...')">
                                     @csrf
                                     <input type="hidden" name="scope" value="single">
                                     <input type="hidden" name="sub_module_id" value="{{ $sm->id }}">
@@ -385,7 +386,7 @@
                                         Mulai tambahkan teori, kosakata, percakapan, atau kuis pilihan ganda untuk sub-modul ini.
                                     </p>
                                     <div class="flex items-center justify-center gap-2 pt-2">
-                                        <form action="{{ route('admin.modules.ai_generate', $module->id) }}" method="POST" onsubmit="showAiOverlay('Menyusun Sub-Modul {{ $sm->title }}...', 'AI sedang menyusun materi untuk sub-modul ini...')">
+                                        <form action="{{ route('admin.modules.ai_generate', $module->id) }}" method="POST" onsubmit="showAiOverlay('Menyusun Sub-Modul {{ addslashes($sm->title) }}...', 'AI sedang menyusun materi untuk sub-modul ini...')">
                                             @csrf
                                             <input type="hidden" name="scope" value="single">
                                             <input type="hidden" name="sub_module_id" value="{{ $sm->id }}">
@@ -431,14 +432,14 @@
                                         @if ($nextSubModule)
                                             @php
                                                 $nextSecCount = $sections->where('sub_module_id', $nextSubModule->id)->count();
-                                            @endphp
+                                             @endphp
                                             @if ($nextSecCount > 0)
                                                 <button type="button" onclick="switchSubModuleTab('{{ $nextSubModule->id }}')" class="btn-tactile btn-tactile-secondary !py-2 !px-3.5 text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer shadow-xs">
                                                     <span>✅ Ya, Sudah Sesuai &bull; Lanjut Tinjau {{ $nextSubModule->title }}</span>
                                                     <svg class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
                                                 </button>
                                             @else
-                                                <form action="{{ route('admin.modules.ai_generate', $module->id) }}" method="POST" onsubmit="showAiOverlay('Menyusun Sub-Modul {{ $nextSubModule->title }}...', 'AI sedang menyusun materi untuk tahap berikutnya...')">
+                                                <form action="{{ route('admin.modules.ai_generate', $module->id) }}" method="POST" onsubmit="showAiOverlay('Menyusun Sub-Modul {{ addslashes($nextSubModule->title) }}...', 'AI sedang menyusun materi untuk tahap berikutnya...')">
                                                     @csrf
                                                     <input type="hidden" name="scope" value="single">
                                                     <input type="hidden" name="sub_module_id" value="{{ $nextSubModule->id }}">
@@ -463,7 +464,7 @@
                                 </div>
 
                                 <div id="regen-box-{{ $sm->id }}" class="hidden mt-3 pt-3 border-t border-emerald-200 dark:border-emerald-800/50">
-                                    <form action="{{ route('admin.modules.ai_generate', $module->id) }}" method="POST" class="space-y-2.5" onsubmit="showAiOverlay('Memperbarui Sub-Modul {{ $sm->title }}...', 'AI sedang menyusun ulang materi dengan catatan Anda...')">
+                                    <form action="{{ route('admin.modules.ai_generate', $module->id) }}" method="POST" class="space-y-2.5" onsubmit="showAiOverlay('Memperbarui Sub-Modul {{ addslashes($sm->title) }}...', 'AI sedang menyusun ulang materi dengan catatan Anda...')">
                                         @csrf
                                         <input type="hidden" name="scope" value="single">
                                         <input type="hidden" name="sub_module_id" value="{{ $sm->id }}">
@@ -491,28 +492,58 @@
         </div>
     </div>
 
-    {{-- FULL SCREEN TACTILE LOADING OVERLAY --}}
-    <div id="aiGeneratingOverlay" class="fixed inset-0 z-50 hidden flex-col items-center justify-center bg-slate-950/80 backdrop-blur-md p-6 text-center text-white transition-all">
-        <div class="relative flex items-center justify-center size-24 mb-6">
-            <div class="absolute inset-0 rounded-full bg-amber-500/20 animate-ping"></div>
-            <div class="relative size-20 rounded-2xl bg-secondary border border-amber-300/40 flex items-center justify-center shadow-2xl">
-                <svg class="size-10 text-white animate-pulse" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                </svg>
+    {{-- DEDICATED MODAL NOTIFIKASI GENERATE AI --}}
+    <div id="aiGeneratingOverlay" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 transition-all">
+        <div class="relative w-full max-w-lg bg-white dark:bg-neutral-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-neutral-700 shadow-2xl text-center overflow-hidden card-tactile">
+            {{-- Top Accent Stripe --}}
+            <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-amber-500 via-secondary to-amber-600"></div>
+
+            {{-- Animated AI Emblem --}}
+            <div class="relative mx-auto flex items-center justify-center size-20 mb-5">
+                <div class="absolute inset-0 rounded-2xl bg-secondary/20 animate-ping"></div>
+                <div class="relative size-16 rounded-2xl bg-secondary border border-amber-300/40 flex items-center justify-center shadow-lg text-white">
+                    <svg class="size-8 animate-pulse" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                    </svg>
+                </div>
             </div>
-        </div>
-        <h3 id="aiOverlayTitle" class="text-xl font-heading font-extrabold tracking-tight mb-2 text-white">
-            Sedang Menyusun Materi Kurikulum dengan AI...
-        </h3>
-        <p id="aiOverlaySubtitle" class="text-sm text-slate-300 max-w-md leading-relaxed">
-            AI sedang menganalisis kurikulum CEFR dan menyusun kosakata, teori, percakapan, dan kuis.
-        </p>
-        <div class="mt-6 flex items-center gap-2.5 text-xs font-semibold text-amber-300 bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/15 shadow-sm">
-            <svg class="animate-spin size-4 text-amber-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-            </svg>
-            <span>Harap tunggu, proses membutuhkan beberapa detik...</span>
+
+            {{-- Title & Subtitle --}}
+            <h3 id="aiOverlayTitle" class="text-lg sm:text-xl font-heading font-extrabold text-primary dark:text-white tracking-tight mb-2">
+                Sedang Menyusun Materi Kurikulum dengan AI...
+            </h3>
+            <p id="aiOverlaySubtitle" class="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 max-w-sm mx-auto leading-relaxed mb-6">
+                AI sedang menganalisis kurikulum CEFR dan menyusun kosakata, teori, percakapan, dan kuis.
+            </p>
+
+            {{-- Live Progress Step Card --}}
+            <div class="p-4 rounded-2xl bg-surface dark:bg-neutral-800/80 border border-slate-200 dark:border-neutral-700 text-left space-y-2.5 mb-5 shadow-2xs">
+                <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                    <span>Status Aktivitas AI</span>
+                    <span class="inline-flex items-center gap-1.5 text-secondary">
+                        <span class="size-2 rounded-full bg-secondary animate-pulse"></span>
+                        Sedang Berjalan
+                    </span>
+                </div>
+                <div class="flex items-center gap-2.5 text-xs font-semibold text-primary dark:text-white">
+                    <svg class="animate-spin size-4 text-secondary shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                    <span id="aiOverlayStatusText" class="truncate">Menganalisis kurikulum CEFR & konteks modul...</span>
+                </div>
+                <div class="w-full bg-slate-200 dark:bg-neutral-700 h-1.5 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-amber-400 to-secondary rounded-full animate-pulse w-3/4"></div>
+                </div>
+            </div>
+
+            {{-- Warning / Notice Footer --}}
+            <div class="inline-flex items-center gap-2 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-3.5 py-2 rounded-xl border border-amber-200 dark:border-amber-800/60 font-medium">
+                <svg class="size-4 shrink-0 text-amber-600 dark:text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>Estimasi 15–30 detik. Harap jangan menutup atau memuat ulang halaman.</span>
+            </div>
         </div>
     </div>
 
@@ -524,5 +555,5 @@
 @endsection
 
 @push('scripts')
-    @include('_admin.modules.partials.section-scripts', ['module' => $module])
+    @include('_admin.modules.partials.section-scripts', ['module' => $module, 'activeSubModuleId' => $activeSubModuleId, 'subModules' => $subModules])
 @endpush
