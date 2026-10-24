@@ -2,13 +2,111 @@
     let vocabIndex = 0;
     let dialogueIndex = 0;
     let quizIndex = 0;
+    let currentActiveSectionContent = {};
+
+    function syncModalContextFromSelect() {
+        const sel = document.getElementById('modalSubModuleId');
+        if (!sel) return;
+        const opt = sel.options[sel.selectedIndex];
+        if (!opt) return;
+
+        const title = opt.dataset.title || opt.text || 'Sub-Modul';
+        const skill = (opt.dataset.skill || 'SKILL').toUpperCase();
+        const order = opt.dataset.order ? ('#' + opt.dataset.order) : '';
+
+        const titleEl = document.getElementById('contextSubModuleTitle');
+        const skillEl = document.getElementById('contextSkillBadge');
+        const orderEl = document.getElementById('contextOrderBadge');
+
+        if (titleEl) titleEl.innerText = title;
+        if (skillEl) skillEl.innerText = skill;
+        if (orderEl) orderEl.innerText = 'Sub-Modul ' + order;
+    }
+
+    function switchEditMode(mode) {
+        const visualCont = document.getElementById('visualModeContainer');
+        const jsonCont = document.getElementById('jsonModeContainer');
+        const tabVisual = document.getElementById('tabModeVisual');
+        const tabJson = document.getElementById('tabModeJson');
+        const btnFormat = document.getElementById('btnFormatJson');
+        const modeInput = document.getElementById('modalContentMode');
+
+        if (mode === 'json') {
+            if (visualCont) visualCont.classList.add('hidden');
+            if (jsonCont) jsonCont.classList.remove('hidden');
+            if (btnFormat) btnFormat.classList.remove('hidden');
+
+            if (tabVisual) {
+                tabVisual.classList.remove('bg-primary', 'text-white', 'shadow-xs');
+                tabVisual.classList.add('bg-slate-100', 'text-slate-700', 'dark:bg-neutral-800', 'dark:text-neutral-300');
+            }
+            if (tabJson) {
+                tabJson.classList.remove('bg-slate-100', 'text-slate-700', 'dark:bg-neutral-800', 'dark:text-neutral-300');
+                tabJson.classList.add('bg-primary', 'text-white', 'shadow-xs');
+            }
+
+            if (modeInput) modeInput.value = 'json';
+
+            // Ensure JSON textarea has current content
+            const ta = document.getElementById('modalContentJson');
+            if (ta && (!ta.value || ta.value.trim() === '')) {
+                ta.value = JSON.stringify(currentActiveSectionContent || {}, null, 2);
+            }
+            validateJsonInput();
+        } else {
+            if (visualCont) visualCont.classList.remove('hidden');
+            if (jsonCont) jsonCont.classList.add('hidden');
+            if (btnFormat) btnFormat.classList.add('hidden');
+
+            if (tabJson) {
+                tabJson.classList.remove('bg-primary', 'text-white', 'shadow-xs');
+                tabJson.classList.add('bg-slate-100', 'text-slate-700', 'dark:bg-neutral-800', 'dark:text-neutral-300');
+            }
+            if (tabVisual) {
+                tabVisual.classList.remove('bg-slate-100', 'text-slate-700', 'dark:bg-neutral-800', 'dark:text-neutral-300');
+                tabVisual.classList.add('bg-primary', 'text-white', 'shadow-xs');
+            }
+
+            if (modeInput) modeInput.value = 'visual';
+        }
+    }
+
+    function formatContentJson() {
+        const ta = document.getElementById('modalContentJson');
+        if (!ta) return;
+        try {
+            const parsed = JSON.parse(ta.value || '{}');
+            ta.value = JSON.stringify(parsed, null, 2);
+            validateJsonInput();
+        } catch (e) {
+            alert('Format JSON belum valid: ' + e.message);
+        }
+    }
+
+    function validateJsonInput() {
+        const ta = document.getElementById('modalContentJson');
+        const statusEl = document.getElementById('jsonValidationStatus');
+        if (!ta || !statusEl) return;
+
+        try {
+            JSON.parse(ta.value || '{}');
+            statusEl.innerText = '✓ Format JSON Valid';
+            statusEl.className = 'text-[11px] text-emerald-600 font-semibold';
+            return true;
+        } catch (e) {
+            statusEl.innerText = '✗ Syntax Error: ' + e.message;
+            statusEl.className = 'text-[11px] text-rose-500 font-semibold';
+            return false;
+        }
+    }
 
     function handleSectionTypeChange(type) {
         document.querySelectorAll('.section-type-option').forEach(el => {
             if (el.dataset.type === type) {
                 el.classList.add('border-primary', 'bg-surface', 'dark:bg-neutral-800');
                 el.classList.remove('border-slate-200', 'dark:border-neutral-700');
-                el.querySelector('input').checked = true;
+                const radio = el.querySelector('input');
+                if (radio) radio.checked = true;
             } else {
                 el.classList.remove('border-primary', 'bg-surface', 'dark:bg-neutral-800');
                 el.classList.add('border-slate-200', 'dark:border-neutral-700');
@@ -17,14 +115,16 @@
 
         document.querySelectorAll('.section-subform').forEach(el => el.classList.add('hidden'));
 
-        if (type === 'theory') document.getElementById('subformTheory').classList.remove('hidden');
-        else if (type === 'vocab') document.getElementById('subformVocab').classList.remove('hidden');
-        else if (type === 'dialogue') document.getElementById('subformDialogue').classList.remove('hidden');
-        else if (type === 'quiz' || type === 'practice') document.getElementById('subformQuiz').classList.remove('hidden');
+        if (type === 'theory') document.getElementById('subformTheory')?.classList.remove('hidden');
+        else if (type === 'vocab') document.getElementById('subformVocab')?.classList.remove('hidden');
+        else if (type === 'dialogue') document.getElementById('subformDialogue')?.classList.remove('hidden');
+        else if (type === 'practice') document.getElementById('subformPractice')?.classList.remove('hidden');
+        else if (type === 'quiz') document.getElementById('subformQuiz')?.classList.remove('hidden');
     }
 
     function addTheoryRuleRow(val = '') {
         const container = document.getElementById('theoryRulesContainer');
+        if (!container) return;
         const rowId = 'rule-row-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
         const div = document.createElement('div');
         div.id = rowId;
@@ -43,11 +143,12 @@
 
     function addVocabRow(data = {}) {
         const container = document.getElementById('vocabRowsContainer');
+        if (!container) return;
         const idx = vocabIndex++;
         const rowId = 'vocab-row-' + idx;
         const div = document.createElement('div');
         div.id = rowId;
-        div.className = 'p-3.5 rounded-xl bg-gray-50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-700 space-y-2 text-xs';
+        div.className = 'p-3 rounded-xl bg-gray-50 dark:bg-neutral-900/50 border border-gray-100 dark:border-neutral-700 space-y-2 text-xs';
         div.innerHTML = `
             <div class="flex items-center justify-between pb-1 border-b border-gray-200/60 dark:border-neutral-700">
                 <span class="font-bold text-gray-700 dark:text-neutral-300">Kata #${idx + 1}</span>
@@ -59,7 +160,7 @@
                 <input type="text" name="vocab_words[${idx}][word]" value="${escapeHtml(data.word || '')}"
                     class="rounded-xl border-gray-200 bg-white py-1.5 px-2.5 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white font-bold"
                     placeholder="Kata (e.g. Greeting)">
-                <input type="text" name="vocab_words[${idx}][phonetic]" value="${escapeHtml(data.phonetic || '')}"
+                <input type="text" name="vocab_words[${idx}][phonetic]" value="${escapeHtml(data.phonetic || data.ipa || '')}"
                     class="rounded-xl border-gray-200 bg-white py-1.5 px-2.5 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white font-mono"
                     placeholder="Fonetik (e.g. /ˈɡriːtɪŋ/)">
                 <input type="text" name="vocab_words[${idx}][partOfSpeech]" value="${escapeHtml(data.partOfSpeech || '')}"
@@ -80,6 +181,7 @@
 
     function addDialogueRow(data = {}) {
         const container = document.getElementById('dialogueRowsContainer');
+        if (!container) return;
         const idx = dialogueIndex++;
         const rowId = 'dialogue-row-' + idx;
         const div = document.createElement('div');
@@ -101,7 +203,7 @@
                 <div class="sm:col-span-3">
                     <input type="text" name="dialogue_lines[${idx}][text]" value="${escapeHtml(data.text || '')}"
                         class="w-full rounded-xl border-gray-200 bg-white py-1.5 px-2.5 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white"
-                        placeholder="Kalimat Bahasa Inggris">
+                        placeholder="Kalimat Bahasa Inggris (3-8 kata)">
                 </div>
             </div>
             <input type="text" name="dialogue_lines[${idx}][translation]" value="${escapeHtml(data.translation || '')}"
@@ -113,6 +215,7 @@
 
     function addQuizQuestionRow(data = {}) {
         const container = document.getElementById('quizQuestionsContainer');
+        if (!container) return;
         const idx = quizIndex++;
         const rowId = 'quiz-row-' + idx;
         const options = data.options || ['', '', '', ''];
@@ -120,7 +223,7 @@
 
         const div = document.createElement('div');
         div.id = rowId;
-        div.className = 'p-4 rounded-xl bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 dark:border-neutral-700 space-y-2.5 text-xs';
+        div.className = 'p-3.5 rounded-xl bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 dark:border-neutral-700 space-y-2 text-xs';
         div.innerHTML = `
             <div class="flex items-center justify-between pb-1 border-b border-gray-200/60 dark:border-neutral-700">
                 <span class="font-bold text-blue-600 dark:text-blue-400">Soal #${idx + 1}</span>
@@ -129,13 +232,13 @@
                 </button>
             </div>
             <div>
-                <label class="block font-semibold text-gray-700 dark:text-neutral-300 mb-1">Pertanyaan Soal</label>
+                <label class="block font-semibold text-gray-700 dark:text-neutral-300 mb-1">Pertanyaan</label>
                 <input type="text" name="quiz_questions[${idx}][question]" value="${escapeHtml(data.question || '')}"
                     class="w-full rounded-xl border-gray-200 bg-white py-1.5 px-2.5 dark:bg-neutral-800 dark:border-neutral-700 dark:text-white font-medium"
                     placeholder="Misal: What is the correct response to 'How are you?'">
             </div>
             <div class="space-y-1.5">
-                <label class="block font-semibold text-gray-700 dark:text-neutral-300">Pilihan Jawaban (Ketik pilihan & tentukan kunci)</label>
+                <label class="block font-semibold text-gray-700 dark:text-neutral-300">Pilihan Jawaban</label>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     ${[0, 1, 2, 3].map(optIdx => `
                         <input type="text" name="quiz_questions[${idx}][options][]" value="${escapeHtml(options[optIdx] || '')}"
@@ -149,7 +252,7 @@
                     <label class="block font-semibold text-emerald-700 dark:text-emerald-400 mb-1">Kunci Jawaban Tepat</label>
                     <input type="text" name="quiz_questions[${idx}][answer]" value="${escapeHtml(currentAnswer)}"
                         class="w-full rounded-xl border-emerald-300 bg-emerald-50/40 py-1.5 px-2.5 dark:bg-emerald-950/20 dark:border-emerald-700 dark:text-emerald-300 font-bold"
-                        placeholder="Ketik teks jawaban yang benar persis">
+                        placeholder="Ketik persis teks jawaban yang benar">
                 </div>
                 <div>
                     <label class="block font-semibold text-gray-700 dark:text-neutral-300 mb-1">Pembahasan (Opsional)</label>
@@ -195,6 +298,9 @@
             document.getElementById('modalSubModuleId').value = subModuleId;
         }
 
+        currentActiveSectionContent = {};
+        document.getElementById('modalContentJson').value = "{}";
+
         // Reset containers
         document.getElementById('theorySummary').value = "";
         document.getElementById('theoryRulesContainer').innerHTML = "";
@@ -208,13 +314,15 @@
         document.getElementById('dialogueRowsContainer').innerHTML = "";
         document.getElementById('quizQuestionsContainer').innerHTML = "";
 
-        // Add 1 default row to each
+        // Add 1 default row
         addTheoryRuleRow();
         addVocabRow();
         addDialogueRow();
         addQuizQuestionRow();
 
+        syncModalContextFromSelect();
         handleSectionTypeChange('theory');
+        switchEditMode('visual');
 
         openModal('sectionModal');
     }
@@ -241,6 +349,8 @@
             document.getElementById('modalSubModuleId').value = sec.sub_module_id;
         }
 
+        syncModalContextFromSelect();
+
         // Clear subform containers
         document.getElementById('theoryRulesContainer').innerHTML = "";
         document.getElementById('vocabRowsContainer').innerHTML = "";
@@ -252,12 +362,19 @@
             try { c = JSON.parse(c); } catch (e) { c = {}; }
         }
         c = c || {};
+        currentActiveSectionContent = c;
+
+        // Populate JSON textarea
+        const jsonText = JSON.stringify(c, null, 2);
+        document.getElementById('modalContentJson').value = jsonText;
 
         let type = sec.section_type;
         if (type === 'vocabulary') type = 'vocab';
-        if (type === 'practice') type = 'quiz';
 
         handleSectionTypeChange(type);
+
+        const complexNotice = document.getElementById('quizComplexNotice');
+        const complexDesc = document.getElementById('quizComplexDesc');
 
         if (type === 'theory') {
             document.getElementById('theorySummary').value = c.summary || '';
@@ -288,16 +405,35 @@
             } else {
                 addDialogueRow();
             }
+        } else if (type === 'practice') {
+            // Handled cleanly via practice card and JSON toggle
         } else if (type === 'quiz') {
             document.getElementById('quizPassingScore').value = c.passingScore || 70;
             const qs = c.questions || [];
-            if (qs.length > 0) {
-                qs.forEach(q => addQuizQuestionRow(q));
+            
+            // Check for complex questions (e.g. 55-question assessment or dictation/arrange)
+            const is55Questions = qs.length >= 15 || !!c.parts;
+            const isPracticum = (c.practicumQuestions && c.practicumQuestions.length > 0) || qs.some(q => q.type === 'dictation' || q.type === 'arrange' || q.storyPoints);
+
+            if (is55Questions || isPracticum) {
+                if (complexNotice) complexNotice.classList.remove('hidden');
+                if (complexDesc) {
+                    complexDesc.innerText = is55Questions 
+                        ? `Ujian komprehensif terdeteksi (${qs.length} butir soal lintas skill). Sangat disarankan edit via Mode JSON.`
+                        : `Soal practicum interaktif terdeteksi (dictation, arrange, storytelling, atau drills).`;
+                }
             } else {
+                if (complexNotice) complexNotice.classList.add('hidden');
+            }
+
+            if (qs.length > 0 && !is55Questions) {
+                qs.forEach(q => addQuizQuestionRow(q));
+            } else if (qs.length === 0) {
                 addQuizQuestionRow();
             }
         }
 
+        switchEditMode('visual');
         openModal('sectionModal');
     }
 
@@ -320,77 +456,30 @@
         openModal('deleteSectionModal');
     }
 
-    function switchSubModuleTab(tabId) {
-        document.querySelectorAll('.submodule-tab-btn').forEach(btn => {
-            if (btn.dataset.tab === tabId) {
-                btn.classList.add('btn-tactile-primary');
-                btn.classList.remove('btn-tactile-outline');
-            } else {
-                btn.classList.remove('btn-tactile-primary');
-                btn.classList.add('btn-tactile-outline');
-            }
-        });
-
-        document.querySelectorAll('.submodule-tab-pane').forEach(pane => {
-            if (pane.id === 'pane-' + tabId) {
-                pane.classList.remove('hidden');
-            } else {
-                pane.classList.add('hidden');
-            }
-        });
-
-        // Update URL query parameter without refresh
-        const url = new URL(window.location);
-        url.searchParams.set('sub_module', tabId);
-        window.history.replaceState({}, '', url);
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
-    function escapeHtml(text) {
-        if (!text) return '';
-        return String(text)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-    function openEditSubModuleModal(subModuleId, title) {
-        const form = document.getElementById('editSubModuleForm');
-        form.action = "{{ url('admin/modules/detail/' . $module->id . '/submodule') }}/" + subModuleId + "/update";
-        document.getElementById('editSubModuleTitleInput').value = title;
-        openModal('editSubModuleModal');
-    }
-
-    function showAiOverlay(title, subtitle) {
-        const overlay = document.getElementById('aiGeneratingOverlay');
-        if (overlay) {
-            if (title) {
-                const titleEl = document.getElementById('aiOverlayTitle');
-                if (titleEl) titleEl.innerText = title;
-            }
-            if (subtitle) {
-                const subEl = document.getElementById('aiOverlaySubtitle');
-                if (subEl) subEl.innerText = subtitle;
-            }
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-        }
-    }
-
-    function toggleRegenerateBox(subModuleId) {
-        const box = document.getElementById('regen-box-' + subModuleId);
-        if (box) {
-            box.classList.toggle('hidden');
-        }
-    }
-
-    // Auto-select tab from URL on page load
-    document.addEventListener('DOMContentLoaded', function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        const subModuleParam = urlParams.get('sub_module');
-        if (subModuleParam && document.getElementById('pane-' + subModuleParam)) {
-            switchSubModuleTab(subModuleParam);
+    // Attach form submit guard to prevent invalid JSON submissions
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('sectionForm');
+        if (form) {
+            form.addEventListener('submit', (e) => {
+                const modeInput = document.getElementById('modalContentMode');
+                if (modeInput && modeInput.value === 'json') {
+                    if (!validateJsonInput()) {
+                        e.preventDefault();
+                        alert('Silakan perbaiki format JSON yang keliru sebelum menyimpan.');
+                        return false;
+                    }
+                }
+            });
         }
     });
 </script>

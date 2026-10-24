@@ -225,6 +225,38 @@
                 </div>
             @endif
 
+            @if (!empty($content['stressPairs']))
+                <div class="space-y-2">
+                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Syllable Stress Pairs ({{ count($content['stressPairs']) }} Pasang)
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        @foreach ($content['stressPairs'] as $pair)
+                            <div class="p-2.5 rounded-lg bg-gray-50 dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-700 text-xs">
+                                <span class="font-bold text-primary dark:text-white">{{ $pair['country'] ?? '' }} &rarr; {{ $pair['nationality'] ?? '' }}</span>
+                                <span class="text-[11px] text-gray-500 dark:text-neutral-400 block mt-0.5">{{ $pair['shiftExplanation'] ?? '' }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @if (!empty($content['mechanicsChallenges']))
+                <div class="space-y-2">
+                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Mechanics Challenges ({{ count($content['mechanicsChallenges']) }} Tantangan)
+                    </div>
+                    <div class="space-y-1.5">
+                        @foreach ($content['mechanicsChallenges'] as $m)
+                            <div class="p-2.5 rounded-lg bg-gray-50 dark:bg-neutral-900/40 border border-gray-100 dark:border-neutral-700 text-xs space-y-0.5">
+                                <div class="text-rose-600 dark:text-rose-400 line-through">{{ $m['faultySentence'] ?? '' }}</div>
+                                <div class="text-emerald-700 dark:text-emerald-400 font-bold">{{ $m['targetSentence'] ?? '' }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
         {{-- 4. THEORY SECTION --}}
         @elseif ($sec->section_type === 'theory')
             @if (!empty($content['summary']))

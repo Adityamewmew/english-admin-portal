@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Constants\DatabaseConst;
 use App\Constants\ResponseConst;
 use App\Http\Controllers\Controller;
 use App\Usecase\Admin\CurriculumModuleUsecase;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class CurriculumModuleController extends Controller
 {
@@ -245,7 +247,7 @@ class CurriculumModuleController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:150',
-            'section_type' => 'required|in:theory,vocab,dialogue,quiz',
+            'section_type' => 'required|in:theory,vocab,dialogue,practice,quiz',
             'sub_module_id' => 'nullable|string|max:36',
             'order_index' => 'nullable|integer|min:1',
         ]);
@@ -273,12 +275,21 @@ class CurriculumModuleController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:150',
-            'section_type' => 'required|in:theory,vocab,dialogue,quiz',
+            'section_type' => 'required|in:theory,vocab,dialogue,practice,quiz',
             'sub_module_id' => 'nullable|string|max:36',
             'order_index' => 'nullable|integer|min:1',
         ]);
 
-        $content = $this->extractSectionContent($request, $request->input('section_type'));
+        $existingSec = DB::table(DatabaseConst::MODULE_SECTIONS())
+            ->where('id', $sectionId)
+            ->where('module_id', $id)
+            ->first();
+        $existingContent = [];
+        if ($existingSec && ! empty($existingSec->content)) {
+            $existingContent = is_array($existingSec->content) ? $existingSec->content : (json_decode($existingSec->content, true) ?: []);
+        }
+
+        $content = $this->extractSectionContent($request, $request->input('section_type'), $existingContent);
 
         $res = $this->usecase->updateSection($id, $sectionId, [
             'title' => $request->input('title'),
@@ -442,15 +453,24 @@ class CurriculumModuleController extends Controller
         return [];
     }
 
-    private function extractSectionContent(Request $request, string $type): array
+    private function extractSectionContent(Request $request, string $type, array $existingContent = []): array
     {
+        // 1. JSON Mode: If user submitted raw structured JSON, decode and use directly
+        if ($request->input('content_mode') === 'json' && $request->filled('content_json')) {
+            $decoded = json_decode($request->input('content_json'), true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return $decoded;
+            }
+        }
+
         switch ($type) {
             case 'theory':
                 $rules = array_values(array_filter($request->input('theory_rules', [])));
-                $content = [
-                    'summary' => $request->input('theory_summary', ''),
-                    'rules' => $rules,
-                ];
+                $content = $existingContent;
+                $content['summary'] = $request->input('theory_summary', $content['summary'] ?? '');
+                if (! empty($rules)) {
+                    $content['rules'] = $rules;
+                }
                 if ($request->filled('theory_trap_title') || $request->filled('theory_trap_wrong')) {
                     $content['commonTrap'] = [
                         'trapTitle' => $request->input('theory_trap_title', ''),
@@ -468,9 +488,11 @@ class CurriculumModuleController extends Controller
                     if (! empty($w['word'])) {
                         $items[] = [
                             'word' => trim($w['word']),
-                            'phonetic' => trim($w['phonetic'] ?? ''),
+                            'phonetic' => trim($w['phonetic'] ?? ($w['ipa'] ?? '')),
+                            'ipa' => trim($w['ipa'] ?? ($w['phonetic'] ?? '')),
                             'partOfSpeech' => trim($w['partOfSpeech'] ?? ''),
-                            'meaningId' => trim($w['meaningId'] ?? ''),
+                            'meaning' => trim($w['meaningId'] ?? ($w['meaning'] ?? '')),
+                            'meaningId' => trim($w['meaningId'] ?? ($w['meaning'] ?? '')),
                             'exampleSentence' => trim($w['exampleSentence'] ?? ''),
                         ];
                     }
@@ -489,11 +511,16 @@ class CurriculumModuleController extends Controller
                         ];
                     }
                 }
+                $content = $existingContent;
+                $content['context'] = $request->input('dialogue_context', $content['context'] ?? '');
+                if (! empty($lines)) {
+                    $content['lines'] = $lines;
+                }
 
-                return [
-                    'context' => $request->input('dialogue_context', ''),
-                    'lines' => $lines,
-                ];
+                return $content;
+
+            case 'practice':
+                return $existingContent;
 
             case 'quiz':
                 $questions = [];
@@ -509,13 +536,18 @@ class CurriculumModuleController extends Controller
                     }
                 }
 
-                return [
-                    'passingScore' => (int) $request->input('quiz_passing_score', 70),
-                    'questions' => $questions,
-                ];
+                $content = $existingContent;
+                if ($request->filled('quiz_passing_score')) {
+                    $content['passingScore'] = (int) $request->input('quiz_passing_score');
+                }
+                if (! empty($questions)) {
+                    $content['questions'] = $questions;
+                }
+
+                return $content;
 
             default:
-                return [];
+                return $existingContent;
         }
     }
 }

@@ -6,6 +6,7 @@ use App\Constants\DatabaseConst;
 use App\Http\Presenter\Response;
 use App\Usecase\Usecase;
 use Exception;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -24,10 +25,8 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                 return Response::buildErrorNotFound('Modul kurikulum tidak ditemukan');
             }
 
-            $subModules = DB::table(DatabaseConst::SUB_MODULES())
-                ->where('module_id', $moduleId)
-                ->orderBy('order_index', 'asc')
-                ->get();
+            // 1. Ensure all 5 standard submodules exist (reading, listening, writing, speaking, assessment)
+            $subModules = $this->ensureFiveSubModules($module);
 
             $subModuleId = $options['sub_module_id'] ?? null;
             $skillType = 'all';
@@ -45,8 +44,8 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             $documentMimeType = $options['document_mime_type'] ?? null;
             $documentText = $options['document_text'] ?? null;
 
-            // 1. Call Elysia backend endpoint
-            $elysiaUrl = rtrim(env('ELYSIA_API_URL', 'http://localhost:3003'), '/');
+            // 2. Call Elysia backend endpoint (Default port 3001 as defined in monorepo architecture)
+            $elysiaUrl = rtrim(env('ELYSIA_API_URL', 'http://localhost:3001'), '/');
             $payload = [
                 'moduleId' => $moduleId,
                 'moduleTitle' => $module->title,
@@ -59,11 +58,13 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                 'documentText' => $documentText,
             ];
 
+            $skillsMap = null;
             $materials = null;
             try {
                 $httpResponse = Http::timeout(180)->post("{$elysiaUrl}/api/curriculum/modules/ai-generate", $payload);
                 if ($httpResponse->successful()) {
                     $json = $httpResponse->json();
+                    $skillsMap = $json['data']['skills'] ?? null;
                     $materials = $json['data']['materials'] ?? null;
                 } else {
                     Log::error('Elysia AI generator failed: HTTP '.$httpResponse->status().' - '.$httpResponse->body());
@@ -73,11 +74,18 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             }
 
             // Fallback: If Elysia call failed or offline, call OmniRoute API directly
-            if (! $materials) {
-                $materials = $this->callOmniRouteDirectly($module, $skillType, $customInstructions, $documentBase64, $documentMimeType, $documentText);
+            if (! $skillsMap && ! $materials) {
+                $fallbackRes = $this->callOmniRouteDirectly($module, $skillType, $customInstructions, $documentBase64, $documentMimeType, $documentText);
+                if (is_array($fallbackRes)) {
+                    if (isset($fallbackRes['reading']) || isset($fallbackRes['assessment'])) {
+                        $skillsMap = $fallbackRes;
+                    } else {
+                        $materials = $fallbackRes;
+                    }
+                }
             }
 
-            if (! $materials) {
+            if (! $skillsMap && ! $materials) {
                 return Response::buildErrorService('Gagal menghasilkan materi dari AI. Silakan coba kembali.');
             }
 
@@ -85,31 +93,66 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             $cleanId = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $moduleId));
             $shouldReplace = ! empty($options['replace']);
 
-            if ($skillType !== 'all' && is_array($materials)) {
-                $sectionsList = isset($materials[0]) ? $materials : ($materials['sections'] ?? ($materials[$skillType] ?? []));
+            // 3. Process persistence based on skillType and data shape
+            if ($skillType !== 'all') {
                 $targetSmId = $targetSubModule ? $targetSubModule->id : null;
+                $sectionsList = [];
+
+                if ($skillsMap && isset($skillsMap[$skillType])) {
+                    $sectionsList = $skillsMap[$skillType];
+                } elseif (is_array($materials)) {
+                    $sectionsList = isset($materials[0]) ? $materials : ($materials['sections'] ?? ($materials[$skillType] ?? []));
+                }
+
                 if ($shouldReplace && $targetSmId) {
                     DB::table(DatabaseConst::MODULE_SECTIONS())
                         ->where('module_id', $moduleId)
                         ->where('sub_module_id', $targetSmId)
                         ->delete();
                 }
+
                 $insertedCount += $this->persistGeneratedSections($moduleId, $cleanId, $targetSmId, $sectionsList);
-            } elseif (is_array($materials)) {
+            } else {
+                // ALL SKILLS MODE
                 if ($shouldReplace) {
                     DB::table(DatabaseConst::MODULE_SECTIONS())
                         ->where('module_id', $moduleId)
                         ->delete();
                 }
-                foreach ($materials as $skill => $sectionsList) {
-                    if (! is_array($sectionsList)) {
-                        continue;
+
+                if ($skillsMap && is_array($skillsMap)) {
+                    foreach ($skillsMap as $skill => $sectionsList) {
+                        if (! is_array($sectionsList)) {
+                            continue;
+                        }
+                        $matchedSm = $subModules->first(function ($sm) use ($skill) {
+                            return strtolower($sm->skill_type) === strtolower($skill);
+                        });
+                        $smId = $matchedSm ? $matchedSm->id : null;
+                        $insertedCount += $this->persistGeneratedSections($moduleId, $cleanId, $smId, $sectionsList);
                     }
-                    $matchedSm = $subModules->first(function ($sm) use ($skill) {
-                        return strtolower($sm->skill_type) === strtolower($skill);
-                    });
-                    $smId = $matchedSm ? $matchedSm->id : null;
-                    $insertedCount += $this->persistGeneratedSections($moduleId, $cleanId, $smId, $sectionsList);
+                } elseif (is_array($materials)) {
+                    // Group sections if flat array
+                    foreach ($materials as $item) {
+                        if (! is_array($item)) {
+                            continue;
+                        }
+                        $itemSubId = $item['subModuleId'] ?? $item['sub_module_id'] ?? null;
+                        $itemSkill = $item['skillType'] ?? $item['skill_type'] ?? null;
+
+                        $matchedSm = null;
+                        if ($itemSubId) {
+                            $matchedSm = $subModules->firstWhere('id', $itemSubId);
+                        }
+                        if (! $matchedSm && $itemSkill) {
+                            $matchedSm = $subModules->first(function ($sm) use ($itemSkill) {
+                                return strtolower($sm->skill_type) === strtolower($itemSkill);
+                            });
+                        }
+
+                        $smId = $matchedSm ? $matchedSm->id : null;
+                        $insertedCount += $this->persistGeneratedSections($moduleId, $cleanId, $smId, [$item]);
+                    }
                 }
             }
 
@@ -124,6 +167,54 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
         }
     }
 
+    /**
+     * Ensures all 5 standard submodules exist for a module.
+     */
+    private function ensureFiveSubModules(object $module): Collection
+    {
+        $existing = DB::table(DatabaseConst::SUB_MODULES())
+            ->where('module_id', $module->id)
+            ->orderBy('order_index', 'asc')
+            ->get();
+
+        $standard = [
+            'reading' => ['title' => 'Reading Mission', 'order' => 1],
+            'listening' => ['title' => 'Listening Mission', 'order' => 2],
+            'writing' => ['title' => 'Writing Mission', 'order' => 3],
+            'speaking' => ['title' => 'Speaking Lab', 'order' => 4],
+            'assessment' => ['title' => 'Unit Final Mission', 'order' => 5],
+        ];
+
+        $cleanId = strtolower(preg_replace('/[^a-zA-Z0-9]/', '-', $module->id));
+        $missing = [];
+
+        foreach ($standard as $skill => $meta) {
+            $found = $existing->first(function ($sm) use ($skill) {
+                return strtolower($sm->skill_type) === $skill;
+            });
+            if (! $found) {
+                $missing[] = [
+                    'id' => "sub-{$cleanId}-{$skill}",
+                    'module_id' => $module->id,
+                    'skill_type' => $skill,
+                    'title' => $meta['title'],
+                    'order_index' => $meta['order'],
+                    'created_at' => now(),
+                ];
+            }
+        }
+
+        if (! empty($missing)) {
+            DB::table(DatabaseConst::SUB_MODULES())->insert($missing);
+            $existing = DB::table(DatabaseConst::SUB_MODULES())
+                ->where('module_id', $module->id)
+                ->orderBy('order_index', 'asc')
+                ->get();
+        }
+
+        return $existing;
+    }
+
     private function persistGeneratedSections(string $moduleId, string $cleanId, ?string $subModuleId, array $sectionsList): int
     {
         $maxOrder = DB::table(DatabaseConst::MODULE_SECTIONS())
@@ -133,8 +224,13 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
 
         $count = 0;
         foreach ($sectionsList as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
             $secType = $item['sectionType'] ?? $item['section_type'] ?? null;
-            if (empty($item['title']) || empty($secType)) {
+            $title = $item['title'] ?? null;
+            if (empty($title) || empty($secType)) {
                 continue;
             }
 
@@ -157,7 +253,7 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                 'module_id' => $moduleId,
                 'sub_module_id' => $subModuleId,
                 'section_type' => $secType,
-                'title' => $item['title'],
+                'title' => $title,
                 'content' => is_string($content) ? $content : json_encode($content),
                 'order_index' => $orderIdx,
                 'created_at' => now(),
@@ -173,7 +269,7 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
         try {
             $apiKey = env('OMNIROUTE_API_KEY') ?: env('AI_TTS_API_KEY');
             if (empty($apiKey)) {
-                Log::error('OMNIROUTE_API_KEY atau AI_TTS_API_KEY belum dikonfigurasi di file .env');
+                Log::error('OMNIROUTE_API_KEY belum dikonfigurasi di file .env');
 
                 return null;
             }
@@ -184,9 +280,9 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             $systemPrompt = "You are an expert Cambridge & CEFR English curriculum designer for EDDY'S English School. Generate complete learning materials for Indonesian students learning English at CEFR level {$cefr}. Output ONLY raw valid JSON (no markdown fences, no extra text).";
 
             if ($skillType !== 'all') {
-                $userPrompt = "Generate 2 to 3 practical sections for sub-module skill '{$skillType}' in module '{$module->title}' (CEFR {$cefr}). Objective: {$objective}. {$customInstructions}. Output a JSON array of sections: [{\"title\": \"...\", \"section_type\": \"theory|vocab|dialogue|quiz\", \"content\": {...}}]";
+                $userPrompt = "Generate calibrated sections for sub-module skill '{$skillType}' in module '{$module->title}' (CEFR {$cefr}). Objective: {$objective}. {$customInstructions}. Output a JSON array of sections: [{\"title\": \"...\", \"section_type\": \"theory|vocab|dialogue|practice|quiz\", \"content\": {...}}]";
             } else {
-                $userPrompt = "Generate 5-skill curriculum package for module '{$module->title}' (CEFR {$cefr}). Objective: {$objective}. {$customInstructions}. Output a JSON object with keys 'reading', 'listening', 'writing', 'speaking', 'assessment', each containing an array of sections with keys 'title', 'section_type' (theory/vocab/dialogue/quiz), and 'content'.";
+                $userPrompt = "Generate 5-skill curriculum package for module '{$module->title}' (CEFR {$cefr}). Objective: {$objective}. {$customInstructions}. Output a JSON object with keys 'reading', 'listening', 'writing', 'speaking', 'assessment', each containing an array of sections with keys 'title', 'section_type' (theory/vocab/dialogue/practice/quiz), and 'content'.";
             }
 
             if ($documentText) {
@@ -224,7 +320,7 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
 
             $json = json_decode($text, true);
             if (json_last_error() === JSON_ERROR_NONE && is_array($json)) {
-                return $json['materials'] ?? $json;
+                return $json['skills'] ?? ($json['materials'] ?? $json);
             }
         } catch (Exception $e) {
             Log::error('Direct OmniRoute error: '.$e->getMessage());
