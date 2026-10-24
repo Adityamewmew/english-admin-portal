@@ -323,6 +323,9 @@ class CurriculumModuleController extends Controller
 
     public function doGenerateAiSection(string $id, Request $request): RedirectResponse
     {
+        @ini_set('max_execution_time', '300');
+        @set_time_limit(300);
+
         $request->validate([
             'sub_module_id' => 'nullable|string',
             'scope' => 'required|in:single,all',

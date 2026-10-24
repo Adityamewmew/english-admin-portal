@@ -15,6 +15,9 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
 {
     public function execute(string $moduleId, array $options = []): array
     {
+        @ini_set('max_execution_time', '300');
+        @set_time_limit(300);
+
         try {
             $module = DB::table(DatabaseConst::CURRICULUM_MODULES())
                 ->where('id', $moduleId)
@@ -61,10 +64,7 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             $skillsMap = null;
             $materials = null;
             try {
-                $httpResponse = Http::timeout(180)
-                    ->retry(2, 1000, function ($exception, $request) {
-                        return true;
-                    }, throw: false)
+                $httpResponse = Http::timeout(40)
                     ->post("{$elysiaUrl}/api/curriculum/modules/ai-generate", $payload);
 
                 if ($httpResponse->successful()) {
@@ -72,10 +72,10 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
                     $skillsMap = $json['data']['skills'] ?? null;
                     $materials = $json['data']['materials'] ?? null;
                 } else {
-                    Log::error('Elysia AI generator failed: HTTP '.$httpResponse->status().' - '.$httpResponse->body());
+                    Log::warning('Elysia AI generator failed: HTTP '.$httpResponse->status().' - '.$httpResponse->body().'. Falling back to direct OmniRoute.');
                 }
             } catch (Exception $e) {
-                Log::warning('Elysia AI generator unreachable: '.$e->getMessage().'. Falling back to direct OmniRoute.');
+                Log::warning('Elysia AI generator unreachable/timeout: '.$e->getMessage().'. Falling back to direct OmniRoute.');
             }
 
             // Fallback: If Elysia call failed or offline, call OmniRoute API directly
