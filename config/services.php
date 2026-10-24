@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'elysia' => [
+        'url' => env('ELYSIA_API_URL', 'https://eddys.drimland.my.id'),
+    ],
+
 ];

@@ -44,8 +44,8 @@ class GenerateModuleAiMaterialsUsecase extends Usecase
             $documentMimeType = $options['document_mime_type'] ?? null;
             $documentText = $options['document_text'] ?? null;
 
-            // 2. Call Elysia backend endpoint (Default port 3001 as defined in monorepo architecture)
-            $elysiaUrl = rtrim(env('ELYSIA_API_URL', 'http://localhost:3001'), '/');
+            // 2. Call Elysia backend endpoint (Production by default, overridable via ELYSIA_API_URL)
+            $elysiaUrl = rtrim(config('services.elysia.url', env('ELYSIA_API_URL', 'https://eddys.drimland.my.id')), '/');
             $payload = [
                 'moduleId' => $moduleId,
                 'moduleTitle' => $module->title,
