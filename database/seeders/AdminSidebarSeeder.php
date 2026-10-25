@@ -218,6 +218,32 @@ class AdminSidebarSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            // SUBMENU 3: Saldo & Dompet
+            [
+                'id' => 81,
+                'parent_id' => 80,
+                'label' => 'Saldo & Dompet',
+                'route_name' => 'admin.wallet.index',
+                'icon' => null,
+                'group' => 'akademik',
+                'sort_order' => 3,
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // SUBMENU 4: Kelola Penarikan
+            [
+                'id' => 82,
+                'parent_id' => 80,
+                'label' => 'Kelola Penarikan',
+                'route_name' => 'admin.wallet.withdrawals',
+                'icon' => null,
+                'group' => 'akademik',
+                'sort_order' => 4,
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
             [
                 'id' => 5,
                 'parent_id' => null,
