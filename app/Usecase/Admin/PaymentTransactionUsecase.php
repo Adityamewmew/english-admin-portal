@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -46,7 +47,11 @@ class PaymentTransactionUsecase extends Usecase
                 ->when($filterData['category'] ?? false, function ($q, $category) {
                     return $q->where('pt.payment_category', $category);
                 })
-                ->when($filterData['exclude_unapproved_manual'] ?? false, function ($q) {
+                ->when($filterData['exclude_unapproved_manual'] ?? false, function ($q) use ($filterData) {
+                    if (($filterData['status'] ?? '') === 'paid') {
+                        return;
+                    }
+
                     return $q->where(function ($sub) {
                         $sub->where('pt.payment_category', '!=', 'manual_transfer')
                             ->orWhere('pt.status', '=', 'paid');
@@ -56,31 +61,43 @@ class PaymentTransactionUsecase extends Usecase
             // Fast count without unnecessary joins when no keyword filter
             $total = (clone $query)->count('pt.id');
 
-            // Apply relations and select for page data
+            // Apply relations and select only required display columns (skip heavy json payloads)
             if (! $hasKeywords) {
                 $query->leftJoin(DatabaseConst::USER().' as u', 'pt.user_id', '=', 'u.id');
             }
-            $query->leftJoin(DatabaseConst::COURSE_CLASSES().' as cc', 'pt.cefr', '=', 'cc.cefr');
 
             $page = (int) ($filterData['page'] ?? request()->get('page', 1));
             $perPage = 20;
 
-            $items = $query->select(
-                'pt.*',
+            $items = $query->select([
+                'pt.id',
+                'pt.order_id',
+                'pt.user_id',
+                'pt.cefr',
+                'pt.tier',
+                'pt.payment_category',
+                'pt.payment_channel',
+                'pt.amount',
+                'pt.status',
+                'pt.created_at',
+                'pt.paid_at',
                 'pt.expires_at as expired_at',
-                'pt.cefr as cefr_level',
-                'pt.tier as tier_name',
-                'pt.payment_channel as payment_channel_name',
                 'pt.transfer_proof_url as proof_url',
                 'u.name as student_name',
-                'u.name as user_name',
                 'u.email as student_email',
-                'u.email as user_email',
-                'cc.name as class_name'
-            )
+            ])
                 ->orderBy('pt.created_at', 'desc')
                 ->forPage($page, $perPage)
                 ->get();
+
+            // Map class name from cache without database join
+            $classNames = Cache::remember('course_classes_cefr_map', now()->addDay(), function () {
+                return DB::table(DatabaseConst::COURSE_CLASSES())->pluck('name', 'cefr')->toArray();
+            });
+
+            foreach ($items as $item) {
+                $item->class_name = $classNames[$item->cefr] ?? 'Kelas '.$item->cefr;
+            }
 
             $paginator = new LengthAwarePaginator(
                 $items,

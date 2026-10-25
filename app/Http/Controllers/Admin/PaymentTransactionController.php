@@ -9,6 +9,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 
 class PaymentTransactionController extends Controller
 {
@@ -31,10 +32,13 @@ class PaymentTransactionController extends Controller
     public function index(Request $request): View|Response
     {
         $status = $request->get('status', 'paid');
+        $keywords = $request->get('keywords');
+        $category = $request->get('category');
+        $page = (int) $request->get('page', 1);
 
         $filter = [
-            'keywords' => $request->get('keywords'),
-            'category' => $request->get('category'),
+            'keywords' => $keywords,
+            'category' => $category,
             'exclude_unapproved_manual' => true,
         ];
 
@@ -42,15 +46,23 @@ class PaymentTransactionController extends Controller
             $filter['status'] = $status;
         }
 
-        $data = $this->usecase->getAll($filter);
+        // Cache default landing page (page 1, status paid, no filter) for 20 seconds
+        $isDefaultView = empty($keywords) && empty($category) && $status === 'paid' && $page === 1;
+
+        if ($isDefaultView) {
+            $data = Cache::remember('payment_tx_index_paid_p1', 20, fn () => $this->usecase->getAll($filter));
+        } else {
+            $data = $this->usecase->getAll($filter);
+        }
+
         $list = $data['data']['list'] ?? [];
 
         return view('_admin.payment_transactions.index', [
             'page' => $this->page,
             'data' => $list,
-            'keywords' => $request->get('keywords'),
+            'keywords' => $keywords,
             'status' => $status,
-            'category' => $request->get('category'),
+            'category' => $category,
         ]);
     }
 
