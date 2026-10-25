@@ -28,13 +28,13 @@
             <div class="flex justify-end items-center gap-2 pt-3 border-t border-slate-200 dark:border-neutral-700">
                 <x-admin.button type="button"
                     size="sm"
-                    variant="outline"
+                    color="outline-secondary"
                     data-hs-overlay="#deleteSectionModal">
                     Batal
                 </x-admin.button>
                 <x-admin.button type="submit"
                     size="sm"
-                    variant="danger">
+                    color="danger">
                     Ya, Hapus Materi
                 </x-admin.button>
             </div>

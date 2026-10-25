@@ -200,10 +200,10 @@
 
                 {{-- FOOTER ACTIONS --}}
                 <div class="pt-4 border-t border-slate-200 dark:border-neutral-700/80 flex items-center justify-end gap-x-3">
-                    <x-admin.button href="{{ route('admin.modules.index') }}" variant="outline" as="a" size="sm">
+                    <x-admin.button href="{{ route('admin.modules.index') }}" color="outline-secondary" size="sm">
                         Batal
                     </x-admin.button>
-                    <x-admin.button type="submit" id="btnSubmitModule" variant="secondary" size="sm">
+                    <x-admin.button type="submit" id="btnSubmitModule" color="secondary" size="sm">
                         <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                         </svg>

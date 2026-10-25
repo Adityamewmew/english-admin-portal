@@ -82,7 +82,7 @@
                             <label class="font-semibold text-slate-700 dark:text-neutral-300">Teks Audio Pembicara (audioText)</label>
                             <button type="button" onclick="playTtsPreview(document.getElementById('audioText-${idx}').value)"
                                 class="text-[11px] text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer">
-                                🔊 Tes Dengarkan Audio
+                                Tes Audio
                             </button>
                         </div>
                         <input type="text" id="audioText-${idx}" name="practicum_questions[${idx}][audioText]" value="${escapeHtml(data.audioText || '')}"
@@ -113,11 +113,11 @@
                             <div class="flex items-center gap-2">
                                 <button type="button" onclick="playTtsPreview(document.getElementById('targetSentence-${idx}').value)"
                                     class="text-[11px] text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer">
-                                    🔊 Tes Audio
+                                    Tes Audio
                                 </button>
                                 <button type="button" onclick="autoShuffleSentence('${idx}')"
                                     class="text-[11px] text-amber-700 dark:text-amber-300 hover:underline font-bold cursor-pointer">
-                                    ⚡ Acak Kata Otomatis
+                                    Acak Kata Otomatis
                                 </button>
                             </div>
                         </div>
@@ -164,7 +164,7 @@
                             <label class="font-semibold text-slate-700 dark:text-neutral-300">Audio Prompt Tutor (audioPrompt)</label>
                             <button type="button" onclick="playTtsPreview(document.getElementById('spkAudio-${idx}').value)"
                                 class="text-[11px] text-primary hover:underline font-bold flex items-center gap-1 cursor-pointer">
-                                🔊 Tes Suara Tutor
+                                Tes Audio Tutor
                             </button>
                         </div>
                         <input type="text" id="spkAudio-${idx}" name="practicum_questions[${idx}][audioPrompt]" value="${escapeHtml(data.audioPrompt || '')}"

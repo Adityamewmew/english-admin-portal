@@ -113,11 +113,11 @@
                 <div class="flex items-center gap-2">
                     <button type="button" onclick="switchEditMode('visual')" id="tabModeVisual"
                         class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-primary text-white cursor-pointer shadow-xs">
-                        📝 Form Visual Cepat
+                        Form Visual Cepat
                     </button>
                     <button type="button" onclick="switchEditMode('json')" id="tabModeJson"
                         class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-neutral-800 dark:text-neutral-300 cursor-pointer">
-                        ⚡ Mode JSON Terstruktur (Aman untuk 55 Soal / Drills)
+                        Mode JSON Terstruktur
                     </button>
                 </div>
                 <div class="flex items-center gap-2">
@@ -237,7 +237,7 @@
                                 <button type="button" onclick="pullFromVocabSection()"
                                     class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-600 hover:bg-amber-700 text-white flex items-center gap-1 shadow-xs cursor-pointer"
                                     title="Tarik otomatis pasangan kata dari daftar kosakata modul">
-                                    ⚡ Tarik dari Kosakata Modul
+                                    Tarik dari Kosakata Modul
                                 </button>
                                 <button type="button" onclick="addCablePairRow()"
                                     class="px-2.5 py-1 rounded-lg text-[11px] font-bold border border-amber-600/40 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 flex items-center gap-1 cursor-pointer">
@@ -365,11 +365,11 @@
             <div class="flex justify-end items-center gap-2 pt-3 border-t border-slate-200 dark:border-neutral-700">
                 <x-admin.button type="button"
                     size="sm"
-                    variant="outline"
+                    color="outline-secondary"
                     data-hs-overlay="#sectionModal">
                     Batal
                 </x-admin.button>
-                <x-admin.button type="submit" id="modalSubmitBtn" variant="secondary" size="sm">
+                <x-admin.button type="submit" id="modalSubmitBtn" color="secondary" size="sm">
                     Simpan Materi
                 </x-admin.button>
             </div>

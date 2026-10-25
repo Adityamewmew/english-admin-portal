@@ -49,6 +49,7 @@ return new class extends Migration
                 $table->string('complexity', 20)->default('medium');
                 $table->integer('estimated_minutes')->default(15);
                 $table->boolean('is_exam')->default(false);
+                $table->boolean('is_active')->default(true);
                 $table->integer('passing_score')->default(70);
                 $table->integer('order_index')->default(1);
                 $table->string('banner_url', 255)->nullable();

@@ -17,10 +17,10 @@
             </div>
 
             <div class="flex justify-end items-center gap-2 pt-3 border-t border-slate-200 dark:border-neutral-700">
-                <x-admin.button type="button" size="sm" variant="outline" data-hs-overlay="#editSubModuleModal">
+                <x-admin.button type="button" size="sm" color="outline-secondary" data-hs-overlay="#editSubModuleModal">
                     Batal
                 </x-admin.button>
-                <x-admin.button type="submit" size="sm" variant="secondary">
+                <x-admin.button type="submit" size="sm" color="secondary">
                     Simpan Perubahan
                 </x-admin.button>
             </div>
