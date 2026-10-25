@@ -35,15 +35,16 @@ class WalletUsecase extends Usecase
                 ->where('confirmed', true)
                 ->sum('amount');
 
-            $totalWithdraw = (float) DB::table(DatabaseConst::WITHDRAWALS())
+            $withdrawStats = DB::table(DatabaseConst::WITHDRAWALS())
                 ->where('user_id', $userId)
-                ->where('status', 'success')
-                ->sum('amount');
+                ->selectRaw('
+                    COALESCE(SUM(CASE WHEN status = \'success\' THEN amount ELSE 0 END), 0) as total_withdraw,
+                    COALESCE(SUM(CASE WHEN status IN (\'pending\', \'approved\', \'processing\') THEN total_debit ELSE 0 END), 0) as pending_withdraw
+                ')
+                ->first();
 
-            $pendingWithdraw = (float) DB::table(DatabaseConst::WITHDRAWALS())
-                ->where('user_id', $userId)
-                ->whereIn('status', ['pending', 'approved', 'processing'])
-                ->sum('total_debit');
+            $totalWithdraw = (float) ($withdrawStats->total_withdraw ?? 0);
+            $pendingWithdraw = (float) ($withdrawStats->pending_withdraw ?? 0);
 
             return Response::buildSuccess([
                 'balance' => $balance,

@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class CourseClassController extends Controller
@@ -33,14 +34,23 @@ class CourseClassController extends Controller
         $classesData = $this->usecase->getClasses();
         $classes = $classesData['data']['classes'] ?? [];
 
-        $accessData = $this->usecase->getStudentAccesses([
-            'cefr' => $cefr,
-            'keywords' => $keywords,
-        ]);
-        $accessList = $accessData['data']['list'] ?? [];
-        $totalAccesses = $accessData['data']['total_accesses'] ?? 0;
+        $accessList = [];
+        $totalAccesses = 0;
+        $students = [];
 
-        $students = $this->usecase->getStudentsForDropdown();
+        if ($activeTab === 'access') {
+            $accessData = $this->usecase->getStudentAccesses([
+                'cefr' => $cefr,
+                'keywords' => $keywords,
+            ]);
+            $accessList = $accessData['data']['list'] ?? [];
+            $totalAccesses = $accessData['data']['total_accesses'] ?? 0;
+            $students = $this->usecase->getStudentsForDropdown();
+        } else {
+            $totalAccesses = Cache::remember('user_class_access_total', 60, function () {
+                return DB::table(DatabaseConst::USER_CLASS_ACCESS())->count();
+            });
+        }
 
         return view('_admin.classes.index', [
             'page' => $this->page,

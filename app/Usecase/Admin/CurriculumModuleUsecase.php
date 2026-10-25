@@ -7,6 +7,7 @@ use App\Constants\ResponseConst;
 use App\Http\Presenter\Response;
 use App\Usecase\Usecase;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -78,29 +79,31 @@ class CurriculumModuleUsecase extends Usecase
     public function getStats(): array
     {
         try {
-            $total = DB::table(DatabaseConst::CURRICULUM_MODULES())
-                ->whereNull('deleted_at')
-                ->count();
+            $data = Cache::remember('curriculum_modules_stats', 60, function () {
+                $stats = DB::table(DatabaseConst::CURRICULUM_MODULES())
+                    ->whereNull('deleted_at')
+                    ->selectRaw('
+                        COUNT(*) as total,
+                        COUNT(*) FILTER (WHERE is_exam = true) as exam_count,
+                        COUNT(*) FILTER (WHERE is_active = true) as active_count
+                    ')
+                    ->first();
 
-            $examCount = DB::table(DatabaseConst::CURRICULUM_MODULES())
-                ->whereNull('deleted_at')
-                ->where('is_exam', true)
-                ->count();
+                $total = (int) ($stats->total ?? 0);
+                $examCount = (int) ($stats->exam_count ?? 0);
+                $activeCount = (int) ($stats->active_count ?? 0);
+                $learningCount = $total - $examCount;
 
-            $activeCount = DB::table(DatabaseConst::CURRICULUM_MODULES())
-                ->whereNull('deleted_at')
-                ->where('is_active', true)
-                ->count();
+                return [
+                    'total' => $total,
+                    'learning_count' => $learningCount,
+                    'exam_count' => $examCount,
+                    'active_count' => $activeCount,
+                    'inactive_count' => $total - $activeCount,
+                ];
+            });
 
-            $learningCount = $total - $examCount;
-
-            return Response::buildSuccess([
-                'total' => $total,
-                'learning_count' => $learningCount,
-                'exam_count' => $examCount,
-                'active_count' => $activeCount,
-                'inactive_count' => $total - $activeCount,
-            ]);
+            return Response::buildSuccess($data);
         } catch (Exception $e) {
             Log::error(message: $e->getMessage(), context: ['method' => __METHOD__]);
 
@@ -367,9 +370,11 @@ class CurriculumModuleUsecase extends Usecase
     public function getLevels(): array
     {
         try {
-            $levels = DB::table(DatabaseConst::CURRICULUM_LEVELS())
-                ->orderBy('order_index', 'asc')
-                ->get();
+            $levels = Cache::remember('curriculum_levels_list', now()->addDay(), function () {
+                return DB::table(DatabaseConst::CURRICULUM_LEVELS())
+                    ->orderBy('order_index', 'asc')
+                    ->get();
+            });
 
             return Response::buildSuccess(['levels' => $levels]);
         } catch (Exception $e) {

@@ -8,6 +8,7 @@ use App\Constants\UserConst;
 use App\Http\Presenter\Response;
 use App\Usecase\Usecase;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -54,39 +55,42 @@ class GradebookUsecase extends Usecase
                 $data->appends($filterData);
             }
 
-            // Summary stats for KPI cards
-            $totalStudents = DB::table(DatabaseConst::USER())
-                ->whereNull('deleted_at')
-                ->where('access_type', $studentAccess)
-                ->count();
+            // Summary stats for KPI cards (Cached for 60 seconds)
+            $summary = Cache::remember('gradebook_kpi_summary', 60, function () use ($studentAccess) {
+                $totalStudents = DB::table(DatabaseConst::USER())
+                    ->whereNull('deleted_at')
+                    ->where('access_type', $studentAccess)
+                    ->count();
 
-            $totalCompleted = DB::table(DatabaseConst::USER_MODULE_PROGRESS())
-                ->where('status', 'completed')
-                ->count();
+                $progStats = DB::table(DatabaseConst::USER_MODULE_PROGRESS())
+                    ->where('status', 'completed')
+                    ->selectRaw('
+                        COUNT(*) as total_completed,
+                        COALESCE(ROUND(AVG(CASE WHEN score > 0 THEN score ELSE NULL END)), 0) as avg_score
+                    ')
+                    ->first();
 
-            $overallAvgScore = (int) DB::table(DatabaseConst::USER_MODULE_PROGRESS())
-                ->where('status', 'completed')
-                ->where('score', '>', 0)
-                ->avg('score');
+                $totalPassedExams = DB::table(DatabaseConst::USER_MODULE_PROGRESS().' as ump')
+                    ->join(DatabaseConst::CURRICULUM_MODULES().' as cm', 'ump.module_id', '=', 'cm.id')
+                    ->where('ump.status', 'completed')
+                    ->where(function ($q) {
+                        $q->where('cm.is_exam', true)->orWhere('cm.id', 'like', '%-M13');
+                    })
+                    ->whereRaw('ump.score >= cm.passing_score')
+                    ->count();
 
-            $totalPassedExams = DB::table(DatabaseConst::USER_MODULE_PROGRESS().' as ump')
-                ->join(DatabaseConst::CURRICULUM_MODULES().' as cm', 'ump.module_id', '=', 'cm.id')
-                ->where('ump.status', 'completed')
-                ->where(function ($q) {
-                    $q->where('cm.is_exam', true)->orWhere('cm.id', 'like', '%-M13');
-                })
-                ->whereRaw('ump.score >= cm.passing_score')
-                ->count();
+                return [
+                    'total_students' => (int) $totalStudents,
+                    'total_completed_modules' => (int) ($progStats->total_completed ?? 0),
+                    'overall_avg_score' => (int) ($progStats->avg_score ?? 0),
+                    'total_passed_exams' => (int) $totalPassedExams,
+                ];
+            });
 
             return Response::buildSuccess(
                 [
                     'list' => $data,
-                    'summary' => [
-                        'total_students' => $totalStudents,
-                        'total_completed_modules' => $totalCompleted,
-                        'overall_avg_score' => $overallAvgScore,
-                        'total_passed_exams' => $totalPassedExams,
-                    ],
+                    'summary' => $summary,
                 ],
                 ResponseConst::HTTP_SUCCESS
             );

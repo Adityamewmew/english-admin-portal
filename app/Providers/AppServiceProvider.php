@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
             resource_path('views/components'),
         );
 
-        View::composer('_admin._layout.sidebar.*', function ($view) {
+        View::composer(['_admin._layout.sidebar.sidebar', '_admin._layout.sidebar.sidebar_utama'], function ($view) {
             if (! Auth::check()) {
                 return;
             }

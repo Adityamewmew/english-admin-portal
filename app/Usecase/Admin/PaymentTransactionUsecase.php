@@ -8,6 +8,7 @@ use App\Http\Presenter\Response;
 use App\Usecase\Usecase;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,24 +22,14 @@ class PaymentTransactionUsecase extends Usecase
     public function getAll(array $filterData = []): array
     {
         try {
+            $hasKeywords = ! empty($filterData['keywords']);
+
             $query = DB::table(DatabaseConst::PAYMENT_TRANSACTIONS().' as pt')
-                ->leftJoin(DatabaseConst::USER().' as u', 'pt.user_id', '=', 'u.id')
-                ->leftJoin(DatabaseConst::COURSE_CLASSES().' as cc', 'pt.cefr', '=', 'cc.cefr')
-                ->select(
-                    'pt.*',
-                    'pt.expires_at as expired_at',
-                    'pt.cefr as cefr_level',
-                    'pt.tier as tier_name',
-                    'pt.payment_channel as payment_channel_name',
-                    'pt.transfer_proof_url as proof_url',
-                    'u.name as student_name',
-                    'u.name as user_name',
-                    'u.email as student_email',
-                    'u.email as user_email',
-                    'cc.name as class_name'
-                )
                 ->whereNull('pt.deleted_at')
-                ->when($filterData['keywords'] ?? false, function ($q, $keywords) {
+                ->when($hasKeywords, function ($q) use ($filterData) {
+                    $keywords = $filterData['keywords'];
+                    $q->leftJoin(DatabaseConst::USER().' as u', 'pt.user_id', '=', 'u.id');
+
                     return $q->where(function ($sub) use ($keywords) {
                         $sub->where('pt.order_id', 'like', '%'.$keywords.'%')
                             ->orWhere('u.name', 'like', '%'.$keywords.'%')
@@ -60,15 +51,46 @@ class PaymentTransactionUsecase extends Usecase
                         $sub->where('pt.payment_category', '!=', 'manual_transfer')
                             ->orWhere('pt.status', '=', 'paid');
                     });
-                })
-                ->orderBy('pt.created_at', 'desc');
+                });
 
-            $data = $query->paginate(20);
-            if (! empty($filterData)) {
-                $data->appends($filterData);
+            // Fast count without unnecessary joins when no keyword filter
+            $total = (clone $query)->count('pt.id');
+
+            // Apply relations and select for page data
+            if (! $hasKeywords) {
+                $query->leftJoin(DatabaseConst::USER().' as u', 'pt.user_id', '=', 'u.id');
             }
+            $query->leftJoin(DatabaseConst::COURSE_CLASSES().' as cc', 'pt.cefr', '=', 'cc.cefr');
 
-            return Response::buildSuccess(['list' => $data], ResponseConst::HTTP_SUCCESS);
+            $page = (int) ($filterData['page'] ?? request()->get('page', 1));
+            $perPage = 20;
+
+            $items = $query->select(
+                'pt.*',
+                'pt.expires_at as expired_at',
+                'pt.cefr as cefr_level',
+                'pt.tier as tier_name',
+                'pt.payment_channel as payment_channel_name',
+                'pt.transfer_proof_url as proof_url',
+                'u.name as student_name',
+                'u.name as user_name',
+                'u.email as student_email',
+                'u.email as user_email',
+                'cc.name as class_name'
+            )
+                ->orderBy('pt.created_at', 'desc')
+                ->forPage($page, $perPage)
+                ->get();
+
+            $paginator = new LengthAwarePaginator(
+                $items,
+                $total,
+                $perPage,
+                $page,
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
+
+            return Response::buildSuccess(['list' => $paginator], ResponseConst::HTTP_SUCCESS);
         } catch (Exception $e) {
             Log::error($e->getMessage(), ['method' => __METHOD__]);
 
