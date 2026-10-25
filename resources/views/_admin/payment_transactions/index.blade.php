@@ -3,7 +3,13 @@
 @section('title', 'Transaksi Masuk & Verifikasi')
 
 @section('content')
-    <x-admin.page-header :title="'Transaksi Masuk & Verifikasi'" subtitle="Pantau seluruh transaksi pembayaran siswa (SingaPay Gateway & Transfer Manual) dan verifikasi bukti transfer manual.">
+    <x-admin.page-header :title="'Transaksi Masuk'" subtitle="Daftar transaksi pembayaran yang telah berhasil/lunas (SingaPay Gateway & Transfer Manual yang telah di-ACC).">
+        <x-admin.button href="{{ route('admin.classes.confirmations') }}" size="sm" color="neutral">
+            <svg class="size-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Antrean Konfirmasi Kelas
+        </x-admin.button>
     </x-admin.page-header>
 
     @if (session('success'))
@@ -45,10 +51,9 @@
                 {{-- Filter Status --}}
                 <div>
                     <select name="status" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 text-slate-800 dark:text-neutral-200 focus:outline-hidden focus:ring-2 focus:ring-primary/20">
-                        <option value="">Semua Status</option>
-                        <option value="verification" {{ in_array($status ?? '', ['verification', 'waiting_approval']) ? 'selected' : '' }}>Menunggu Verifikasi (Manual)</option>
+                        <option value="paid" {{ ($status ?? 'paid') === 'paid' ? 'selected' : '' }}>Lunas / Berhasil (Default)</option>
+                        <option value="all" {{ ($status ?? '') === 'all' ? 'selected' : '' }}>Semua Status</option>
                         <option value="pending" {{ ($status ?? '') === 'pending' ? 'selected' : '' }}>Menunggu Pembayaran (Pending)</option>
-                        <option value="paid" {{ ($status ?? '') === 'paid' ? 'selected' : '' }}>Berhasil (Paid)</option>
                         <option value="rejected" {{ ($status ?? '') === 'rejected' ? 'selected' : '' }}>Ditolak (Rejected)</option>
                         <option value="expired" {{ ($status ?? '') === 'expired' ? 'selected' : '' }}>Kadaluarsa (Expired)</option>
                     </select>

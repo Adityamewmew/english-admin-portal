@@ -30,19 +30,26 @@ class PaymentTransactionController extends Controller
      */
     public function index(Request $request): View|Response
     {
-        $data = $this->usecase->getAll([
-            'keywords' => $request->get('keywords'),
-            'status' => $request->get('status'),
-            'category' => $request->get('category'),
-        ]);
+        $status = $request->get('status', 'paid');
 
+        $filter = [
+            'keywords' => $request->get('keywords'),
+            'category' => $request->get('category'),
+            'exclude_unapproved_manual' => true,
+        ];
+
+        if ($status !== 'all' && ! empty($status)) {
+            $filter['status'] = $status;
+        }
+
+        $data = $this->usecase->getAll($filter);
         $list = $data['data']['list'] ?? [];
 
         return view('_admin.payment_transactions.index', [
             'page' => $this->page,
             'data' => $list,
             'keywords' => $request->get('keywords'),
-            'status' => $request->get('status'),
+            'status' => $status,
             'category' => $request->get('category'),
         ]);
     }

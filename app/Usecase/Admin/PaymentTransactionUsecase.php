@@ -55,6 +55,12 @@ class PaymentTransactionUsecase extends Usecase
                 ->when($filterData['category'] ?? false, function ($q, $category) {
                     return $q->where('pt.payment_category', $category);
                 })
+                ->when($filterData['exclude_unapproved_manual'] ?? false, function ($q) {
+                    return $q->where(function ($sub) {
+                        $sub->where('pt.payment_category', '!=', 'manual_transfer')
+                            ->orWhere('pt.status', '=', 'paid');
+                    });
+                })
                 ->orderBy('pt.created_at', 'desc');
 
             $data = $query->paginate(20);
