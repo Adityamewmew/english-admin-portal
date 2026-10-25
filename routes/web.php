@@ -97,6 +97,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Course Classes (Paket & Tarif Kelas) Routes
     Route::middleware('access_type:1')->prefix('classes')->name('classes.')->group(function () {
         Route::get('/', [CourseClassController::class, 'index'])->name('index');
+        Route::get('/confirmations', [CourseClassController::class, 'confirmations'])->name('confirmations');
         Route::get('/add', [CourseClassController::class, 'add'])->name('add');
         Route::post('/create', [CourseClassController::class, 'doCreate'])->name('create');
         Route::get('/edit/{cefr}', [CourseClassController::class, 'edit'])->name('edit');

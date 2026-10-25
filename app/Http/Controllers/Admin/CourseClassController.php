@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Constants\DatabaseConst;
 use App\Http\Controllers\Controller;
 use App\Usecase\Admin\CourseClassUsecase;
+use App\Usecase\Admin\PaymentTransactionUsecase;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
 
 class CourseClassController extends Controller
 {
@@ -17,7 +20,8 @@ class CourseClassController extends Controller
     ];
 
     public function __construct(
-        protected CourseClassUsecase $usecase
+        protected CourseClassUsecase $usecase,
+        protected PaymentTransactionUsecase $transactionUsecase,
     ) {}
 
     public function index(Request $request): View|Response
@@ -86,7 +90,7 @@ class CourseClassController extends Controller
 
         $res = $this->usecase->createClass($data);
 
-        if (!$res['success']) {
+        if (! $res['success']) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', $res['message'] ?? 'Gagal membuat paket kelas.');
@@ -101,7 +105,7 @@ class CourseClassController extends Controller
         $res = $this->usecase->getClassByCefr($cefr);
         $class = $res['data']['class'] ?? null;
 
-        if (!$class) {
+        if (! $class) {
             return redirect()->route('admin.classes.index')
                 ->with('error', 'Data kelas tidak ditemukan.');
         }
@@ -144,7 +148,7 @@ class CourseClassController extends Controller
 
         $res = $this->usecase->updateClass($cefr, $data);
 
-        if (!$res['success']) {
+        if (! $res['success']) {
             return redirect()->back()
                 ->withInput()
                 ->with('error', $res['message'] ?? 'Gagal memperbarui paket kelas.');
@@ -158,7 +162,7 @@ class CourseClassController extends Controller
     {
         $res = $this->usecase->deleteClass($cefr);
 
-        if (!$res['success']) {
+        if (! $res['success']) {
             return redirect()->back()
                 ->with('error', $res['message'] ?? 'Gagal menghapus paket kelas.');
         }
@@ -184,7 +188,7 @@ class CourseClassController extends Controller
             $request->input('tier', 'basic')
         );
 
-        if (!$res['success']) {
+        if (! $res['success']) {
             return redirect()->back()
                 ->with('error', $res['message'] ?? 'Gagal memberikan akses kelas.');
         }
@@ -197,12 +201,65 @@ class CourseClassController extends Controller
     {
         $res = $this->usecase->revokeAccess($id);
 
-        if (!$res['success']) {
+        if (! $res['success']) {
             return redirect()->back()
                 ->with('error', $res['message'] ?? 'Gagal mencabut akses kelas.');
         }
 
         return redirect()->route('admin.classes.index', ['tab' => 'access'])
             ->with('success', 'Akses kelas siswa berhasil dicabut.');
+    }
+
+    /**
+     * Konfirmasi Pembayaran Siswa via Transfer Manual (Buka Akses Kelas).
+     */
+    public function confirmations(Request $request): View|Response
+    {
+        $status = $request->get('status', 'verification');
+        $keywords = $request->get('keywords');
+
+        $filter = [
+            'category' => 'manual_transfer',
+            'keywords' => $keywords,
+        ];
+        if ($status !== 'all') {
+            $filter['status'] = $status;
+        }
+
+        $res = $this->transactionUsecase->getAll($filter);
+        $list = $res['data']['list'] ?? [];
+
+        $counts = [
+            'verification' => DB::table(DatabaseConst::PAYMENT_TRANSACTIONS())
+                ->whereNull('deleted_at')
+                ->where('payment_category', 'manual_transfer')
+                ->where('status', 'verification')
+                ->count(),
+            'pending' => DB::table(DatabaseConst::PAYMENT_TRANSACTIONS())
+                ->whereNull('deleted_at')
+                ->where('payment_category', 'manual_transfer')
+                ->where('status', 'pending')
+                ->count(),
+            'paid' => DB::table(DatabaseConst::PAYMENT_TRANSACTIONS())
+                ->whereNull('deleted_at')
+                ->where('payment_category', 'manual_transfer')
+                ->where('status', 'paid')
+                ->count(),
+            'all' => DB::table(DatabaseConst::PAYMENT_TRANSACTIONS())
+                ->whereNull('deleted_at')
+                ->where('payment_category', 'manual_transfer')
+                ->count(),
+        ];
+
+        return view('_admin.classes.confirmations', [
+            'page' => [
+                'route' => 'classes.confirmations',
+                'title' => 'Konfirmasi Akses Kelas',
+            ],
+            'data' => $list,
+            'status' => $status,
+            'keywords' => $keywords,
+            'counts' => $counts,
+        ]);
     }
 }
