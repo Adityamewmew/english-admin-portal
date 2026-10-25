@@ -46,6 +46,10 @@ class PaymentTransactionUsecase extends Usecase
                     });
                 })
                 ->when($filterData['status'] ?? false, function ($q, $status) {
+                    if (in_array($status, ['verification', 'waiting_approval'])) {
+                        return $q->whereIn('pt.status', ['waiting_approval', 'verification']);
+                    }
+
                     return $q->where('pt.status', $status);
                 })
                 ->when($filterData['category'] ?? false, function ($q, $category) {

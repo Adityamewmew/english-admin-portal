@@ -194,7 +194,7 @@
                                         <span class="size-1.5 rounded-full bg-emerald-500"></span>
                                         Lunas / Aktif
                                     </span>
-                                @elseif ($t->status === 'verification')
+                                @elseif ($t->status === 'verification' || $t->status === 'waiting_approval')
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 animate-pulse">
                                         <span class="size-1.5 rounded-full bg-amber-500"></span>
                                         Perlu ACC
@@ -219,7 +219,7 @@
                             {{-- Aksi Konfirmasi --}}
                             <td class="px-4 py-3 whitespace-nowrap text-end">
                                 <div class="inline-flex items-center gap-1.5">
-                                    @if ($t->status === 'verification' || $t->status === 'pending')
+                                    @if ($t->status === 'verification' || $t->status === 'waiting_approval' || $t->status === 'pending')
                                         <form action="{{ route('admin.payment_transactions.approve', $t->id) }}" method="POST"
                                               onsubmit="return confirm('ACC pembayaran dan aktifkan kelas CEFR {{ $t->cefr ?? $t->cefr_level ?? '' }} untuk siswa {{ $t->student_name ?? $t->user_name ?? '' }}?');"
                                               class="inline-block">

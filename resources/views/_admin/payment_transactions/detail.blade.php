@@ -26,7 +26,7 @@
                     <span class="size-2 rounded-full bg-emerald-500"></span>
                     Pembayaran Berhasil
                 </span>
-            @elseif ($data->status === 'verification')
+            @elseif ($data->status === 'verification' || $data->status === 'waiting_approval')
                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 animate-pulse">
                     <span class="size-2 rounded-full bg-blue-500"></span>
                     Menunggu Verifikasi Admin
@@ -72,8 +72,8 @@
         </div>
     @endif
 
-    {{-- Action Bar ACC / Reject if pending / verification --}}
-    @if ($data->status === 'verification' || $data->status === 'pending')
+    {{-- Action Bar ACC / Reject if pending / verification / waiting_approval --}}
+    @if ($data->status === 'verification' || $data->status === 'waiting_approval' || $data->status === 'pending')
         <div class="mb-6 p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <div class="size-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">

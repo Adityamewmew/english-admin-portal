@@ -62,18 +62,43 @@ test('guest is redirected to login from class confirmations route', function () 
     $this->get(route('admin.classes.confirmations'))->assertRedirect(route('login'));
 });
 
-test('admin can view class confirmations page', function () {
+test('admin can view class confirmations page with waiting_approval transactions', function () {
     $admin = User::factory()->make([
         'id' => (string) Str::uuid(),
         'access_type' => UserConst::SUPERADMIN,
         'role' => 'admin',
     ]);
 
+    $studentId = (string) Str::uuid();
+    DB::table(DatabaseConst::USER())->insert([
+        'id' => $studentId,
+        'name' => 'Waiting Approval Student',
+        'email' => 'waiting-'.Str::random(6).'@example.com',
+        'password' => bcrypt('password'),
+        'created_at' => now(),
+    ]);
+
+    DB::table(DatabaseConst::PAYMENT_TRANSACTIONS())->insert([
+        'id' => (string) Str::uuid(),
+        'order_id' => 'INV-WAITING-01',
+        'user_id' => $studentId,
+        'cefr' => 'A2',
+        'tier' => 'basic',
+        'amount' => 149000,
+        'payment_category' => 'manual_transfer',
+        'payment_channel' => 'BCA',
+        'status' => 'waiting_approval',
+        'transfer_proof_url' => 'https://example.com/proof.jpg',
+        'created_at' => now(),
+    ]);
+
     $this->actingAs($admin)
         ->get(route('admin.classes.confirmations'))
         ->assertStatus(200)
         ->assertSee('Konfirmasi Kelas Siswa')
-        ->assertSee('Perlu Verifikasi / ACC');
+        ->assertSee('INV-WAITING-01')
+        ->assertSee('Waiting Approval Student')
+        ->assertSee('Perlu ACC');
 });
 
 test('admin can approve manual transfer to grant class access', function () {

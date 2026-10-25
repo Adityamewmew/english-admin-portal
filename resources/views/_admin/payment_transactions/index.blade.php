@@ -46,7 +46,7 @@
                 <div>
                     <select name="status" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 text-slate-800 dark:text-neutral-200 focus:outline-hidden focus:ring-2 focus:ring-primary/20">
                         <option value="">Semua Status</option>
-                        <option value="verification" {{ ($status ?? '') === 'verification' ? 'selected' : '' }}>Menunggu Verifikasi (Manual)</option>
+                        <option value="verification" {{ in_array($status ?? '', ['verification', 'waiting_approval']) ? 'selected' : '' }}>Menunggu Verifikasi (Manual)</option>
                         <option value="pending" {{ ($status ?? '') === 'pending' ? 'selected' : '' }}>Menunggu Pembayaran (Pending)</option>
                         <option value="paid" {{ ($status ?? '') === 'paid' ? 'selected' : '' }}>Berhasil (Paid)</option>
                         <option value="rejected" {{ ($status ?? '') === 'rejected' ? 'selected' : '' }}>Ditolak (Rejected)</option>
@@ -162,7 +162,7 @@
                                         <span class="size-1.5 rounded-full bg-emerald-500"></span>
                                         Berhasil
                                     </span>
-                                @elseif ($t->status === 'verification')
+                                @elseif ($t->status === 'verification' || $t->status === 'waiting_approval')
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 animate-pulse">
                                         <span class="size-1.5 rounded-full bg-blue-500"></span>
                                         Perlu ACC
@@ -194,7 +194,7 @@
                                         Detail
                                     </a>
 
-                                    @if ($t->status === 'verification' || $t->status === 'pending')
+                                    @if ($t->status === 'verification' || $t->status === 'waiting_approval' || $t->status === 'pending')
                                         <form action="{{ route('admin.payment_transactions.approve', $t->id) }}" method="POST"
                                               onsubmit="return confirm('ACC pembayaran transaksi {{ $t->order_id }}? Akses kelas siswa akan langsung otomatis diaktifkan.');"
                                               class="inline-block">

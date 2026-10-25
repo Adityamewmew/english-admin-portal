@@ -233,7 +233,7 @@ class CourseClassController extends Controller
             'verification' => DB::table(DatabaseConst::PAYMENT_TRANSACTIONS())
                 ->whereNull('deleted_at')
                 ->where('payment_category', 'manual_transfer')
-                ->where('status', 'verification')
+                ->whereIn('status', ['waiting_approval', 'verification'])
                 ->count(),
             'pending' => DB::table(DatabaseConst::PAYMENT_TRANSACTIONS())
                 ->whereNull('deleted_at')
