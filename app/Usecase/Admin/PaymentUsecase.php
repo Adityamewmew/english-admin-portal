@@ -75,7 +75,6 @@ class PaymentUsecase extends Usecase
             'bank_name' => 'required|string|max:100',
             'account_name' => 'required|string|max:150',
             'account_number' => 'required|string|max:50',
-            'bank_logo' => 'nullable|string',
             'instructions' => 'nullable|string',
             'sort_order' => 'nullable|integer',
             'is_active' => 'nullable|in:0,1',
@@ -85,13 +84,31 @@ class PaymentUsecase extends Usecase
             return Response::buildError(ResponseConst::HTTP_BAD_REQUEST, $validator->errors()->first());
         }
 
+        $bankLogo = null;
+        if ($data->hasFile('bank_logo') && $data->file('bank_logo')->isValid()) {
+            $file = $data->file('bank_logo');
+            $ext = strtolower($file->guessExtension() ?: 'png');
+            if (! in_array($ext, ['png', 'jpg', 'jpeg', 'svg', 'webp'])) {
+                $ext = 'png';
+            }
+            $filename = 'bank_'.time().'_'.uniqid().'.'.$ext;
+            $dest = public_path('uploads/banks');
+            if (! file_exists($dest)) {
+                @mkdir($dest, 0755, true);
+            }
+            $file->move($dest, $filename);
+            $bankLogo = '/uploads/banks/'.$filename;
+        } elseif (is_string($data->input('bank_logo'))) {
+            $bankLogo = $data->input('bank_logo');
+        }
+
         DB::beginTransaction();
         try {
             DB::table(DatabaseConst::PAYMENT_METHODS())->insert([
                 'bank_name' => trim($data->input('bank_name')),
                 'account_name' => trim($data->input('account_name')),
                 'account_number' => trim($data->input('account_number')),
-                'bank_logo' => $data->input('bank_logo'),
+                'bank_logo' => $bankLogo,
                 'instructions' => $data->input('instructions'),
                 'sort_order' => (int) ($data->input('sort_order') ?: 1),
                 'is_active' => $data->has('is_active') ? (int) $data->input('is_active') : 1,
@@ -120,7 +137,6 @@ class PaymentUsecase extends Usecase
             'bank_name' => 'required|string|max:100',
             'account_name' => 'required|string|max:150',
             'account_number' => 'required|string|max:50',
-            'bank_logo' => 'nullable|string',
             'instructions' => 'nullable|string',
             'sort_order' => 'nullable|integer',
             'is_active' => 'nullable|in:0,1',
@@ -132,20 +148,36 @@ class PaymentUsecase extends Usecase
 
         DB::beginTransaction();
         try {
+            $payload = [
+                'bank_name' => trim($data->input('bank_name')),
+                'account_name' => trim($data->input('account_name')),
+                'account_number' => trim($data->input('account_number')),
+                'instructions' => $data->input('instructions'),
+                'sort_order' => (int) ($data->input('sort_order') ?: 1),
+                'is_active' => $data->has('is_active') ? (int) $data->input('is_active') : 1,
+                'updated_by' => Auth::user()?->id,
+                'updated_at' => now(),
+            ];
+
+            if ($data->hasFile('bank_logo') && $data->file('bank_logo')->isValid()) {
+                $file = $data->file('bank_logo');
+                $ext = strtolower($file->guessExtension() ?: 'png');
+                if (! in_array($ext, ['png', 'jpg', 'jpeg', 'svg', 'webp'])) {
+                    $ext = 'png';
+                }
+                $filename = 'bank_'.time().'_'.uniqid().'.'.$ext;
+                $dest = public_path('uploads/banks');
+                if (! file_exists($dest)) {
+                    @mkdir($dest, 0755, true);
+                }
+                $file->move($dest, $filename);
+                $payload['bank_logo'] = '/uploads/banks/'.$filename;
+            }
+
             $updated = DB::table(DatabaseConst::PAYMENT_METHODS())
                 ->where('id', $id)
                 ->whereNull('deleted_at')
-                ->update([
-                    'bank_name' => trim($data->input('bank_name')),
-                    'account_name' => trim($data->input('account_name')),
-                    'account_number' => trim($data->input('account_number')),
-                    'bank_logo' => $data->input('bank_logo'),
-                    'instructions' => $data->input('instructions'),
-                    'sort_order' => (int) ($data->input('sort_order') ?: 1),
-                    'is_active' => $data->has('is_active') ? (int) $data->input('is_active') : 1,
-                    'updated_by' => Auth::user()?->id,
-                    'updated_at' => now(),
-                ]);
+                ->update($payload);
 
             if (! $updated) {
                 DB::rollback();
@@ -253,11 +285,7 @@ class PaymentUsecase extends Usecase
                 'whatsapp_name' => $map['whatsapp_name'] ?? 'Admin Support EDDY\'S AI',
                 'whatsapp_message' => $map['whatsapp_message'] ?? 'Halo Admin EDDY\'S AI, saya ingin konfirmasi pembayaran untuk aktivasi kelas.',
                 'whatsapp_is_active' => $map['whatsapp_is_active'] ?? '1',
-                'singapay_client_id' => $map['singapay_client_id'] ?? 'ce3b8d81-9f1a-4c84-a88f-45abf3dcd20e',
-                'singapay_client_secret' => $map['singapay_client_secret'] ?? 'cf80dd5184f15e215c8fc0716776f46328de74ceddb34761d2703d083c657150',
-                'singapay_api_key' => $map['singapay_api_key'] ?? 'da7d1150-40fe-4f6c-a586-6482fe65d52e',
-                'singapay_hmac_key' => $map['singapay_hmac_key'] ?? 'ee492152f86c4f9ec5e35a8c788788444adce957',
-                'singapay_is_sandbox' => $map['singapay_is_sandbox'] ?? '1',
+                'singapay_is_sandbox' => $map['singapay_is_sandbox'] ?? (env('SINGAPAY_ENVIRONMENT') === 'production' ? '0' : '1'),
                 'payment_expired_hours' => $map['payment_expired_hours'] ?? '24',
             ];
 
@@ -280,10 +308,6 @@ class PaymentUsecase extends Usecase
         try {
             if ($settingType === 'gateway') {
                 $keys = [
-                    'singapay_client_id' => trim($data->input('singapay_client_id')),
-                    'singapay_client_secret' => trim($data->input('singapay_client_secret')),
-                    'singapay_api_key' => trim($data->input('singapay_api_key')),
-                    'singapay_hmac_key' => trim($data->input('singapay_hmac_key')),
                     'singapay_is_sandbox' => $data->has('singapay_is_sandbox') ? '1' : '0',
                     'payment_expired_hours' => (string) ($data->input('payment_expired_hours') ?: '24'),
                 ];

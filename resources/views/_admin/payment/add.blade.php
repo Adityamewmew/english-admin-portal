@@ -20,7 +20,7 @@
 
     <div class="max-w-2xl mx-auto">
         <x-admin.card variant="white" padding="p-6 sm:p-7">
-            <form action="{{ route('admin.payment.create') }}" method="POST" class="space-y-5">
+            <form action="{{ route('admin.payment.create') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                 @csrf
 
                 {{-- Nama Bank & Preset Pilihan Cepat --}}
@@ -37,18 +37,18 @@
                         <span class="text-[10px] text-slate-400 font-medium">Pilihan cepat:</span>
                         @php
                             $presetBanks = [
-                                ['name' => 'BCA (Bank Central Asia)', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg'],
-                                ['name' => 'Bank Mandiri', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Bank_Mandiri_logo_2016.svg'],
-                                ['name' => 'BRI (Bank Rakyat Indonesia)', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/6/68/BANK_BRI_logo.svg'],
-                                ['name' => 'BNI (Bank Negara Indonesia)', 'logo' => 'https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg'],
-                                ['name' => 'BSI (Bank Syariah Indonesia)', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Bank_Syariah_Indonesia.svg'],
+                                'BCA (Bank Central Asia)',
+                                'Bank Mandiri',
+                                'BRI (Bank Rakyat Indonesia)',
+                                'BNI (Bank Negara Indonesia)',
+                                'BSI (Bank Syariah Indonesia)',
                             ];
                         @endphp
-                        @foreach ($presetBanks as $pb)
+                        @foreach ($presetBanks as $name)
                             <button type="button"
-                                    onclick="document.getElementById('bank_name_input').value = '{{ $pb['name'] }}'; document.getElementById('bank_logo_input').value = '{{ $pb['logo'] }}';"
+                                    onclick="document.getElementById('bank_name_input').value = '{{ $name }}';"
                                     class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer border border-slate-200 dark:border-neutral-700">
-                                {{ explode(' ', $pb['name'])[0] }}
+                                {{ explode(' ', $name)[0] }}
                             </button>
                         @endforeach
                     </div>
@@ -81,12 +81,14 @@
                     @enderror
                 </div>
 
-                {{-- URL Logo Bank --}}
+                {{-- Upload Logo Bank --}}
                 <div class="space-y-1.5">
-                    <x-admin.input label="URL / Link Logo Bank (Opsional)" id="bank_logo_input" name="bank_logo"
-                                   :value="old('bank_logo')"
-                                   placeholder="https://... (URL gambar/SVG logo resmi bank)" />
-                    <span class="text-[11px] text-slate-400">Bisa menggunakan link logo SVG/PNG transparan agar tampil menarik di aplikasi siswa.</span>
+                    <label class="block text-xs font-bold text-slate-700 dark:text-neutral-200">
+                        Upload Logo Bank (Opsional)
+                    </label>
+                    <input type="file" name="bank_logo" accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                           class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 file:cursor-pointer border border-slate-200 dark:border-neutral-700 rounded-xl bg-surface dark:bg-neutral-800 p-1">
+                    <span class="text-[11px] text-slate-400">Pilih file logo bank (PNG, JPG, SVG, WebP transparan).</span>
                     @error('bank_logo')
                         <p class="text-xs text-rose-500 mt-1 font-medium">{{ $message }}</p>
                     @enderror
