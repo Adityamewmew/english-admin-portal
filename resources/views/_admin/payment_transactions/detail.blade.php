@@ -125,18 +125,21 @@
                         </svg>
                         Bukti Transfer Manual
                     </h3>
-                    @if ($data->proof_url)
-                        <a href="{{ $data->proof_url }}" target="_blank" rel="noopener noreferrer"
+                    @php
+                        $proof = $data->transfer_proof_url ?? $data->proof_url ?? null;
+                    @endphp
+                    @if ($proof)
+                        <a href="{{ $proof }}" target="_blank" rel="noopener noreferrer"
                            class="text-xs font-bold text-primary dark:text-blue-400 hover:underline">
                             Buka Gambar Penuh
                         </a>
                     @endif
                 </div>
 
-                @if ($data->proof_url)
+                @if ($proof)
                     <div class="space-y-3">
                         <div class="rounded-xl overflow-hidden border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 flex items-center justify-center p-2">
-                            <img src="{{ $data->proof_url }}" alt="Bukti Transfer" class="max-h-96 w-auto object-contain rounded-lg shadow-2xs">
+                            <img src="{{ $proof }}" alt="Bukti Transfer" class="max-h-96 w-auto object-contain rounded-lg shadow-2xs">
                         </div>
                         <div class="p-3 rounded-xl bg-surface dark:bg-neutral-800 text-[11px] text-slate-500 space-y-1">
                             <p><span class="font-bold text-slate-700 dark:text-neutral-300">File:</span> Bukti transfer diunggah oleh siswa.</p>
@@ -193,7 +196,7 @@
                     <div class="py-2.5 flex justify-between items-center">
                         <dt class="text-slate-500">Kategori & Metode</dt>
                         <dd class="font-bold text-slate-800 dark:text-neutral-200 text-end">
-                            {{ $data->payment_channel_name }}
+                            {{ $data->payment_channel_name ?? $data->payment_channel }}
                             <span class="block text-[10px] text-slate-400 uppercase font-mono">{{ str_replace('_', ' ', $data->payment_category) }}</span>
                         </dd>
                     </div>
@@ -237,11 +240,11 @@
                 <div class="space-y-4 text-xs">
                     <div class="flex items-center gap-3 p-3 rounded-xl bg-surface dark:bg-neutral-800">
                         <div class="size-10 rounded-full bg-primary/10 text-primary dark:text-blue-400 font-black flex items-center justify-center shrink-0">
-                            {{ strtoupper(substr($data->user_name ?? 'U', 0, 1)) }}
+                            {{ strtoupper(substr($data->student_name ?? $data->user_name ?? 'U', 0, 1)) }}
                         </div>
                         <div>
-                            <p class="font-bold text-slate-900 dark:text-white text-sm">{{ $data->user_name ?? 'Siswa' }}</p>
-                            <p class="text-slate-400 text-xs">{{ $data->user_email ?? '-' }}</p>
+                            <p class="font-bold text-slate-900 dark:text-white text-sm">{{ $data->student_name ?? $data->user_name ?? 'Siswa' }}</p>
+                            <p class="text-slate-400 text-xs">{{ $data->student_email ?? $data->user_email ?? '-' }}</p>
                         </div>
                     </div>
 
@@ -249,13 +252,13 @@
                         <div class="flex justify-between items-center">
                             <span class="text-slate-500 font-medium">Level CEFR:</span>
                             <span class="px-2 py-0.5 rounded-md bg-primary text-white font-black text-xs">
-                                {{ $data->cefr_level }}
+                                {{ $data->cefr ?? $data->cefr_level ?? 'A1' }}
                             </span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-slate-500 font-medium">Paket Tier:</span>
                             <span class="font-bold text-slate-800 dark:text-white">
-                                {{ $data->tier_name }}
+                                {{ $data->class_name ?? strtoupper($data->tier ?? $data->tier_name ?? 'BASIC') }}
                             </span>
                         </div>
                     </div>

@@ -110,42 +110,45 @@
 
                             {{-- Siswa --}}
                             <td class="px-4 py-3 whitespace-nowrap">
-                                <p class="font-bold text-slate-900 dark:text-white">{{ $t->user_name ?? 'Siswa' }}</p>
-                                <p class="text-[10px] text-slate-400">{{ $t->user_email ?? '-' }}</p>
+                                <p class="font-bold text-slate-900 dark:text-white">{{ $t->student_name ?? $t->user_name ?? 'Siswa' }}</p>
+                                <p class="text-[10px] text-slate-400">{{ $t->student_email ?? $t->user_email ?? '-' }}</p>
                             </td>
 
                             {{-- Paket Kelas --}}
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md font-black text-[11px] bg-slate-100 dark:bg-neutral-800 text-slate-800 dark:text-neutral-200">
-                                    {{ $t->cefr_level }}
+                                    {{ $t->cefr ?? $t->cefr_level ?? 'A1' }}
                                 </span>
                                 <span class="text-[11px] font-medium text-slate-600 dark:text-neutral-300 ml-1">
-                                    {{ $t->tier_name }}
+                                    {{ $t->class_name ?? strtoupper($t->tier ?? $t->tier_name ?? 'BASIC') }}
                                 </span>
                             </td>
 
                             {{-- Metode / Channel --}}
                             <td class="px-4 py-3 whitespace-nowrap">
                                 <div class="font-bold text-slate-800 dark:text-neutral-200">
-                                    {{ $t->payment_channel_name }}
+                                    {{ $t->payment_channel_name ?? $t->payment_channel }}
                                 </div>
                                 <span class="text-[10px] uppercase font-mono tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-neutral-800 text-slate-500">
-                                    {{ str_replace('_', ' ', $t->payment_category) }}
+                                    {{ str_replace('_', ' ', $t->payment_category ?? '') }}
                                 </span>
                             </td>
 
                             {{-- Nominal --}}
                             <td class="px-4 py-3 whitespace-nowrap font-bold text-slate-900 dark:text-white">
-                                Rp {{ number_format($t->amount, 0, ',', '.') }}
+                                Rp {{ number_format($t->amount ?? 0, 0, ',', '.') }}
                             </td>
 
                             {{-- Bukti Transfer --}}
                             <td class="px-4 py-3 whitespace-nowrap text-center">
-                                @if ($t->proof_url)
-                                    <a href="{{ $t->proof_url }}" target="_blank" rel="noopener noreferrer" class="inline-block relative group" title="Lihat Bukti Transfer">
-                                        <img src="{{ $t->proof_url }}" alt="Bukti" class="size-9 rounded-lg object-cover border border-slate-200 dark:border-neutral-700 shadow-2xs group-hover:scale-110 transition-transform">
+                                @php
+                                    $proof = $t->transfer_proof_url ?? $t->proof_url ?? null;
+                                @endphp
+                                @if ($proof)
+                                    <a href="{{ $proof }}" target="_blank" rel="noopener noreferrer" class="inline-block relative group" title="Lihat Bukti Transfer">
+                                        <img src="{{ $proof }}" alt="Bukti" class="size-9 rounded-lg object-cover border border-slate-200 dark:border-neutral-700 shadow-2xs group-hover:scale-110 transition-transform">
                                     </a>
-                                @elseif ($t->payment_category === 'manual_transfer')
+                                @elseif (($t->payment_category ?? '') === 'manual_transfer')
                                     <span class="text-[10px] text-amber-600 dark:text-amber-400 font-medium">Belum upload</span>
                                 @else
                                     <span class="text-[10px] text-slate-400 font-mono">Gateway Otomatis</span>

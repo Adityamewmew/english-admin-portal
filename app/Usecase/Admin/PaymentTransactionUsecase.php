@@ -26,8 +26,14 @@ class PaymentTransactionUsecase extends Usecase
                 ->leftJoin(DatabaseConst::COURSE_CLASSES().' as cc', 'pt.cefr', '=', 'cc.cefr')
                 ->select(
                     'pt.*',
+                    'pt.cefr as cefr_level',
+                    'pt.tier as tier_name',
+                    'pt.payment_channel as payment_channel_name',
+                    'pt.transfer_proof_url as proof_url',
                     'u.name as student_name',
+                    'u.name as user_name',
                     'u.email as student_email',
+                    'u.email as user_email',
                     'cc.name as class_name'
                 )
                 ->whereNull('pt.deleted_at')
@@ -70,8 +76,14 @@ class PaymentTransactionUsecase extends Usecase
                 ->leftJoin(DatabaseConst::COURSE_CLASSES().' as cc', 'pt.cefr', '=', 'cc.cefr')
                 ->select(
                     'pt.*',
+                    'pt.cefr as cefr_level',
+                    'pt.tier as tier_name',
+                    'pt.payment_channel as payment_channel_name',
+                    'pt.transfer_proof_url as proof_url',
                     'u.name as student_name',
+                    'u.name as user_name',
                     'u.email as student_email',
+                    'u.email as user_email',
                     'cc.name as class_name'
                 )
                 ->whereNull('pt.deleted_at')
