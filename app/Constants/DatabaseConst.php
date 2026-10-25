@@ -106,6 +106,26 @@ class DatabaseConst
         return 'payment_transactions';
     }
 
+    public static function USER_BANK_ACCOUNTS(): string
+    {
+        return 'user_bank_accounts';
+    }
+
+    public static function WITHDRAWALS(): string
+    {
+        return 'withdrawals';
+    }
+
+    public static function WALLETS(): string
+    {
+        return 'wallets';
+    }
+
+    public static function WALLET_TRANSACTIONS(): string
+    {
+        return 'transactions';
+    }
+
     public static function DB_CORE(): string
     {
         return config('database.connections.pgsql.database', 'db-eddys');

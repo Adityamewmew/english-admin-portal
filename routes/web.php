@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PaymentTransactionController;
 use App\Http\Controllers\Admin\QuestionBankController;
 use App\Http\Controllers\Admin\SidebarMenuController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\WalletController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -126,6 +127,21 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/detail/{id}', [PaymentTransactionController::class, 'detail'])->name('detail');
         Route::post('/approve/{id}', [PaymentTransactionController::class, 'doApprove'])->name('approve');
         Route::post('/reject/{id}', [PaymentTransactionController::class, 'doReject'])->name('reject');
+    });
+
+    // Wallet & Withdrawals (Saldo & Penarikan Dana)
+    Route::prefix('wallet')->name('wallet.')->group(function () {
+        Route::get('/', [WalletController::class, 'index'])->name('index');
+        Route::post('/bank/add', [WalletController::class, 'doAddBankAccount'])->name('add_bank');
+        Route::delete('/bank/{id}', [WalletController::class, 'doDeleteBankAccount'])->name('delete_bank');
+        Route::post('/withdraw', [WalletController::class, 'doRequestWithdraw'])->name('request_withdraw');
+
+        // Admin Approval Routes
+        Route::middleware('access_type:1')->group(function () {
+            Route::get('/withdrawals', [WalletController::class, 'withdrawalsIndex'])->name('withdrawals');
+            Route::post('/withdrawals/{id}/approve', [WalletController::class, 'doApproveWithdrawal'])->name('approve_withdrawal');
+            Route::post('/withdrawals/{id}/reject', [WalletController::class, 'doRejectWithdrawal'])->name('reject_withdrawal');
+        });
     });
 
     Route::middleware('access_type:1')->prefix('sidebar-menu')->name('sidebar_menu.')->group(function () {
