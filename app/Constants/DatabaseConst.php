@@ -91,6 +91,16 @@ class DatabaseConst
         return 'user_daily_ai_usage';
     }
 
+    public static function PAYMENT_METHODS(): string
+    {
+        return 'payment_methods';
+    }
+
+    public static function PAYMENT_SETTINGS(): string
+    {
+        return 'payment_settings';
+    }
+
     public static function DB_CORE(): string
     {
         return config('database.connections.pgsql.database', 'db-eddys');

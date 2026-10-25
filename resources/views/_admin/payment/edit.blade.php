@@ -1,0 +1,143 @@
+@extends('_admin._layout.app')
+
+@section('title', 'Edit Rekening Transfer Bank')
+
+@section('content')
+    <x-admin.page-header :title="'Edit Rekening Bank'" subtitle="Perbarui data rekening pembayaran manual: {{ $data->bank_name }}.">
+        <x-admin.button href="{{ route('admin.payment.index', ['tab' => 'banks']) }}" size="sm" color="outline-secondary">
+            Kembali ke Daftar
+        </x-admin.button>
+    </x-admin.page-header>
+
+    @if (session('error'))
+        <div class="mb-4 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 border-b-2 border-b-rose-300 text-rose-800 dark:text-rose-200 text-sm flex items-center gap-2 shadow-2xs">
+            <svg class="size-5 text-rose-600 dark:text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span class="font-medium">{{ session('error') }}</span>
+        </div>
+    @endif
+
+    <div class="max-w-2xl mx-auto">
+        <x-admin.card variant="white" padding="p-6 sm:p-7">
+            <form action="{{ route('admin.payment.doUpdate', $data->id) }}" method="POST" class="space-y-5">
+                @csrf
+
+                {{-- Nama Bank & Preset Pilihan Cepat --}}
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-neutral-200">
+                        Nama Bank <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" id="bank_name_input" name="bank_name" value="{{ old('bank_name', $data->bank_name) }}"
+                           placeholder="Contoh: BCA, Mandiri, BRI, BNI, BSI, CIMB Niaga..." required
+                           class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 text-slate-800 dark:text-neutral-200 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-primary/20">
+
+                    {{-- Quick Fill Chips --}}
+                    <div class="flex items-center gap-1.5 flex-wrap pt-1">
+                        <span class="text-[10px] text-slate-400 font-medium">Pilihan cepat:</span>
+                        @php
+                            $presetBanks = [
+                                ['name' => 'BCA (Bank Central Asia)', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg'],
+                                ['name' => 'Bank Mandiri', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Bank_Mandiri_logo_2016.svg'],
+                                ['name' => 'BRI (Bank Rakyat Indonesia)', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/6/68/BANK_BRI_logo.svg'],
+                                ['name' => 'BNI (Bank Negara Indonesia)', 'logo' => 'https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg'],
+                                ['name' => 'BSI (Bank Syariah Indonesia)', 'logo' => 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Bank_Syariah_Indonesia.svg'],
+                            ];
+                        @endphp
+                        @foreach ($presetBanks as $pb)
+                            <button type="button"
+                                    onclick="document.getElementById('bank_name_input').value = '{{ $pb['name'] }}'; document.getElementById('bank_logo_input').value = '{{ $pb['logo'] }}';"
+                                    class="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300 hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer border border-slate-200 dark:border-neutral-700">
+                                {{ explode(' ', $pb['name'])[0] }}
+                            </button>
+                        @endforeach
+                    </div>
+                    @error('bank_name')
+                        <p class="text-xs text-rose-500 mt-1 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Nomor Rekening --}}
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-neutral-200">
+                        Nomor Rekening Bank <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" name="account_number" value="{{ old('account_number', $data->account_number) }}"
+                           placeholder="Contoh: 8920192831" required
+                           class="w-full px-3.5 py-2 text-xs font-mono font-bold rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 text-slate-800 dark:text-neutral-200 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-primary/20 tracking-wider">
+                    <span class="text-[11px] text-slate-400">Pastikan nomor rekening tepat dan tanpa spasi.</span>
+                    @error('account_number')
+                        <p class="text-xs text-rose-500 mt-1 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Atas Nama Rekening --}}
+                <div class="space-y-1.5">
+                    <x-admin.input label="Atas Nama Rekening" name="account_name" :value="old('account_name', $data->account_name)"
+                                   placeholder="Contoh: KHOIRUL ANWAR atau PT EDDYS ENGLISH ACADEMY" required />
+                    <span class="text-[11px] text-slate-400">Nama pemilik rekening yang tertera di mutasi bank.</span>
+                    @error('account_name')
+                        <p class="text-xs text-rose-500 mt-1 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- URL Logo Bank --}}
+                <div class="space-y-1.5">
+                    <x-admin.input label="URL / Link Logo Bank (Opsional)" id="bank_logo_input" name="bank_logo"
+                                   :value="old('bank_logo', $data->bank_logo)"
+                                   placeholder="https://... (URL gambar/SVG logo resmi bank)" />
+                    @if ($data->bank_logo)
+                        <div class="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 w-fit">
+                            <span class="text-[10px] text-slate-400">Preview:</span>
+                            <img src="{{ $data->bank_logo }}" alt="Logo" class="h-6 w-auto object-contain">
+                        </div>
+                    @endif
+                    @error('bank_logo')
+                        <p class="text-xs text-rose-500 mt-1 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Instruksi / Catatan Transfer --}}
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-slate-700 dark:text-neutral-200">
+                        Instruksi / Catatan Pembayaran (Opsional)
+                    </label>
+                    <textarea name="instructions" rows="2"
+                              placeholder="Contoh: Transfer tepat sesuai nominal tarif kelas. Simpan bukti transfer dan konfirmasi ke WhatsApp Admin."
+                              class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 text-slate-800 dark:text-neutral-200 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-primary/20 leading-relaxed">{{ old('instructions', $data->instructions) }}</textarea>
+                    @error('instructions')
+                        <p class="text-xs text-rose-500 mt-1 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Urutan & Status Aktif --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100 dark:border-neutral-800">
+                    <div class="space-y-1.5">
+                        <x-admin.input label="Urutan Tampilan" type="number" name="sort_order"
+                                       :value="old('sort_order', $data->sort_order)" min="1" required />
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-neutral-200">
+                            Status Rekening
+                        </label>
+                        <select name="is_active" class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 text-slate-800 dark:text-neutral-200 focus:outline-hidden focus:ring-2 focus:ring-primary/20">
+                            <option value="1" {{ old('is_active', $data->is_active) == 1 ? 'selected' : '' }}>Aktif (Ditampilkan ke Siswa)</option>
+                            <option value="0" {{ old('is_active', $data->is_active) == 0 ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
+                        </select>
+                    </div>
+                </div>
+
+                {{-- Action Buttons --}}
+                <div class="pt-4 border-t border-slate-100 dark:border-neutral-800 flex items-center justify-end gap-3">
+                    <x-admin.button href="{{ route('admin.payment.index', ['tab' => 'banks']) }}" size="sm" color="outline-secondary">
+                        Batal
+                    </x-admin.button>
+                    <x-admin.button type="submit" size="sm" color="primary">
+                        Perbarui Rekening Bank
+                    </x-admin.button>
+                </div>
+            </form>
+        </x-admin.card>
+    </div>
+@endsection

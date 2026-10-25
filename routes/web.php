@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CourseClassController;
 use App\Http\Controllers\Admin\CurriculumModuleController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\GradebookController;
+use App\Http\Controllers\Admin\PaymentController;
 use App\Http\Controllers\Admin\QuestionBankController;
 use App\Http\Controllers\Admin\SidebarMenuController;
 use App\Http\Controllers\Admin\UserController;
@@ -103,6 +104,18 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('/delete/{cefr}', [CourseClassController::class, 'delete'])->name('delete');
         Route::post('/grant-access', [CourseClassController::class, 'doGrantAccess'])->name('grant_access');
         Route::delete('/revoke-access/{id}', [CourseClassController::class, 'doRevokeAccess'])->name('revoke_access');
+    });
+
+    // Payment Methods & Settings (Metode Pembayaran) Routes
+    Route::middleware('access_type:1')->prefix('payment')->name('payment.')->group(function () {
+        Route::get('/', [PaymentController::class, 'index'])->name('index');
+        Route::get('/add', [PaymentController::class, 'add'])->name('add');
+        Route::post('/create', [PaymentController::class, 'doCreate'])->name('create');
+        Route::get('/edit/{id}', [PaymentController::class, 'edit'])->name('edit');
+        Route::post('/update/{id}', [PaymentController::class, 'doUpdate'])->name('doUpdate');
+        Route::delete('/delete/{id}', [PaymentController::class, 'delete'])->name('delete');
+        Route::post('/toggle-status/{id}', [PaymentController::class, 'toggleStatus'])->name('toggleStatus');
+        Route::post('/settings', [PaymentController::class, 'doUpdateSettings'])->name('updateSettings');
     });
 
     Route::middleware('access_type:1')->prefix('sidebar-menu')->name('sidebar_menu.')->group(function () {
