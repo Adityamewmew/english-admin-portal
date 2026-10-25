@@ -253,6 +253,12 @@ class PaymentUsecase extends Usecase
                 'whatsapp_name' => $map['whatsapp_name'] ?? 'Admin Support EDDY\'S AI',
                 'whatsapp_message' => $map['whatsapp_message'] ?? 'Halo Admin EDDY\'S AI, saya ingin konfirmasi pembayaran untuk aktivasi kelas.',
                 'whatsapp_is_active' => $map['whatsapp_is_active'] ?? '1',
+                'singapay_client_id' => $map['singapay_client_id'] ?? 'ce3b8d81-9f1a-4c84-a88f-45abf3dcd20e',
+                'singapay_client_secret' => $map['singapay_client_secret'] ?? 'cf80dd5184f15e215c8fc0716776f46328de74ceddb34761d2703d083c657150',
+                'singapay_api_key' => $map['singapay_api_key'] ?? 'da7d1150-40fe-4f6c-a586-6482fe65d52e',
+                'singapay_hmac_key' => $map['singapay_hmac_key'] ?? 'ee492152f86c4f9ec5e35a8c788788444adce957',
+                'singapay_is_sandbox' => $map['singapay_is_sandbox'] ?? '1',
+                'payment_expired_hours' => $map['payment_expired_hours'] ?? '24',
             ];
 
             return Response::buildSuccess($defaults, ResponseConst::HTTP_SUCCESS);
@@ -264,35 +270,36 @@ class PaymentUsecase extends Usecase
     }
 
     /**
-     * Update konfigurasi pembayaran (WhatsApp Admin Contact).
+     * Update konfigurasi pembayaran (WhatsApp & Gateway SingaPay).
      */
     public function updatePaymentSettings(Request $data): array
     {
-        $validator = Validator::make($data->all(), [
-            'whatsapp_number' => 'required|string|max:30',
-            'whatsapp_name' => 'required|string|max:100',
-            'whatsapp_message' => 'required|string',
-            'whatsapp_is_active' => 'nullable|in:0,1',
-        ]);
-
-        if ($validator->fails()) {
-            return Response::buildError(ResponseConst::HTTP_BAD_REQUEST, $validator->errors()->first());
-        }
+        $settingType = $data->input('setting_type', 'whatsapp');
 
         DB::beginTransaction();
         try {
-            $cleanNumber = preg_replace('/[^0-9]/', '', $data->input('whatsapp_number'));
-            // If starts with 08, change to 628
-            if (str_starts_with($cleanNumber, '08')) {
-                $cleanNumber = '628'.substr($cleanNumber, 2);
-            }
+            if ($settingType === 'gateway') {
+                $keys = [
+                    'singapay_client_id' => trim($data->input('singapay_client_id')),
+                    'singapay_client_secret' => trim($data->input('singapay_client_secret')),
+                    'singapay_api_key' => trim($data->input('singapay_api_key')),
+                    'singapay_hmac_key' => trim($data->input('singapay_hmac_key')),
+                    'singapay_is_sandbox' => $data->has('singapay_is_sandbox') ? '1' : '0',
+                    'payment_expired_hours' => (string) ($data->input('payment_expired_hours') ?: '24'),
+                ];
+            } else {
+                $cleanNumber = preg_replace('/[^0-9]/', '', $data->input('whatsapp_number'));
+                if (str_starts_with($cleanNumber, '08')) {
+                    $cleanNumber = '628'.substr($cleanNumber, 2);
+                }
 
-            $keys = [
-                'whatsapp_number' => $cleanNumber,
-                'whatsapp_name' => trim($data->input('whatsapp_name')),
-                'whatsapp_message' => trim($data->input('whatsapp_message')),
-                'whatsapp_is_active' => $data->has('whatsapp_is_active') ? (string) $data->input('whatsapp_is_active') : '1',
-            ];
+                $keys = [
+                    'whatsapp_number' => $cleanNumber,
+                    'whatsapp_name' => trim($data->input('whatsapp_name')),
+                    'whatsapp_message' => trim($data->input('whatsapp_message')),
+                    'whatsapp_is_active' => $data->has('whatsapp_is_active') ? (string) $data->input('whatsapp_is_active') : '1',
+                ];
+            }
 
             foreach ($keys as $k => $v) {
                 DB::table(DatabaseConst::PAYMENT_SETTINGS())->updateOrInsert(
@@ -303,7 +310,7 @@ class PaymentUsecase extends Usecase
 
             DB::commit();
 
-            return Response::buildSuccess(message: 'Pengaturan kontak WhatsApp Admin berhasil disimpan');
+            return Response::buildSuccess(message: 'Pengaturan pembayaran berhasil disimpan');
         } catch (Exception $e) {
             DB::rollback();
             Log::error($e->getMessage(), ['method' => __METHOD__]);

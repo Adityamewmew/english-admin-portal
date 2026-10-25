@@ -250,3 +250,30 @@ export const paymentSettings = pgTable('payment_settings', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// 18. Payment Transactions Table (Order / Invoice Konfirmasi Pembayaran)
+export const paymentTransactions = pgTable('payment_transactions', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  orderId: varchar('order_id', { length: 50 }).notNull().unique(),
+  userId: varchar('user_id', { length: 36 }).notNull(),
+  cefr: varchar('cefr', { length: 10 }).notNull(),
+  tier: varchar('tier', { length: 20 }).notNull().default('basic'),
+  paymentCategory: varchar('payment_category', { length: 30 }).notNull(),
+  paymentChannel: varchar('payment_channel', { length: 50 }).notNull(),
+  amount: integer('amount').notNull().default(0),
+  status: varchar('status', { length: 20 }).notNull().default('pending'),
+  vaNumber: varchar('va_number', { length: 50 }),
+  qrData: text('qr_data'),
+  qrImageUrl: text('qr_image_url'),
+  transferProofUrl: text('transfer_proof_url'),
+  rejectionReason: text('rejection_reason'),
+  expiresAt: timestamp('expires_at').notNull(),
+  paidAt: timestamp('paid_at'),
+  approvedBy: varchar('approved_by', { length: 36 }),
+  approvedAt: timestamp('approved_at'),
+  singapayPayload: jsonb('singapay_payload'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  deletedAt: timestamp('deleted_at'),
+});
+
+

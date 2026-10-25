@@ -56,6 +56,16 @@
                 <span class="inline-block size-2 rounded-full bg-emerald-500"></span>
             @endif
         </a>
+        <a href="{{ route('admin.payment.index', ['tab' => 'gateway']) }}"
+           class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold border-b-2 transition-all {{ $activeTab === 'gateway' ? 'border-primary text-primary dark:text-white dark:border-blue-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-neutral-400 dark:hover:text-neutral-200' }}">
+            <svg class="size-4 shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            SingaPay & Batas Expired
+            @if(($settings->singapay_is_sandbox ?? '1') == '1')
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Sandbox</span>
+            @endif
+        </a>
     </div>
 
     @if ($activeTab === 'banks')
@@ -195,12 +205,13 @@
                 </table>
             </div>
         </div>
-    @else
+    @elseif ($activeTab === 'whatsapp')
         {{-- TAB 2: PENGATURAN HUBUNGI ADMIN (WHATSAPP) --}}
         <div class="max-w-2xl mx-auto space-y-6">
             <x-admin.card variant="white" padding="p-6 sm:p-7">
                 <form action="{{ route('admin.payment.updateSettings') }}" method="POST" class="space-y-5">
                     @csrf
+                    <input type="hidden" name="setting_type" value="whatsapp">
 
                     <div class="border-b border-slate-100 dark:border-neutral-800 pb-4">
                         <div class="flex items-center gap-2">
@@ -296,6 +307,108 @@
                     <div class="pt-3 border-t border-slate-100 dark:border-neutral-800 flex justify-end">
                         <x-admin.button type="submit" size="sm" color="primary">
                             Simpan Pengaturan WhatsApp
+                        </x-admin.button>
+                    </div>
+                </form>
+            </x-admin.card>
+        </div>
+    @elseif ($activeTab === 'gateway')
+        {{-- TAB 3: PENGATURAN GATEWAY SINGAPAY & EXPIRED TIMER --}}
+        <div class="max-w-2xl mx-auto space-y-6">
+            <x-admin.card variant="white" padding="p-6 sm:p-7">
+                <form action="{{ route('admin.payment.updateSettings') }}" method="POST" class="space-y-5">
+                    @csrf
+                    <input type="hidden" name="setting_type" value="gateway">
+
+                    <div class="border-b border-slate-100 dark:border-neutral-800 pb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-200">
+                                <svg class="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </span>
+                            <div>
+                                <h3 class="font-heading font-black text-base text-slate-900 dark:text-white">Pengaturan SingaPay Payment Gateway</h3>
+                                <p class="text-xs text-slate-500">Konfigurasi API credentials SingaPay (VA, QRIS, E-Wallet) dan durasi masa berlaku link konfirmasi.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Mode Sandbox --}}
+                    <div class="flex items-center justify-between p-3.5 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/40">
+                        <div>
+                            <span class="block text-xs font-bold text-amber-900 dark:text-amber-200">Gunakan SingaPay Sandbox</span>
+                            <span class="text-[11px] text-amber-700 dark:text-amber-400">Aktifkan untuk lingkungan pengujian (https://sandbox-openapi.singapay.id).</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="singapay_is_sandbox" value="1"
+                                   {{ old('singapay_is_sandbox', $settings->singapay_is_sandbox ?? '1') == '1' ? 'checked' : '' }}
+                                   class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-hidden rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
+                        </label>
+                    </div>
+
+                    {{-- Batas Waktu Kadaluarsa (Jam) --}}
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-neutral-200">
+                            Durasi Kadaluarsa Link Pembayaran (Jam) <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number" name="payment_expired_hours" min="1" max="168"
+                                   value="{{ old('payment_expired_hours', $settings->payment_expired_hours ?? '24') }}"
+                                   placeholder="24" required
+                                   class="w-full px-3.5 py-2 text-xs font-mono font-bold rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 text-slate-800 dark:text-neutral-200 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-primary/20">
+                        </div>
+                        <span class="text-[11px] text-slate-400">Waktu hitung mundur (countdown) pada halaman konfirmasi sebelum link expired (default: 24 jam).</span>
+                    </div>
+
+                    {{-- Client ID --}}
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-neutral-200">
+                            Client ID SingaPay <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" name="singapay_client_id"
+                               value="{{ old('singapay_client_id', $settings->singapay_client_id ?? '') }}"
+                               placeholder="e.g. ce3b8d81-9f1a-4c84-a88f-45abf3dcd20e" required
+                               class="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 text-slate-800 dark:text-neutral-200 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-primary/20">
+                    </div>
+
+                    {{-- Client Secret --}}
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-neutral-200">
+                            Client Secret SingaPay <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" name="singapay_client_secret"
+                               value="{{ old('singapay_client_secret', $settings->singapay_client_secret ?? '') }}"
+                               placeholder="e.g. cf80dd5184f15e215c8fc0716776f46328de74ceddb34761d2703d083c657150" required
+                               class="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 text-slate-800 dark:text-neutral-200 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-primary/20">
+                    </div>
+
+                    {{-- API Key --}}
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-neutral-200">
+                            API Key SingaPay <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" name="singapay_api_key"
+                               value="{{ old('singapay_api_key', $settings->singapay_api_key ?? '') }}"
+                               placeholder="e.g. da7d1150-40fe-4f6c-a586-6482fe65d52e" required
+                               class="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 text-slate-800 dark:text-neutral-200 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-primary/20">
+                    </div>
+
+                    {{-- HMAC Validation Key --}}
+                    <div class="space-y-1.5">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-neutral-200">
+                            HMAC Validation Key SingaPay <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" name="singapay_hmac_key"
+                               value="{{ old('singapay_hmac_key', $settings->singapay_hmac_key ?? '') }}"
+                               placeholder="e.g. ee492152f86c4f9ec5e35a8c788788444adce957" required
+                               class="w-full px-3.5 py-2 text-xs font-mono rounded-xl border border-slate-200 dark:border-neutral-700 bg-surface dark:bg-neutral-800 text-slate-800 dark:text-neutral-200 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-primary/20">
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-100 dark:border-neutral-800 flex justify-end">
+                        <x-admin.button type="submit" size="sm" color="primary">
+                            Simpan Pengaturan Gateway
                         </x-admin.button>
                     </div>
                 </form>

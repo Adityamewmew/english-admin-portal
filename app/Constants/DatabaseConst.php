@@ -101,6 +101,11 @@ class DatabaseConst
         return 'payment_settings';
     }
 
+    public static function PAYMENT_TRANSACTIONS(): string
+    {
+        return 'payment_transactions';
+    }
+
     public static function DB_CORE(): string
     {
         return config('database.connections.pgsql.database', 'db-eddys');

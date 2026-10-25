@@ -165,6 +165,18 @@ class AdminSidebarSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'id' => 9,
+                'parent_id' => null,
+                'label' => 'Transaksi Masuk',
+                'route_name' => 'admin.payment_transactions.index',
+                'icon' => '_admin._layout.icons.sidebar.payment',
+                'group' => 'akademik',
+                'sort_order' => 6,
+                'is_active' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
                 'id' => 5,
                 'parent_id' => null,
                 'label' => 'Manajemen Menu',

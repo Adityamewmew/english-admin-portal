@@ -148,10 +148,11 @@ class PaymentController extends Controller
     public function doUpdateSettings(Request $request): RedirectResponse
     {
         $process = $this->usecase->updatePaymentSettings(data: $request);
+        $tab = $request->input('setting_type', 'whatsapp');
 
         if ($process['success']) {
-            return redirect()->route('admin.payment.index', ['tab' => 'whatsapp'])
-                ->with('success', 'Pengaturan kontak WhatsApp Admin berhasil disimpan');
+            return redirect()->route('admin.payment.index', ['tab' => $tab])
+                ->with('success', $process['message'] ?? 'Pengaturan pembayaran berhasil disimpan');
         }
 
         return redirect()->back()->withInput()

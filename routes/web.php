@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CurriculumModuleController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\GradebookController;
 use App\Http\Controllers\Admin\PaymentController;
+use App\Http\Controllers\Admin\PaymentTransactionController;
 use App\Http\Controllers\Admin\QuestionBankController;
 use App\Http\Controllers\Admin\SidebarMenuController;
 use App\Http\Controllers\Admin\UserController;
@@ -116,6 +117,14 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('/delete/{id}', [PaymentController::class, 'delete'])->name('delete');
         Route::post('/toggle-status/{id}', [PaymentController::class, 'toggleStatus'])->name('toggleStatus');
         Route::post('/settings', [PaymentController::class, 'doUpdateSettings'])->name('updateSettings');
+    });
+
+    // Payment Transactions (Transaksi & Verifikasi Pembayaran)
+    Route::middleware('access_type:1')->prefix('payment-transactions')->name('payment_transactions.')->group(function () {
+        Route::get('/', [PaymentTransactionController::class, 'index'])->name('index');
+        Route::get('/detail/{id}', [PaymentTransactionController::class, 'detail'])->name('detail');
+        Route::post('/approve/{id}', [PaymentTransactionController::class, 'doApprove'])->name('approve');
+        Route::post('/reject/{id}', [PaymentTransactionController::class, 'doReject'])->name('reject');
     });
 
     Route::middleware('access_type:1')->prefix('sidebar-menu')->name('sidebar_menu.')->group(function () {
