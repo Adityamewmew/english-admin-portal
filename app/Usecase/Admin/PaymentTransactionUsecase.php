@@ -26,6 +26,7 @@ class PaymentTransactionUsecase extends Usecase
                 ->leftJoin(DatabaseConst::COURSE_CLASSES().' as cc', 'pt.cefr', '=', 'cc.cefr')
                 ->select(
                     'pt.*',
+                    'pt.expires_at as expired_at',
                     'pt.cefr as cefr_level',
                     'pt.tier as tier_name',
                     'pt.payment_channel as payment_channel_name',
@@ -76,6 +77,7 @@ class PaymentTransactionUsecase extends Usecase
                 ->leftJoin(DatabaseConst::COURSE_CLASSES().' as cc', 'pt.cefr', '=', 'cc.cefr')
                 ->select(
                     'pt.*',
+                    'pt.expires_at as expired_at',
                     'pt.cefr as cefr_level',
                     'pt.tier as tier_name',
                     'pt.payment_channel as payment_channel_name',

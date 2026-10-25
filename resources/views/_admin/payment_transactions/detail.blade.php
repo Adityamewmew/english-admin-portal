@@ -143,7 +143,7 @@
                         </div>
                         <div class="p-3 rounded-xl bg-surface dark:bg-neutral-800 text-[11px] text-slate-500 space-y-1">
                             <p><span class="font-bold text-slate-700 dark:text-neutral-300">File:</span> Bukti transfer diunggah oleh siswa.</p>
-                            @if ($data->metadata && isset($data->metadata['proof_uploaded_at']))
+                            @if (!empty($data->metadata) && is_array($data->metadata) && isset($data->metadata['proof_uploaded_at']))
                                 <p><span class="font-bold text-slate-700 dark:text-neutral-300">Waktu Upload:</span> {{ $data->metadata['proof_uploaded_at'] }}</p>
                             @endif
                         </div>
@@ -156,14 +156,14 @@
                             </svg>
                         </div>
                         <p class="font-bold text-xs text-slate-700 dark:text-neutral-300">
-                            @if ($data->payment_category === 'manual_transfer')
+                            @if (($data->payment_category ?? '') === 'manual_transfer')
                                 Siswa belum mengunggah bukti transfer
                             @else
                                 Pembayaran Otomatis SingaPay Gateway
                             @endif
                         </p>
                         <p class="text-[11px] text-slate-400 max-w-xs mx-auto">
-                            @if ($data->payment_category === 'manual_transfer')
+                            @if (($data->payment_category ?? '') === 'manual_transfer')
                                 Status akan otomatis berubah menjadi "Menunggu Verifikasi" segera setelah siswa upload foto bukti.
                             @else
                                 Sistem SingaPay memvalidasi pembayaran ini secara otomatis lewat callback webhook.
@@ -185,22 +185,22 @@
                 <dl class="divide-y divide-slate-100 dark:divide-neutral-800 text-xs">
                     <div class="py-2.5 flex justify-between items-center">
                         <dt class="text-slate-500">Order ID</dt>
-                        <dd class="font-mono font-bold text-primary dark:text-blue-400">{{ $data->order_id }}</dd>
+                        <dd class="font-mono font-bold text-primary dark:text-blue-400">{{ $data->order_id ?? '-' }}</dd>
                     </div>
                     <div class="py-2.5 flex justify-between items-center">
                         <dt class="text-slate-500">Total Tagihan</dt>
                         <dd class="text-base font-black text-slate-900 dark:text-white">
-                            Rp {{ number_format($data->amount, 0, ',', '.') }}
+                            Rp {{ number_format($data->amount ?? 0, 0, ',', '.') }}
                         </dd>
                     </div>
                     <div class="py-2.5 flex justify-between items-center">
                         <dt class="text-slate-500">Kategori & Metode</dt>
                         <dd class="font-bold text-slate-800 dark:text-neutral-200 text-end">
-                            {{ $data->payment_channel_name ?? $data->payment_channel }}
-                            <span class="block text-[10px] text-slate-400 uppercase font-mono">{{ str_replace('_', ' ', $data->payment_category) }}</span>
+                            {{ $data->payment_channel_name ?? $data->payment_channel ?? '-' }}
+                            <span class="block text-[10px] text-slate-400 uppercase font-mono">{{ str_replace('_', ' ', $data->payment_category ?? '') }}</span>
                         </dd>
                     </div>
-                    @if ($data->va_number)
+                    @if (!empty($data->va_number))
                         <div class="py-2.5 flex justify-between items-center">
                             <dt class="text-slate-500">Nomor Virtual Account</dt>
                             <dd class="font-mono font-black text-primary dark:text-blue-400 bg-primary/5 px-2 py-1 rounded">
@@ -208,7 +208,7 @@
                             </dd>
                         </div>
                     @endif
-                    @if ($data->gateway_trx_id)
+                    @if (!empty($data->gateway_trx_id))
                         <div class="py-2.5 flex justify-between items-center">
                             <dt class="text-slate-500">ID Transaksi Gateway</dt>
                             <dd class="font-mono text-slate-700 dark:text-neutral-300">{{ $data->gateway_trx_id }}</dd>
@@ -217,10 +217,13 @@
                     <div class="py-2.5 flex justify-between items-center">
                         <dt class="text-slate-500">Batas Waktu Expired</dt>
                         <dd class="font-mono text-slate-700 dark:text-neutral-300">
-                            {{ $data->expired_at ? \Carbon\Carbon::parse($data->expired_at)->format('d M Y, H:i') . ' WIB' : '-' }}
+                            @php
+                                $expiry = $data->expires_at ?? $data->expired_at ?? null;
+                            @endphp
+                            {{ $expiry ? \Carbon\Carbon::parse($expiry)->format('d M Y, H:i') . ' WIB' : '-' }}
                         </dd>
                     </div>
-                    @if ($data->paid_at)
+                    @if (!empty($data->paid_at))
                         <div class="py-2.5 flex justify-between items-center">
                             <dt class="text-slate-500">Waktu Sukses Bayar</dt>
                             <dd class="font-mono font-bold text-emerald-600 dark:text-emerald-400">
