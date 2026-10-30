@@ -17,7 +17,7 @@
         <div class="px-2 pt-0 flex items-center bg-surface/50 border-b border-slate-200 dark:border-neutral-700">
             <a class="flex-none rounded-xl text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80"
                 href="#" aria-label="EDDY'S AI">
-                <img src="{{ asset('images/logo-light.png') }}" alt="Logo EDDY'S AI" class="w-56 h-auto p-4">
+                <img src="{{ asset('images/logo-academy.png') }}" alt="EDDY'S AI Academy" class="h-10 w-auto my-3 mx-2 object-contain">
             </a>
         </div>
 

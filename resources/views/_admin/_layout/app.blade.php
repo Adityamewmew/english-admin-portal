@@ -48,7 +48,7 @@
                 <!-- Logo -->
                 <a class="flex-none rounded-md text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80"
                     href="#" aria-label="Logo">
-                    <img src="{{ asset('images/logo-light.png') }}" alt="Logo Smart Project Starter Kit" class="w-40 h-auto p-4">
+                    <img src="{{ asset('images/logo-academy.png') }}" alt="EDDY'S AI Academy" class="h-8 w-auto">
                 </a>
                 <!-- End Logo -->
             </div>

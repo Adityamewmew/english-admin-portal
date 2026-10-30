@@ -21,7 +21,7 @@
     <header class="w-full bg-white border-b border-slate-200 shadow-2xs">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <a href="{{ url('/') }}" class="flex items-center gap-2">
-                <img src="{{ asset('images/logo-light.png') }}" alt="EDDY'S AI" class="h-9 w-auto">
+                <img src="{{ asset('images/logo-academy.png') }}" alt="EDDY'S AI Academy" class="h-9 w-auto">
             </a>
 
             <div class="flex items-center gap-3">

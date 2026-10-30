@@ -5,7 +5,7 @@
 @section('content')
     <div class="w-full max-w-md p-4">
         <div class="mb-6 flex flex-col items-center justify-center text-center">
-            <img src="{{ asset('images/logo-light.png') }}" alt="EDDY'S AI Logo" class="w-auto h-14 mb-2">
+            <img src="{{ asset('images/logo-academy.png') }}" alt="EDDY'S AI Academy" class="w-auto h-14 mb-2">
             <span class="text-xs font-semibold uppercase tracking-widest text-slate-400">English Learning Platform</span>
         </div>
 
